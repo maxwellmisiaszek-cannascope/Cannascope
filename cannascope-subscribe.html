@@ -132,16 +132,10 @@
   </main>
 
   <script>
-    // ─── CONFIG ──────────────────────────────────────────────────────────────
     const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
 
-    // ── STRIPE ────────────────────────────────────────────────────────────────
-    // 1. Go to dashboard.stripe.com → Products → Create product
-    //    Name: "Cannascope Per Location"  Price: $199/month recurring
-    // 2. Get the Payment Link URL from that product page
-    // 3. Paste it below — looks like: https://buy.stripe.com/XXXXXXXX
-    const STRIPE_PAYMENT_LINK = 'PASTE_YOUR_STRIPE_PAYMENT_LINK_HERE';
+    const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/test_6oU3cvbj09sEcQN8kbbwk00';
 
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -149,12 +143,6 @@
     async function startCheckout() {
       const btn = document.getElementById('subscribeBtn');
       const msg = document.getElementById('statusMsg');
-
-      if (STRIPE_PAYMENT_LINK === 'PASTE_YOUR_STRIPE_PAYMENT_LINK_HERE') {
-        msg.textContent = '⚠️ Stripe not configured yet — contact support to subscribe.';
-        msg.style.color = '#f59e0b';
-        return;
-      }
 
       btn.classList.add('loading');
       btn.textContent = 'Redirecting to Stripe...';
