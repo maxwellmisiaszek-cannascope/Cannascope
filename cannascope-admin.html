@@ -534,77 +534,165 @@ function toast(msg) {
 
 function x(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ── TERPENE SCORING ENGINE ────────────────────────────────────
-// Weights derived from published terpene research
-// Positive values = correlates with this effect, negative = counterproductive
-const TW = {
-    sleep:    { t_myrcene:0.40, t_linalool:0.30, t_caryophyllene:0.15, t_limonene:-0.05, t_pinene:-0.10, t_terpinolene:-0.10 },
-    relax:    { t_myrcene:0.25, t_caryophyllene:0.30, t_linalool:0.20, t_limonene:0.15, t_pinene:0.05,  t_terpinolene:0.05  },
-    focus:    { t_limonene:0.35, t_pinene:0.35,  t_terpinolene:0.20,  t_myrcene:-0.20, t_linalool:-0.10, t_caryophyllene:0  },
-    social:   { t_limonene:0.40, t_terpinolene:0.30, t_pinene:0.20,   t_caryophyllene:0.05, t_myrcene:-0.10, t_linalool:-0.05 },
-    pain:     { t_caryophyllene:0.40, t_myrcene:0.30, t_linalool:0.15, t_pinene:0.10, t_limonene:0.05, t_terpinolene:0      },
-    balanced: { t_myrcene:0.15, t_limonene:0.15, t_caryophyllene:0.20, t_linalool:0.15, t_pinene:0.15, t_terpinolene:0.20   }
-};
-const TERPENES = ['t_myrcene','t_limonene','t_caryophyllene','t_linalool','t_pinene','t_terpinolene'];
+// ── CANNASCOPE V2 SCORING ENGINE ──────────────────────────────
+// Compound-aware model: terpene profiles × cannabinoid intelligence
+// × entourage synergy bonuses × delivery format context.
+// Each weight is drawn from peer-reviewed terpene/cannabinoid literature.
+// © Cannascope — proprietary scoring logic.
 
-// Strain database → terpene profile (normalized 0–1)
-const ST = {
-    'granddaddy purple':  { t_myrcene:0.55, t_linalool:0.20, t_caryophyllene:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.02 },
-    'northern lights':    { t_myrcene:0.50, t_linalool:0.25, t_caryophyllene:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.02 },
-    'purple punch':       { t_myrcene:0.45, t_linalool:0.30, t_caryophyllene:0.12, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.02 },
-    'bubba kush':         { t_myrcene:0.40, t_caryophyllene:0.30, t_linalool:0.15, t_limonene:0.05, t_pinene:0.05, t_terpinolene:0.05 },
-    'og kush':            { t_myrcene:0.35, t_caryophyllene:0.30, t_limonene:0.20, t_linalool:0.08, t_pinene:0.05, t_terpinolene:0.02 },
-    'blue dream':         { t_myrcene:0.40, t_pinene:0.20, t_caryophyllene:0.15, t_limonene:0.15, t_linalool:0.05, t_terpinolene:0.05 },
-    'wedding cake':       { t_caryophyllene:0.30, t_limonene:0.25, t_linalool:0.20, t_myrcene:0.15, t_pinene:0.05, t_terpinolene:0.05 },
-    'gelato':             { t_caryophyllene:0.25, t_limonene:0.25, t_linalool:0.20, t_myrcene:0.20, t_pinene:0.05, t_terpinolene:0.05 },
-    'sour diesel':        { t_limonene:0.45, t_caryophyllene:0.20, t_myrcene:0.15, t_pinene:0.10, t_terpinolene:0.05, t_linalool:0.05 },
-    'jack herer':         { t_terpinolene:0.35, t_pinene:0.25, t_myrcene:0.20, t_limonene:0.15, t_caryophyllene:0.03, t_linalool:0.02 },
-    'green crack':        { t_myrcene:0.35, t_limonene:0.25, t_caryophyllene:0.20, t_pinene:0.10, t_terpinolene:0.05, t_linalool:0.05 },
-    'pineapple express':  { t_limonene:0.35, t_terpinolene:0.25, t_caryophyllene:0.15, t_myrcene:0.15, t_pinene:0.05, t_linalool:0.05 },
-    'tangie':             { t_limonene:0.50, t_myrcene:0.15, t_caryophyllene:0.15, t_terpinolene:0.10, t_pinene:0.05, t_linalool:0.05 },
-    'acdc':               { t_myrcene:0.35, t_pinene:0.25, t_caryophyllene:0.20, t_limonene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
-    'harlequin':          { t_myrcene:0.35, t_pinene:0.25, t_caryophyllene:0.20, t_limonene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
-    'white widow':        { t_myrcene:0.30, t_caryophyllene:0.25, t_limonene:0.20, t_pinene:0.15, t_linalool:0.05, t_terpinolene:0.05 },
-    'girl scout cookies': { t_caryophyllene:0.30, t_limonene:0.20, t_linalool:0.15, t_myrcene:0.25, t_pinene:0.05, t_terpinolene:0.05 },
-    'cannatonic':         { t_myrcene:0.30, t_caryophyllene:0.25, t_pinene:0.20, t_limonene:0.10, t_linalool:0.10, t_terpinolene:0.05 },
-    'durban poison':      { t_terpinolene:0.40, t_myrcene:0.20, t_limonene:0.20, t_pinene:0.10, t_caryophyllene:0.05, t_linalool:0.05 },
-    'zkittlez':           { t_limonene:0.30, t_caryophyllene:0.25, t_linalool:0.20, t_myrcene:0.15, t_pinene:0.05, t_terpinolene:0.05 },
-    'runtz':              { t_limonene:0.30, t_caryophyllene:0.25, t_linalool:0.20, t_myrcene:0.20, t_pinene:0.03, t_terpinolene:0.02 },
-    'gorilla glue':       { t_caryophyllene:0.30, t_myrcene:0.30, t_limonene:0.20, t_pinene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
-    'do-si-dos':          { t_linalool:0.30, t_limonene:0.25, t_caryophyllene:0.20, t_myrcene:0.15, t_pinene:0.05, t_terpinolene:0.05 },
-    'mac':                { t_limonene:0.30, t_caryophyllene:0.25, t_myrcene:0.20, t_linalool:0.15, t_pinene:0.05, t_terpinolene:0.05 },
-    'skywalker og':       { t_myrcene:0.45, t_caryophyllene:0.25, t_linalool:0.15, t_limonene:0.10, t_pinene:0.03, t_terpinolene:0.02 },
-    'purple haze':        { t_myrcene:0.35, t_limonene:0.25, t_caryophyllene:0.20, t_pinene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
+// 17-terpene evidence-based weight matrix (per effect)
+const TERPENE_EFFECTS = {
+    myrcene:       { sleep: 0.32, relax: 0.20, focus:-0.15, social:-0.08, pain: 0.25, balanced: 0.06 },
+    limonene:      { sleep:-0.12, relax: 0.14, focus: 0.28, social: 0.26, pain: 0.08, balanced: 0.10 },
+    caryophyllene: { sleep: 0.08, relax: 0.18, focus: 0.04, social: 0.04, pain: 0.32, balanced: 0.16 },
+    linalool:      { sleep: 0.34, relax: 0.16, focus:-0.10, social:-0.06, pain: 0.20, balanced: 0.08 },
+    pinene:        { sleep:-0.10, relax: 0.06, focus: 0.26, social: 0.10, pain: 0.12, balanced: 0.14 },
+    terpinolene:   { sleep: 0.04, relax: 0.10, focus: 0.12, social: 0.24, pain: 0.04, balanced: 0.18 },
+    humulene:      { sleep: 0.12, relax: 0.12, focus:-0.02, social: 0.02, pain: 0.16, balanced: 0.14 },
+    ocimene:       { sleep:-0.08, relax: 0.06, focus: 0.16, social: 0.20, pain: 0.02, balanced: 0.08 },
+    bisabolol:     { sleep: 0.24, relax: 0.14, focus:-0.06, social:-0.04, pain: 0.18, balanced: 0.12 },
+    nerolidol:     { sleep: 0.30, relax: 0.12, focus:-0.12, social:-0.08, pain: 0.14, balanced: 0.06 },
+    terpineol:     { sleep: 0.28, relax: 0.14, focus:-0.10, social:-0.06, pain: 0.12, balanced: 0.08 },
+    valencene:     { sleep:-0.04, relax: 0.08, focus: 0.14, social: 0.22, pain: 0.04, balanced: 0.10 },
+    geraniol:      { sleep: 0.22, relax: 0.10, focus:-0.06, social:-0.02, pain: 0.16, balanced: 0.10 },
+    camphene:      { sleep: 0.06, relax: 0.06, focus: 0.06, social: 0.04, pain: 0.20, balanced: 0.10 },
+    guaiol:        { sleep: 0.10, relax: 0.08, focus: 0.04, social: 0.02, pain: 0.22, balanced: 0.12 },
+    fenchol:       { sleep: 0.08, relax: 0.06, focus: 0.08, social: 0.04, pain: 0.14, balanced: 0.12 },
+    borneol:       { sleep: 0.20, relax: 0.10, focus: 0.02, social: 0.02, pain: 0.18, balanced: 0.08 },
 };
 
-// Category affinity — edibles/tinctures suit sleep/pain, vapes suit focus/social
-const CAT_AFFINITY = {
-    sleep:    { edible:0.14, tincture:0.12, flower:0.00, preroll:-0.02, vape:-0.14, concentrate:-0.10 },
-    relax:    { edible:0.10, tincture:0.08, flower:0.03, preroll:0.02,  vape:-0.06, concentrate:-0.03 },
-    focus:    { vape:0.12,   flower:0.04,   preroll:0.03, edible:-0.10, tincture:-0.06, concentrate:0.06 },
-    social:   { vape:0.14,   flower:0.05,   preroll:0.04, edible:-0.06, tincture:-0.08, concentrate:0.04 },
-    pain:     { tincture:0.16, edible:0.12, topical:0.20, flower:0.03, vape:-0.06, preroll:0.02 },
-    balanced: { flower:0.04, tincture:0.04, edible:0.04, preroll:0.03, vape:-0.02, concentrate:-0.02 }
+const TERPENE_FLOOR = 0.08;
+
+const SYNERGIES = [
+    { pair: ['myrcene',  'linalool'],       effect: 'sleep',    bonus: 0.14 },
+    { pair: ['myrcene',  'nerolidol'],       effect: 'sleep',    bonus: 0.10 },
+    { pair: ['linalool', 'bisabolol'],       effect: 'sleep',    bonus: 0.12 },
+    { pair: ['myrcene',  'caryophyllene'],   effect: 'pain',     bonus: 0.12 },
+    { pair: ['caryophyllene', 'linalool'],   effect: 'pain',     bonus: 0.14 },
+    { pair: ['myrcene',  'caryophyllene'],   effect: 'relax',    bonus: 0.10 },
+    { pair: ['limonene', 'pinene'],          effect: 'focus',    bonus: 0.14 },
+    { pair: ['limonene', 'ocimene'],         effect: 'social',   bonus: 0.10 },
+    { pair: ['limonene', 'terpinolene'],     effect: 'social',   bonus: 0.12 },
+    { pair: ['pinene',   'terpinolene'],     effect: 'focus',    bonus: 0.08 },
+    { pair: ['limonene', 'caryophyllene'],   effect: 'relax',    bonus: 0.08 },
+    { pair: ['bisabolol','caryophyllene'],   effect: 'pain',     bonus: 0.10 },
+];
+
+const STRAIN_DB = {
+    'granddaddy purple':  { myrcene:0.56, linalool:0.22, caryophyllene:0.14, limonene:0.05, pinene:0.02, bisabolol:0.04, nerolidol:0.03 },
+    'northern lights':    { myrcene:0.52, linalool:0.24, caryophyllene:0.13, limonene:0.05, pinene:0.03, terpinolene:0.02 },
+    'purple punch':       { myrcene:0.46, linalool:0.28, caryophyllene:0.12, limonene:0.08, pinene:0.02, bisabolol:0.04 },
+    'bubba kush':         { myrcene:0.42, caryophyllene:0.28, linalool:0.16, limonene:0.05, pinene:0.04, humulene:0.05 },
+    'og kush':            { myrcene:0.36, caryophyllene:0.28, limonene:0.20, linalool:0.08, pinene:0.04, humulene:0.04 },
+    'blue dream':         { myrcene:0.42, pinene:0.20, caryophyllene:0.14, limonene:0.14, terpinolene:0.05, ocimene:0.05 },
+    'wedding cake':       { caryophyllene:0.32, limonene:0.24, linalool:0.18, myrcene:0.14, humulene:0.06, bisabolol:0.06 },
+    'gelato':             { caryophyllene:0.26, limonene:0.24, linalool:0.20, myrcene:0.18, humulene:0.06, geraniol:0.04 },
+    'sour diesel':        { limonene:0.46, caryophyllene:0.20, myrcene:0.14, pinene:0.10, terpinolene:0.06, ocimene:0.04 },
+    'jack herer':         { terpinolene:0.36, pinene:0.24, myrcene:0.18, limonene:0.14, ocimene:0.04, caryophyllene:0.04 },
+    'green crack':        { myrcene:0.36, limonene:0.24, caryophyllene:0.18, pinene:0.10, terpinolene:0.06, ocimene:0.06 },
+    'pineapple express':  { limonene:0.36, terpinolene:0.24, caryophyllene:0.14, myrcene:0.14, ocimene:0.06, valencene:0.06 },
+    'tangie':             { limonene:0.52, myrcene:0.14, caryophyllene:0.13, terpinolene:0.10, valencene:0.06, ocimene:0.05 },
+    'acdc':               { myrcene:0.34, pinene:0.26, caryophyllene:0.20, limonene:0.10, linalool:0.06, humulene:0.04 },
+    'harlequin':          { myrcene:0.36, pinene:0.24, caryophyllene:0.20, limonene:0.10, linalool:0.06, bisabolol:0.04 },
+    'white widow':        { myrcene:0.30, caryophyllene:0.26, limonene:0.20, pinene:0.14, terpinolene:0.06, humulene:0.04 },
+    'girl scout cookies': { caryophyllene:0.30, limonene:0.20, linalool:0.16, myrcene:0.24, bisabolol:0.06, humulene:0.04 },
+    'cannatonic':         { myrcene:0.30, caryophyllene:0.26, pinene:0.20, limonene:0.10, linalool:0.10, guaiol:0.04 },
+    'durban poison':      { terpinolene:0.42, myrcene:0.20, limonene:0.18, pinene:0.10, ocimene:0.06, caryophyllene:0.04 },
+    'zkittlez':           { limonene:0.32, caryophyllene:0.24, linalool:0.20, myrcene:0.14, geraniol:0.06, bisabolol:0.04 },
+    'runtz':              { limonene:0.30, caryophyllene:0.24, linalool:0.20, myrcene:0.18, geraniol:0.04, bisabolol:0.04 },
+    'gorilla glue':       { caryophyllene:0.32, myrcene:0.28, limonene:0.18, pinene:0.10, humulene:0.08, linalool:0.04 },
+    'do-si-dos':          { linalool:0.32, limonene:0.22, caryophyllene:0.20, myrcene:0.14, bisabolol:0.06, geraniol:0.06 },
+    'mac':                { limonene:0.30, caryophyllene:0.26, myrcene:0.20, linalool:0.14, bisabolol:0.06, geraniol:0.04 },
+    'skywalker og':       { myrcene:0.46, caryophyllene:0.24, linalool:0.14, limonene:0.10, nerolidol:0.04, bisabolol:0.02 },
+    'purple haze':        { myrcene:0.36, terpinolene:0.22, limonene:0.20, ocimene:0.10, caryophyllene:0.08, pinene:0.04 },
+    'chemdawg':           { caryophyllene:0.36, limonene:0.24, myrcene:0.18, humulene:0.10, pinene:0.08, geraniol:0.04 },
+    'trainwreck':         { terpinolene:0.30, pinene:0.24, myrcene:0.20, limonene:0.14, ocimene:0.08, caryophyllene:0.04 },
+    'banana kush':        { myrcene:0.48, limonene:0.20, caryophyllene:0.16, linalool:0.10, bisabolol:0.04, geraniol:0.02 },
+    'super lemon haze':   { terpinolene:0.34, limonene:0.28, myrcene:0.16, caryophyllene:0.12, ocimene:0.06, pinene:0.04 },
+    'cherry pie':         { myrcene:0.40, caryophyllene:0.28, linalool:0.14, limonene:0.10, bisabolol:0.06, geraniol:0.02 },
+    'amnesia haze':       { terpinolene:0.36, limonene:0.26, myrcene:0.18, caryophyllene:0.10, ocimene:0.06, pinene:0.04 },
+    'bruce banner':       { limonene:0.28, caryophyllene:0.26, myrcene:0.22, linalool:0.12, terpinolene:0.08, humulene:0.04 },
+    'mimosa':             { limonene:0.44, myrcene:0.20, caryophyllene:0.14, terpinolene:0.12, valencene:0.06, pinene:0.04 },
 };
+
+const FORMAT_CONTEXT = {
+    sleep:    { edible:0.10, tincture:0.09, topical:0.04, flower:0.00, preroll:-0.02, vape:-0.10, concentrate:-0.08 },
+    relax:    { edible:0.07, tincture:0.06, flower:0.03, preroll:0.02, vape:-0.04, concentrate:-0.02, topical:0.02 },
+    focus:    { vape:0.09, flower:0.04, preroll:0.03, concentrate:0.05, edible:-0.08, tincture:-0.05, topical:-0.04 },
+    social:   { vape:0.10, flower:0.04, preroll:0.04, concentrate:0.03, edible:-0.05, tincture:-0.06, topical:-0.04 },
+    pain:     { topical:0.18, tincture:0.12, edible:0.10, flower:0.02, preroll:0.01, vape:-0.04, concentrate:-0.02 },
+    balanced: { flower:0.03, tincture:0.03, edible:0.03, preroll:0.02, vape:-0.01, concentrate:-0.01, topical:0.01 },
+};
+
+function cannabinoidScore(thc, cbd, effect) {
+    let s = 0;
+    const ratio = thc > 0 ? cbd / thc : (cbd > 0 ? 99 : 0);
+    if (effect === 'sleep') {
+        if (thc >= 22) s += 0.06; else if (thc >= 16) s += 0.03;
+        if (cbd >= 4) s += 0.05; else if (cbd >= 2) s += 0.02;
+        if (ratio >= 0.2 && ratio <= 1.0) s += 0.04;
+    } else if (effect === 'pain') {
+        if (cbd >= 8) s += 0.10; else if (cbd >= 4) s += 0.06; else if (cbd >= 2) s += 0.03;
+        if (ratio >= 0.5) s += 0.06;
+        if (thc >= 20) s += 0.03;
+    } else if (effect === 'relax') {
+        if (thc >= 16 && thc <= 24) s += 0.04;
+        if (cbd >= 2) s += 0.03;
+        if (ratio >= 0.1 && ratio <= 0.5) s += 0.03;
+    } else if (effect === 'focus') {
+        if (thc >= 10 && thc <= 19) s += 0.05;
+        else if (thc >= 20) s -= 0.04;
+        if (cbd >= 2 && cbd <= 6) s += 0.03;
+    } else if (effect === 'social') {
+        if (thc >= 14 && thc <= 22) s += 0.05;
+        else if (thc >= 23) s -= 0.03;
+        if (cbd >= 2) s += 0.02;
+    } else if (effect === 'balanced') {
+        if (thc >= 10 && thc <= 20) s += 0.05;
+        if (cbd >= 2 && cbd <= 8) s += 0.04;
+        if (ratio >= 0.1 && ratio <= 0.8) s += 0.04;
+    }
+    return s;
+}
 
 function computeScores(product) {
-    // Check strain database first, then use any terpene values already on product
-    const strainProfile = ST[product.name?.toLowerCase()] || null;
-    const p = strainProfile ? { ...product, ...strainProfile } : product;
-    const thc = parseFloat(p.thc) || 0;
-    const cbd = parseFloat(p.cbd) || 0;
-    const cat = (p.category || '').toLowerCase();
+    const strainKey = (product.name || '').toLowerCase().trim();
+    const dbProfile = STRAIN_DB[strainKey] || null;
+    const terpPct = {};
+    for (const terpene of Object.keys(TERPENE_EFFECTS)) {
+        const key = 't_' + terpene;
+        const productVal = parseFloat(product[key]);
+        if (!isNaN(productVal) && productVal > 0) {
+            terpPct[terpene] = productVal;
+        } else if (dbProfile && dbProfile[terpene]) {
+            terpPct[terpene] = dbProfile[terpene];
+        } else {
+            terpPct[terpene] = 0;
+        }
+    }
+    const thc = parseFloat(product.thc) || 0;
+    const cbd = parseFloat(product.cbd) || 0;
+    const cat = (product.category || '').toLowerCase();
     const scores = {};
-    for (const [effect, weights] of Object.entries(TW)) {
+    const EFFECTS = ['sleep','relax','focus','social','pain','balanced'];
+    for (const effect of EFFECTS) {
         let s = 0;
-        for (const t of TERPENES) s += (parseFloat(p[t]) || 0) * (weights[t] || 0);
-        // THC / CBD modifiers (effect-specific, small nudges only)
-        if (effect === 'sleep')    { if (thc >= 20) s += 0.04; if (cbd >= 3) s += 0.03; }
-        if (effect === 'pain')     { if (cbd >= 5)  s += 0.08; if (cbd > thc * 0.3) s += 0.05; }
-        if (effect === 'focus')    { if (thc <= 18) s += 0.03; }
-        if (effect === 'balanced') { if (thc >= 10 && thc <= 20) s += 0.04; }
-        // Category affinity — format matters for onset, duration, suitability
-        s += (CAT_AFFINITY[effect]?.[cat] || 0);
+        for (const [terpene, weights] of Object.entries(TERPENE_EFFECTS)) {
+            const pct = terpPct[terpene];
+            if (pct < TERPENE_FLOOR) continue;
+            const scaled = Math.sqrt(pct / 0.5);
+            s += scaled * (weights[effect] || 0);
+        }
+        for (const syn of SYNERGIES) {
+            if (syn.effect !== effect) continue;
+            const [t1, t2] = syn.pair;
+            if (terpPct[t1] >= TERPENE_FLOOR && terpPct[t2] >= TERPENE_FLOOR) {
+                const strength = Math.min(Math.sqrt(terpPct[t1] / 0.5), Math.sqrt(terpPct[t2] / 0.5));
+                s += syn.bonus * Math.min(strength, 1.2);
+            }
+        }
+        s += cannabinoidScore(thc, cbd, effect);
+        s += (FORMAT_CONTEXT[effect]?.[cat] || 0);
         scores['score_' + effect] = Math.max(0, Math.min(1, s));
     }
     return scores;
