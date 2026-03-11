@@ -114,6 +114,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
         <span class="org-label" id="orgLabel"></span>
         <span class="mode-badge">Budtender Mode</span>
         <span class="product-count" id="productCount"></span>
+        <a href="cannascope-admin.html" id="adminLink" style="display:none;font-size:11px;font-weight:600;color:var(--text-3);text-decoration:none;border:1px solid var(--border-2);padding:5px 10px;border-radius:4px;transition:border-color 0.15s,color 0.15s;" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--border-2)';this.style.color='var(--text-3)'">Admin</a>
     </div>
 </div>
 
@@ -164,6 +165,10 @@ const UPSELL = {
 async function init() {
     const params = new URLSearchParams(window.location.search);
     const key = params.get('key');
+
+    // If manager is signed in, show the Admin back-link
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) document.getElementById('adminLink').style.display = 'inline-flex';
 
     if (!key) {
         showDemoMode();

@@ -34,14 +34,17 @@
         .ok  { background:var(--green-dim); border:1px solid rgba(16,185,129,0.2); color:var(--green); padding:10px 13px; border-radius:5px; font-size:13px; margin-bottom:14px; display:none; }
         .divider { text-align:center; font-size:11px; color:var(--text-3); margin:16px 0; letter-spacing:0.06em; text-transform:uppercase; }
         .footer { margin-top:24px; font-size:12px; color:var(--text-3); text-align:center; }
+        .back-home { font-size:12px; color:var(--text-3); text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin-bottom:28px; transition:color 0.15s; }
+        .back-home:hover { color:var(--text-2); }
     </style>
 </head>
 <body>
 <div class="page">
-    <div class="wordmark">Cannascope</div>
+    <a href="cannascope-landing.html" class="back-home">← Back to home</a>
+    <a href="cannascope-landing.html" style="text-decoration:none"><div class="wordmark">Cannascope</div></a>
     <div class="card">
-        <div class="card-title">Welcome back</div>
-        <div class="card-sub">Sign in to manage your dispensary</div>
+        <div class="card-title" id="cardTitle">Welcome back</div>
+        <div class="card-sub" id="cardSub">Sign in to manage your dispensary</div>
 
         <div class="tabs">
             <div class="tab active" id="tabSignin" onclick="switchTab('signin')">Sign In</div>
@@ -102,12 +105,21 @@ sb.auth.getSession().then(({ data }) => {
     if (data.session) window.location.href = 'cannascope-admin.html';
 });
 
+// Auto-open signup tab if ?signup=1 in URL
+if (new URLSearchParams(window.location.search).get('signup') === '1') {
+    document.getElementById('cardTitle').textContent = 'Create your account';
+    document.getElementById('cardSub').textContent   = 'Set up your dispensary in under 5 minutes';
+    switchTab('signup');
+}
+
 function switchTab(tab) {
     const isSignin = tab === 'signin';
     document.getElementById('tabSignin').classList.toggle('active', isSignin);
     document.getElementById('tabSignup').classList.toggle('active', !isSignin);
     document.getElementById('formSignin').style.display = isSignin ? 'block' : 'none';
     document.getElementById('formSignup').style.display = isSignin ? 'none'  : 'block';
+    document.getElementById('cardTitle').textContent = isSignin ? 'Welcome back' : 'Create your account';
+    document.getElementById('cardSub').textContent   = isSignin ? 'Sign in to manage your dispensary' : 'Set up your dispensary in under 5 minutes';
     clearMsgs();
 }
 
@@ -167,8 +179,8 @@ async function signUp() {
         .insert({ id: userId, organization_id: orgData.id, role: 'owner', full_name: name });
     if (profileErr) { showErr('Profile setup failed: ' + profileErr.message); btn.disabled = false; btn.textContent = 'Create Account →'; return; }
 
-    showOk('Account created. Redirecting to your dashboard…');
-    setTimeout(() => window.location.href = 'cannascope-admin.html', 1500);
+    showOk('Account created! Setting up your inventory now…');
+    setTimeout(() => window.location.href = 'cannascope-onboarding.html', 1500);
 }
 
 // Enter key support

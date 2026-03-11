@@ -139,6 +139,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
         <div class="nav-links">
             <a class="nav-link active">Admin</a>
             <a class="nav-link" href="cannascope-onboarding.html">Import</a>
+            <a class="nav-link" id="budtenderViewBtn" href="cannascope-cheatsheet-v2.html" target="_blank" style="display:none">Budtender View ↗</a>
         </div>
         <button class="signout" onclick="signOut()">Sign Out</button>
     </div>
@@ -317,6 +318,11 @@ async function init() {
     const cheatUrl = window.location.origin + window.location.pathname.replace('cannascope-admin.html', '') + 'cannascope-cheatsheet-v2.html?key=' + publicKey;
     document.getElementById('shareUrl').textContent = cheatUrl;
     document.getElementById('shareBanner').style.display = 'flex';
+
+    // Wire up the "Budtender View" nav button with the correct key URL
+    const viewBtn = document.getElementById('budtenderViewBtn');
+    viewBtn.href = cheatUrl;
+    viewBtn.style.display = 'inline-flex';
 
     await loadProducts();
 }
