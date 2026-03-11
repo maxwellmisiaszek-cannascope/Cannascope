@@ -127,8 +127,8 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
         <div class="effect-btn" onclick="show('relax')"><div class="effect-label">Relax</div><div class="effect-sub">Unwind &amp; decompress</div></div>
         <div class="effect-btn" onclick="show('focus')"><div class="effect-label">Focus</div><div class="effect-sub">Clarity &amp; energy</div></div>
         <div class="effect-btn" onclick="show('social')"><div class="effect-label">Social</div><div class="effect-sub">Uplift &amp; connect</div></div>
-        <div class="effect-btn" onclick="show('pain')"><div class="effect-label">Pain</div><div class="effect-sub">Relief &amp; comfort</div></div>
-        <div class="effect-btn" onclick="show('balanced')"><div class="effect-label">Balanced</div><div class="effect-sub">Versatile &amp; mild</div></div>
+        <div class="effect-btn" onclick="show('relief')"><div class="effect-label">Relief</div><div class="effect-sub">Pain &amp; inflammation</div></div>
+        <div class="effect-btn" onclick="show('beginner')"><div class="effect-label">Beginner</div><div class="effect-sub">New to cannabis</div></div>
     </div>
 </div>
 
@@ -149,17 +149,17 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let orgId = null, orgName = '', allProducts = [];
 
-const LABELS = { sleep:'Sleep', relax:'Relax', focus:'Focus', social:'Social', pain:'Pain', balanced:'Balanced' };
-const SCORE_COL = { sleep:'score_sleep', relax:'score_relax', focus:'score_focus', social:'score_social', pain:'score_pain', balanced:'score_balanced' };
+const LABELS = { sleep:'Sleep', relax:'Relax', focus:'Focus', social:'Social', relief:'Relief', beginner:'Beginner' };
+const SCORE_COL = { sleep:'score_sleep', relax:'score_relax', focus:'score_focus', social:'score_social', relief:'score_relief', beginner:'score_beginner' };
 
 // Per-effect upsell suggestions — help budtenders increase basket size
 const UPSELL = {
-    sleep:    'Customers purchasing sleep products often add a CBD tincture or 1:1 gummy for extended overnight relief.',
-    relax:    'Customers purchasing relax flower often add low-dose gummies for a longer, more sustained effect throughout the evening.',
-    focus:    'Customers purchasing focus products often add a vape pen for portable, on-demand use throughout the day.',
-    social:   'Customers purchasing social products often add a vape pen for easy, discreet use on the go.',
-    pain:     'Customers purchasing pain products often add a topical for targeted, localized relief in addition to the inhalable.',
-    balanced: 'Customers purchasing balanced products often add a low-dose edible for a complementary longer-lasting effect.'
+    sleep:    'If they want longer sleep, suggest gummies.',
+    relax:    'If they want something lighter, suggest a 5mg edible.',
+    focus:    'If they want daytime microdosing, suggest a low-dose vape.',
+    social:   'If they want something shareable, suggest prerolls.',
+    relief:   'If they want body relief, suggest a topical.',
+    beginner: 'If they want controlled dosing, suggest 2.5mg gummies.'
 };
 
 async function init() {
@@ -310,104 +310,104 @@ const DEMO_PRODUCTS = [
         id:'d1', name:'Granddaddy Purple', brand:'Royal Gardens', category:'flower',
         price:45, thc:23, cbd:0, shelf:'B3', effect:'sleep', score_sleep:0.82,
         manager_note: 'Premium shelf — highest margin in category.',
-        talking_points:'This is our most recommended for sleep. The Myrcene terpene profile produces that heavy, settled feeling most people associate with a full night of rest. Best taken 60 to 90 minutes before bed.'
+        talking_points:'Best for sleep — customers consistently report faster onset and longer duration.'
     },
     {
         id:'d2', name:'Northern Lights', brand:'Emerald Fields', category:'flower',
         price:40, thc:18, cbd:0, shelf:'B1', effect:'sleep', score_sleep:0.74,
-        talking_points:'Lower potency makes this ideal for people who are THC-sensitive or newer to cannabis. Calming without being overwhelming, and most people report waking without grogginess.'
+        talking_points:'Best for sensitive sleepers — calming without heaviness, most customers wake without grogginess.'
     },
     {
         id:'d3', name:'Purple Punch', brand:'Green Peak', category:'edible',
         price:25, thc:10, cbd:0, shelf:'E2', effect:'sleep', score_sleep:0.68,
         manager_note: 'Overstock inventory — push this batch first.',
-        talking_points:'Edible format means effects last 6 to 8 hours. Take it 90 minutes before bed. Linalool adds a gentle calming quality similar to lavender.'
+        talking_points:'Best for deep sleep — edible format means effects last 6 to 8 hours through the night.'
     },
     // Relax
     {
         id:'d4', name:'Blue Dream', brand:'Canopy Co', category:'flower',
         price:42, thc:22, cbd:0, shelf:'A4', effect:'relax', score_relax:0.78,
         manager_note: 'Overstock — push first.',
-        talking_points:'The go-to after-work strain. Relaxes the body without sedation — you can still function normally. Very smooth and consistent.'
+        talking_points:'Best for after work — relieves tension without heaviness, smooth and consistent every time.'
     },
     {
         id:'d5', name:'OG Kush', brand:'Canopy Co', category:'flower',
         price:48, thc:21, cbd:0, shelf:'A2', effect:'relax', score_relax:0.72,
         manager_note: 'High margin product.',
-        talking_points:'A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties — particularly good for people carrying physical tension or stress.'
+        talking_points:'Best for physical tension — grounding and settled, particularly effective for stress and muscle tightness.'
     },
     {
         id:'d6', name:'Wedding Cake', brand:'Summit Select', category:'vape',
         price:55, thc:25, cbd:0, shelf:'V1', effect:'relax', score_relax:0.65,
-        talking_points:'Vape format means fast onset and easy dose control. One to two pulls, wait five minutes. The Limonene adds a slight uplift that prevents the relaxation from tipping into sedation.'
+        talking_points:'Best for controlled relaxation — fast onset, easy dose control, and lifts enough to stay present.'
     },
     // Focus
     {
         id:'d7', name:'Sour Diesel', brand:'Green Peak', category:'flower',
         price:46, thc:24, cbd:0, shelf:'C3', effect:'focus', score_focus:0.80,
         manager_note: 'Brand promotion this week.',
-        talking_points:'Most requested for creative focus. Limonene-dominant — that citrus-forward energy sharpens thinking without causing anxiety. Works well for writing, design, or anything requiring mental engagement.'
+        talking_points:'Best for creative work — citrus-forward energy sharpens thinking without anxiety or overstimulation.'
     },
     {
         id:'d8', name:'Jack Herer', brand:'Summit Select', category:'flower',
         price:44, thc:23, cbd:0, shelf:'C1', effect:'focus', score_focus:0.76,
-        talking_points:'Consistently one of our best performers for daytime productivity. Clear-headed and motivating. Good for work, studying, or anything demanding sustained attention.'
+        talking_points:'Best for productivity — clear-headed, motivating, and consistent across a full work session.'
     },
     {
         id:'d9', name:'Green Crack', brand:'Emerald Fields', category:'vape',
         price:50, thc:23, cbd:0, shelf:'V3', effect:'focus', score_focus:0.70,
-        talking_points:'High energy with a sharp mental edge. Pinene supports alertness and memory. Ideal for early mornings or afternoons when focus tends to drop.'
+        talking_points:'Best for alertness — high energy and sharp, ideal for early mornings or mid-afternoon focus dips.'
     },
     // Social
     {
         id:'d10', name:'Pineapple Express', brand:'Summit Select', category:'flower',
         price:45, thc:24, cbd:0, shelf:'D2', effect:'social', score_social:0.79,
-        talking_points:'Conversations feel easier, mood lifts, everything lightens up. Works well for concerts, parties, or any setting that calls for good energy and light engagement.'
+        talking_points:'Best for social settings — mood lifts, conversation flows, perfect for concerts and gatherings.'
     },
     {
         id:'d11', name:'Gelato', brand:'Emerald Fields', category:'flower',
         price:50, thc:25, cbd:0, shelf:'D4', effect:'social', score_social:0.73,
         manager_note: 'Best seller this month.',
-        talking_points:'Balanced in the best way — euphoric but not overwhelming, relaxed but present. Good for dinner parties or settings where you want to be sociable and engaged.'
+        talking_points:'Best for dinner parties — euphoric but not overwhelming, sociable and fully present.'
     },
     {
         id:'d12', name:'Tangie', brand:'Royal Gardens', category:'vape',
         price:52, thc:22, cbd:0, shelf:'V2', effect:'social', score_social:0.67,
-        talking_points:'Very citrus-forward in both flavor and effect. Fast-acting, uplifting, conversational. One of our most consistent options for social settings.'
+        talking_points:'Best for uplifting energy — citrus-forward, fast-acting, one of our most consistent social options.'
     },
     // Pain
     {
         id:'d13', name:'ACDC', brand:'Green Peak', category:'flower',
-        price:38, thc:6, cbd:12, shelf:'F1', effect:'pain', score_pain:0.83,
+        price:38, thc:6, cbd:12, shelf:'F1', effect:'relief', score_relief:0.83,
         manager_note: 'Recommended upsell — pair with any flower purchase.',
-        talking_points:'High CBD, minimal THC. Relief without impairment — you can use it during the day and continue working or driving. Best for chronic pain, inflammation, and nerve discomfort.'
+        talking_points:'Best for daytime relief — high CBD with minimal THC means no impairment while managing chronic pain.'
     },
     {
         id:'d14', name:'Bubba Kush', brand:'Royal Gardens', category:'flower',
-        price:44, thc:19, cbd:0, shelf:'F3', effect:'pain', score_pain:0.74,
-        talking_points:'Heavy full-body relief. Anti-inflammatory Myrcene profile with noticeably physical effect. Best used at night given the sedative quality.'
+        price:44, thc:19, cbd:0, shelf:'F3', effect:'relief', score_relief:0.74,
+        talking_points:'Best for nighttime relief — heavy full-body effect, anti-inflammatory, best used before bed.'
     },
     {
         id:'d15', name:'Harlequin', brand:'Canopy Co', category:'vape',
-        price:48, thc:8, cbd:14, shelf:'V4', effect:'pain', score_pain:0.69,
-        talking_points:'A 2-to-1 CBD-to-THC ratio delivers targeted relief with minimal psychoactive effect. Fast onset when pain spikes. One of the clearest options for daytime pain management.'
+        price:48, thc:8, cbd:14, shelf:'V4', effect:'relief', score_relief:0.69,
+        talking_points:'Best for fast relief — 2:1 CBD:THC ratio targets pain quickly with minimal psychoactive effect.'
     },
     // Balanced
     {
         id:'d16', name:'White Widow', brand:'Emerald Fields', category:'flower',
-        price:43, thc:20, cbd:0, shelf:'G2', effect:'balanced', score_balanced:0.71,
+        price:43, thc:20, cbd:0, shelf:'G2', effect:'beginner', score_beginner:0.71,
         manager_note: 'End of batch — prioritize over new stock.',
-        talking_points:'A genuine all-purpose strain. Not too sedating, not too energizing — comfortable middle ground. An excellent starting point for someone new or someone unsure of what they want.'
+        talking_points:'Best first experience — not too sedating, not too energizing, a true starting point for anyone new.'
     },
     {
         id:'d17', name:'Girl Scout Cookies', brand:'Green Peak', category:'flower',
-        price:48, thc:26, cbd:0, shelf:'G4', effect:'balanced', score_balanced:0.68,
-        talking_points:'One of our most popular strains. Euphoric and uplifting with physical relaxation that does not tip into sedation. Works across a wide range of situations.'
+        price:48, thc:26, cbd:0, shelf:'G4', effect:'beginner', score_beginner:0.68,
+        talking_points:'Most popular in the store — euphoric and uplifting without tipping into sedation, works for almost anyone.'
     },
     {
         id:'d18', name:'Cannatonic', brand:'Summit Select', category:'vape',
-        price:45, thc:10, cbd:10, shelf:'V5', effect:'balanced', score_balanced:0.65,
-        talking_points:'A 1-to-1 CBD-to-THC formulation at the intersection of therapeutic and recreational. Low psychoactivity with meaningful effects on anxiety, stress, and mild pain.'
+        price:45, thc:10, cbd:10, shelf:'V5', effect:'beginner', score_beginner:0.65,
+        talking_points:'Best low-intensity option — 1:1 CBD:THC keeps the experience gentle while still providing meaningful relief.'
     }
 ];
 
