@@ -308,8 +308,15 @@ async function init() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.href = 'cannascope-login.html'; return; }
 
-    const { data: profile } = await sb.from('user_profiles').select('organization_id, organizations(name, public_key)').eq('id', session.user.id).single();
+    const { data: profile } = await sb.from('user_profiles').select('organization_id, organizations(name, public_key, paid_status)').eq('id', session.user.id).single();
     if (!profile) { window.location.href = 'cannascope-login.html'; return; }
+
+    // Subscription gate — redirect to subscribe if not active
+    const paidStatus = profile.organizations?.paid_status;
+    if (paidStatus !== 'active') {
+      window.location.href = 'cannascope-subscribe.html';
+      return;
+    }
 
     orgId = profile.organization_id;
     publicKey = profile.organizations.public_key;
