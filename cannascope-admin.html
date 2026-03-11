@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cannascope — Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --green:#10b981; --green-dim:rgba(16,185,129,0.10);
+            --bg:#080808; --surface:#111111; --surface-2:#181818;
+            --border:#1e1e1e; --border-2:#282828;
+            --text:#f0f0f0; --text-2:#909090; --text-3:#505050;
+            --danger:#ef4444; --warning:#f59e0b;
+        }
+        html,body { min-height:100%; font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+        .header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+        .wordmark { font-size:12px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--green); }
+        .wordmark span { color:var(--text-3); font-weight:500; margin-left:10px; font-size:11px; letter-spacing:0.04em; }
+        .header-right { display:flex; align-items:center; gap:12px; }
+        .org-name { font-size:12px; color:var(--text-3); }
+        .nav-links { display:flex; gap:6px; }
+        .nav-link { padding:6px 13px; border-radius:5px; font-size:12px; font-weight:600; text-decoration:none; cursor:pointer; border:1px solid var(--border-2); color:var(--text-2); transition:border-color 0.15s, color 0.15s; letter-spacing:0.02em; }
+        .nav-link:hover { border-color:var(--green); color:var(--green); }
+        .nav-link.active { background:var(--green); color:#000; border-color:var(--green); }
+        .signout { padding:6px 13px; border-radius:5px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border-2); color:var(--text-3); background:none; font-family:inherit; transition:border-color 0.15s, color 0.15s; }
+        .signout:hover { border-color:var(--danger); color:#f87171; }
+        .main { max-width:1160px; margin:0 auto; padding:32px 24px 80px; }
+
+        /* ── CHEAT SHEET LINK BANNER ── */
+        .share-banner { background:var(--surface); border:1px solid var(--border-2); border-radius:8px; padding:14px 20px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+        .share-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); margin-bottom:4px; }
+        .share-url { font-size:13px; color:var(--green); font-weight:500; word-break:break-all; }
+        .copy-btn { padding:7px 14px; background:var(--green-dim); border:1px solid rgba(16,185,129,0.2); color:var(--green); border-radius:4px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; transition:background 0.15s; }
+        .copy-btn:hover { background:rgba(16,185,129,0.18); }
+
+        /* ── STATS ── */
+        .stats-row { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:28px; }
+        .stat { background:var(--surface); border:1px solid var(--border-2); border-radius:8px; padding:18px 16px; }
+        .stat-val { font-size:26px; font-weight:800; color:var(--green); letter-spacing:-0.02em; line-height:1; margin-bottom:5px; }
+        .stat-val.warn { color:var(--warning); }
+        .stat-val.danger { color:var(--danger); }
+        .stat-lbl { font-size:11px; font-weight:600; color:var(--text-3); letter-spacing:0.07em; text-transform:uppercase; }
+
+        /* ── TOOLBAR ── */
+        .toolbar { display:flex; gap:8px; margin-bottom:20px; align-items:center; flex-wrap:wrap; }
+        .search { flex:1; min-width:200px; padding:10px 14px; background:var(--surface); border:1px solid var(--border-2); border-radius:6px; color:var(--text); font-size:13px; font-family:inherit; }
+        .search:focus { outline:none; border-color:var(--green); }
+        .flt { padding:10px 14px; background:var(--surface); border:1px solid var(--border-2); border-radius:6px; color:var(--text); font-size:13px; font-family:inherit; cursor:pointer; }
+        .flt:focus { outline:none; border-color:var(--green); }
+        .btn { padding:10px 18px; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; letter-spacing:0.03em; white-space:nowrap; transition:opacity 0.15s; }
+        .btn-primary { background:var(--green); color:#000; }
+        .btn-primary:hover { opacity:0.87; }
+        .btn-ghost { background:var(--surface); border:1px solid var(--border-2); color:var(--text-2); }
+        .btn-ghost:hover { border-color:var(--green); color:var(--green); }
+        .btn-dg { background:transparent; border:1px solid rgba(239,68,68,0.3); color:#f87171; }
+        .btn-dg:hover { border-color:var(--danger); background:rgba(239,68,68,0.06); }
+        .btn-sm { padding:5px 11px; font-size:11px; }
+
+        .sec-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px; }
+        .sec-title { font-size:15px; font-weight:700; }
+        .sec-count { font-size:12px; color:var(--text-3); }
+
+        /* ── TABLE ── */
+        .tbl-wrap { background:var(--surface); border:1px solid var(--border-2); border-radius:10px; overflow:hidden; }
+        table { width:100%; border-collapse:collapse; }
+        thead tr { background:var(--bg); }
+        th { padding:12px 16px; text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-3); font-weight:700; white-space:nowrap; }
+        td { padding:13px 16px; border-top:1px solid var(--border); vertical-align:middle; }
+        tbody tr:hover td { background:rgba(255,255,255,0.015); }
+        .p-name { font-size:14px; font-weight:700; }
+        .p-brand { font-size:11px; color:var(--text-3); margin-top:2px; }
+        .eff { display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
+        .eff-sleep    { background:rgba(99,102,241,0.15);  color:#a5b4fc; }
+        .eff-relax    { background:rgba(16,185,129,0.13);  color:#6ee7b7; }
+        .eff-focus    { background:rgba(245,158,11,0.15);  color:#fcd34d; }
+        .eff-social   { background:rgba(236,72,153,0.13);  color:#f9a8d4; }
+        .eff-pain     { background:rgba(239,68,68,0.13);   color:#fca5a5; }
+        .eff-balanced { background:rgba(156,163,175,0.13); color:#9ca3af; }
+        .dot-row { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; }
+        .dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .dot-g { background:var(--green); } .dot-w { background:var(--warning); }
+        .toggle-wrap { display:flex; align-items:center; gap:7px; cursor:pointer; }
+        .ttrack { width:34px; height:18px; border-radius:9px; background:var(--border-2); position:relative; transition:background 0.2s; flex-shrink:0; }
+        .ttrack.on { background:var(--green); }
+        .tthumb { width:12px; height:12px; background:#fff; border-radius:50%; position:absolute; top:3px; left:3px; transition:transform 0.2s; }
+        .ttrack.on .tthumb { transform:translateX(16px); }
+        .tlabel { font-size:11px; font-weight:600; color:var(--text-3); }
+        .tlabel.on { color:var(--green); }
+        .acts { display:flex; gap:5px; }
+        .empty { text-align:center; padding:72px 20px; color:var(--text-3); }
+        .empty-title { font-size:16px; font-weight:600; margin-bottom:6px; color:var(--text-2); }
+        .empty-sub { font-size:13px; margin-bottom:24px; }
+
+        /* ── MODAL ── */
+        .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; align-items:center; justify-content:center; padding:24px; }
+        .overlay.open { display:flex; }
+        .modal { background:var(--surface); border:1px solid var(--border-2); border-radius:12px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; }
+        .modal.sm { max-width:380px; }
+        .mhead { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+        .mtitle { font-size:17px; font-weight:800; }
+        .mclose { width:28px; height:28px; background:var(--bg); border:1px solid var(--border-2); border-radius:5px; color:var(--text-2); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+        .mbody { padding:22px 24px; }
+        .mfoot { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+        .fg { margin-bottom:16px; }
+        .fl { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); margin-bottom:6px; }
+        .fi, .fs, .ft { width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--border-2); border-radius:5px; color:var(--text); font-size:13px; font-family:inherit; }
+        .fi:focus, .fs:focus, .ft:focus { outline:none; border-color:var(--green); }
+        .ft { min-height:110px; resize:vertical; line-height:1.65; }
+        .frow { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .gen-btn { margin-top:7px; padding:7px 13px; background:var(--green-dim); border:1px solid rgba(16,185,129,0.2); color:var(--green); border-radius:4px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.15s; }
+        .gen-btn:hover { background:rgba(16,185,129,0.18); }
+        .del-name { font-size:16px; font-weight:700; margin:6px 0 10px; }
+        .del-sub { font-size:13px; color:var(--text-3); }
+
+        /* ── TOAST ── */
+        .toast { position:fixed; bottom:20px; right:20px; background:var(--surface); border:1px solid var(--green); color:var(--green); padding:12px 18px; border-radius:7px; font-size:13px; font-weight:600; z-index:999; transform:translateY(80px); opacity:0; transition:all 0.25s; }
+        .toast.show { transform:translateY(0); opacity:1; }
+
+        @media (max-width:860px) { .stats-row { grid-template-columns:repeat(3,1fr); } }
+        @media (max-width:580px) { .stats-row { grid-template-columns:repeat(2,1fr); } .frow { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+
+<!-- ── CONFIG — replace with your Supabase values ───────────── -->
+<script>
+const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
+</script>
+<!-- ─────────────────────────────────────────────────────────── -->
+
+<div class="header">
+    <div class="wordmark">Cannascope <span>Admin</span></div>
+    <div class="header-right">
+        <span class="org-name" id="orgName"></span>
+        <div class="nav-links">
+            <a class="nav-link active">Admin</a>
+            <a class="nav-link" href="cannascope-onboarding.html">Import</a>
+        </div>
+        <button class="signout" onclick="signOut()">Sign Out</button>
+    </div>
+</div>
+
+<div class="main">
+    <div class="share-banner" id="shareBanner" style="display:none">
+        <div>
+            <div class="share-label">Budtender Cheat Sheet URL</div>
+            <div class="share-url" id="shareUrl"></div>
+        </div>
+        <button class="copy-btn" onclick="copyLink()">Copy Link</button>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat"><div class="stat-val" id="stTotal">—</div><div class="stat-lbl">Total Products</div></div>
+        <div class="stat"><div class="stat-val" id="stIn">—</div><div class="stat-lbl">In Stock</div></div>
+        <div class="stat"><div class="stat-val danger" id="stOut">—</div><div class="stat-lbl">Out of Stock</div></div>
+        <div class="stat"><div class="stat-val warn" id="stMiss">—</div><div class="stat-lbl">Missing Scripts</div></div>
+        <div class="stat"><div class="stat-val" id="stCats">—</div><div class="stat-lbl">Categories</div></div>
+    </div>
+
+    <div class="toolbar">
+        <input class="search" id="searchQ" type="text" placeholder="Search products…" oninput="renderTable()">
+        <select class="flt" id="fxEff" onchange="renderTable()">
+            <option value="">All Effects</option>
+            <option value="sleep">Sleep</option><option value="relax">Relax</option>
+            <option value="focus">Focus</option><option value="social">Social</option>
+            <option value="pain">Pain</option><option value="balanced">Balanced</option>
+        </select>
+        <select class="flt" id="fxStock" onchange="renderTable()">
+            <option value="">All Stock</option>
+            <option value="in">In Stock</option><option value="out">Out of Stock</option>
+        </select>
+        <button class="btn btn-ghost" onclick="autoScripts()">Generate All Scripts</button>
+        <button class="btn btn-primary" onclick="openAdd()">+ Add Product</button>
+    </div>
+
+    <div class="sec-head">
+        <div class="sec-title">Products</div>
+        <div class="sec-count" id="secCount"></div>
+    </div>
+
+    <div class="tbl-wrap">
+        <table><thead>
+            <tr>
+                <th>Product</th><th>Category</th><th>THC</th><th>Price</th><th>Shelf</th>
+                <th>Effect</th><th>Script</th><th>Manager Note</th><th>Stock</th><th></th>
+            </tr>
+        </thead><tbody id="tBody"></tbody></table>
+        <div id="emptyState" class="empty" style="display:none">
+            <div class="empty-title">No products yet</div>
+            <div class="empty-sub">Import your inventory to get started</div>
+            <button class="btn btn-primary" onclick="location.href='cannascope-onboarding.html'">Import Inventory</button>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="overlay" id="editOv">
+    <div class="modal">
+        <div class="mhead"><div class="mtitle">Edit Product</div><button class="mclose" onclick="close('editOv')">&#215;</button></div>
+        <div class="mbody">
+            <input type="hidden" id="eId">
+            <div class="frow">
+                <div class="fg"><label class="fl">Product Name</label><input class="fi" id="eName"></div>
+                <div class="fg"><label class="fl">Brand</label><input class="fi" id="eBrand"></div>
+            </div>
+            <div class="frow">
+                <div class="fg"><label class="fl">Category</label>
+                    <select class="fs" id="eCat"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Pre-Roll</option></select>
+                </div>
+                <div class="fg"><label class="fl">Effect</label>
+                    <select class="fs" id="eEff"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="pain">Pain</option><option value="balanced">Balanced</option></select>
+                </div>
+            </div>
+            <div class="frow">
+                <div class="fg"><label class="fl">THC %</label><input class="fi" id="eThc" type="number" step="0.1" min="0" max="100"></div>
+                <div class="fg"><label class="fl">CBD %</label><input class="fi" id="eCbd" type="number" step="0.1" min="0" max="100"></div>
+            </div>
+            <div class="frow">
+                <div class="fg"><label class="fl">Price ($)</label><input class="fi" id="ePrice" type="number" step="0.01" min="0"></div>
+                <div class="fg"><label class="fl">Shelf Location</label><input class="fi" id="eShelf" placeholder="e.g. A3"></div>
+            </div>
+            <div class="fg"><label class="fl">Budtender Script</label>
+                <textarea class="ft" id="eTp" placeholder="What should the budtender say to customers?"></textarea>
+                <button class="gen-btn" onclick="genScript('e')">Generate Script</button>
+            </div>
+            <div class="fg"><label class="fl">Manager Note <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3)">(optional — internal, visible to budtenders)</span></label>
+                <input class="fi" id="eMn" placeholder="e.g. Overstock inventory — push first, High margin product, Brand promo this week">
+            </div>
+        </div>
+        <div class="mfoot">
+            <button class="btn btn-ghost" onclick="close('editOv')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="overlay" id="addOv">
+    <div class="modal">
+        <div class="mhead"><div class="mtitle">Add Product</div><button class="mclose" onclick="close('addOv')">&#215;</button></div>
+        <div class="mbody">
+            <div class="frow">
+                <div class="fg"><label class="fl">Product Name *</label><input class="fi" id="aName" placeholder="e.g. Granddaddy Purple"></div>
+                <div class="fg"><label class="fl">Brand *</label><input class="fi" id="aBrand" placeholder="e.g. Green Peak"></div>
+            </div>
+            <div class="frow">
+                <div class="fg"><label class="fl">Category</label>
+                    <select class="fs" id="aCat"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Pre-Roll</option></select>
+                </div>
+                <div class="fg"><label class="fl">Effect</label>
+                    <select class="fs" id="aEff"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="pain">Pain</option><option value="balanced">Balanced</option></select>
+                </div>
+            </div>
+            <div class="frow">
+                <div class="fg"><label class="fl">THC %</label><input class="fi" id="aThc" type="number" step="0.1" placeholder="e.g. 22"></div>
+                <div class="fg"><label class="fl">CBD %</label><input class="fi" id="aCbd" type="number" step="0.1" placeholder="e.g. 0.5"></div>
+            </div>
+            <div class="frow">
+                <div class="fg"><label class="fl">Price ($)</label><input class="fi" id="aPrice" type="number" step="0.01" placeholder="e.g. 45"></div>
+                <div class="fg"><label class="fl">Shelf Location</label><input class="fi" id="aShelf" placeholder="e.g. A3"></div>
+            </div>
+            <div class="fg"><label class="fl">Budtender Script</label>
+                <textarea class="ft" id="aTp" placeholder="What should the budtender say to customers?"></textarea>
+                <button class="gen-btn" onclick="genScript('a')">Generate Script</button>
+            </div>
+            <div class="fg"><label class="fl">Manager Note <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3)">(optional — internal, visible to budtenders)</span></label>
+                <input class="fi" id="aMn" placeholder="e.g. Overstock inventory — push first, High margin product, Brand promo this week">
+            </div>
+        </div>
+        <div class="mfoot">
+            <button class="btn btn-ghost" onclick="close('addOv')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveAdd()">Add Product</button>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="overlay" id="delOv">
+    <div class="modal sm">
+        <div class="mhead"><div class="mtitle">Remove product?</div><button class="mclose" onclick="close('delOv')">&#215;</button></div>
+        <div class="mbody">
+            <div style="color:var(--text-2);font-size:13px;">You are removing:</div>
+            <div class="del-name" id="delName"></div>
+            <div class="del-sub">This will remove it from the cheat sheet immediately.</div>
+        </div>
+        <div class="mfoot">
+            <button class="btn btn-ghost" onclick="close('delOv')">Cancel</button>
+            <button class="btn btn-dg" onclick="confirmDel()">Remove</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let products = [], orgId = null, publicKey = null, delId = null;
+
+// ── AUTH GUARD ────────────────────────────────────────────────
+async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'cannascope-login.html'; return; }
+
+    const { data: profile } = await sb.from('user_profiles').select('organization_id, organizations(name, public_key)').eq('id', session.user.id).single();
+    if (!profile) { window.location.href = 'cannascope-login.html'; return; }
+
+    orgId = profile.organization_id;
+    publicKey = profile.organizations.public_key;
+    document.getElementById('orgName').textContent = profile.organizations.name;
+
+    const cheatUrl = window.location.origin + window.location.pathname.replace('cannascope-admin.html', '') + 'cannascope-cheatsheet-v2.html?key=' + publicKey;
+    document.getElementById('shareUrl').textContent = cheatUrl;
+    document.getElementById('shareBanner').style.display = 'flex';
+
+    await loadProducts();
+}
+
+async function signOut() {
+    await sb.auth.signOut();
+    window.location.href = 'cannascope-login.html';
+}
+
+// ── DATA ──────────────────────────────────────────────────────
+async function loadProducts() {
+    const { data, error } = await sb.from('products').select('*').eq('organization_id', orgId).order('name');
+    if (error) { toast('Error loading products: ' + error.message); return; }
+    products = data || [];
+    renderStats();
+    renderTable();
+}
+
+function renderStats() {
+    const total = products.length;
+    const inN   = products.filter(p => p.in_stock).length;
+    const miss  = products.filter(p => !p.talking_points?.trim()).length;
+    const cats  = new Set(products.map(p => p.category)).size;
+    document.getElementById('stTotal').textContent = total;
+    document.getElementById('stIn').textContent    = inN;
+    document.getElementById('stOut').textContent   = total - inN;
+    document.getElementById('stMiss').textContent  = miss;
+    document.getElementById('stCats').textContent  = cats;
+}
+
+function renderTable() {
+    const q  = document.getElementById('searchQ').value.toLowerCase();
+    const fe = document.getElementById('fxEff').value;
+    const fs = document.getElementById('fxStock').value;
+    const filtered = products.filter(p => {
+        const ms = !q || p.name?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
+        const me = !fe || p.effect === fe;
+        const mk = !fs || (fs === 'in' ? p.in_stock : !p.in_stock);
+        return ms && me && mk;
+    });
+    document.getElementById('secCount').textContent = filtered.length + ' product' + (filtered.length !== 1 ? 's' : '');
+    const tbody = document.getElementById('tBody');
+    const empty = document.getElementById('emptyState');
+    if (products.length === 0) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    if (filtered.length === 0) { tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-3);font-size:13px">No results</td></tr>`; return; }
+    tbody.innerHTML = filtered.map(p => {
+        const cat = p.category?.charAt(0).toUpperCase() + p.category?.slice(1) || '—';
+        const hasTp = !!p.talking_points?.trim();
+        return `<tr>
+            <td><div class="p-name">${x(p.name)}</div><div class="p-brand">${x(p.brand||'')}</div></td>
+            <td style="font-size:13px;color:var(--text-2)">${cat}</td>
+            <td style="font-size:13px">${p.thc != null ? p.thc + '%' : '—'}</td>
+            <td style="font-size:13px">${p.price != null ? '$' + Number(p.price).toFixed(2) : '—'}</td>
+            <td style="font-size:13px;color:var(--text-2)">${x(p.shelf||'—')}</td>
+            <td><span class="eff eff-${p.effect||'balanced'}">${p.effect||'balanced'}</span></td>
+            <td><span class="dot-row"><span class="dot ${hasTp ? 'dot-g' : 'dot-w'}"></span><span style="font-size:11px;font-weight:600;color:${hasTp ? 'var(--green)' : 'var(--warning)'}">${hasTp ? 'Ready' : 'Missing'}</span></span></td>
+            <td style="font-size:12px;color:var(--warning);max-width:180px">${p.manager_note ? `<span title="${x(p.manager_note)}" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px;font-weight:500">${x(p.manager_note)}</span>` : '<span style="color:var(--text-3)">—</span>'}</td>
+            <td><div class="toggle-wrap" onclick="toggleStock('${p.id}')"><div class="ttrack ${p.in_stock ? 'on' : ''}"><div class="tthumb"></div></div><span class="tlabel ${p.in_stock ? 'on' : ''}">${p.in_stock ? 'In Stock' : 'Out'}</span></div></td>
+            <td><div class="acts"><button class="btn btn-ghost btn-sm" onclick="openEdit('${p.id}')">Edit</button><button class="btn btn-dg btn-sm" onclick="openDel('${p.id}')">Remove</button></div></td>
+        </tr>`;
+    }).join('');
+}
+
+// ── STOCK TOGGLE ──────────────────────────────────────────────
+async function toggleStock(id) {
+    const p = products.find(q => q.id === id);
+    if (!p) return;
+    const newVal = !p.in_stock;
+    const { error } = await sb.from('products').update({ in_stock: newVal }).eq('id', id);
+    if (error) { toast('Error: ' + error.message); return; }
+    p.in_stock = newVal;
+    renderStats(); renderTable();
+    toast(p.name + (newVal ? ' marked in stock' : ' marked out of stock'));
+}
+
+// ── EDIT ──────────────────────────────────────────────────────
+function openEdit(id) {
+    const p = products.find(q => q.id === id);
+    if (!p) return;
+    document.getElementById('eId').value    = id;
+    document.getElementById('eName').value  = p.name || '';
+    document.getElementById('eBrand').value = p.brand || '';
+    document.getElementById('eCat').value   = p.category || 'flower';
+    document.getElementById('eEff').value   = p.effect || 'balanced';
+    document.getElementById('eThc').value   = p.thc ?? '';
+    document.getElementById('eCbd').value   = p.cbd ?? '';
+    document.getElementById('ePrice').value = p.price ?? '';
+    document.getElementById('eShelf').value = p.shelf || '';
+    document.getElementById('eTp').value    = p.talking_points || '';
+    document.getElementById('eMn').value    = p.manager_note || '';
+    open('editOv');
+}
+
+async function saveEdit() {
+    const id = document.getElementById('eId').value;
+    const updates = {
+        name:           document.getElementById('eName').value.trim(),
+        brand:          document.getElementById('eBrand').value.trim(),
+        category:       document.getElementById('eCat').value,
+        effect:         document.getElementById('eEff').value,
+        thc:            parseFloat(document.getElementById('eThc').value) || 0,
+        cbd:            parseFloat(document.getElementById('eCbd').value) || 0,
+        price:          parseFloat(document.getElementById('ePrice').value) || 0,
+        shelf:          document.getElementById('eShelf').value.trim(),
+        talking_points: document.getElementById('eTp').value.trim(),
+        manager_note:   document.getElementById('eMn').value.trim() || null
+    };
+    // Compute terpene-based effect scores
+    const scores = computeScores(updates);
+    Object.assign(updates, scores);
+
+    const { error } = await sb.from('products').update(updates).eq('id', id);
+    if (error) { toast('Save failed: ' + error.message); return; }
+    await loadProducts();
+    close('editOv'); toast('Product updated');
+}
+
+// ── ADD ───────────────────────────────────────────────────────
+function openAdd() {
+    ['aName','aBrand','aThc','aCbd','aPrice','aShelf','aTp','aMn'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('aCat').value = 'flower';
+    document.getElementById('aEff').value = 'balanced';
+    open('addOv');
+}
+
+async function saveAdd() {
+    const name  = document.getElementById('aName').value.trim();
+    const brand = document.getElementById('aBrand').value.trim();
+    if (!name || !brand) { toast('Name and brand are required'); return; }
+    const cat   = document.getElementById('aCat').value;
+    const eff   = document.getElementById('aEff').value;
+    const thc   = parseFloat(document.getElementById('aThc').value) || 0;
+    const cbd   = parseFloat(document.getElementById('aCbd').value) || 0;
+    const price = parseFloat(document.getElementById('aPrice').value) || 0;
+    const tp    = document.getElementById('aTp').value.trim() || buildScript(name, cat, eff, thc, price);
+    const mn    = document.getElementById('aMn').value.trim() || null;
+    const product = { organization_id: orgId, name, brand, category: cat, effect: eff, thc, cbd, price, shelf: document.getElementById('aShelf').value.trim(), talking_points: tp, manager_note: mn, in_stock: true };
+    Object.assign(product, computeScores(product));
+    const { error } = await sb.from('products').insert(product);
+    if (error) { toast('Add failed: ' + error.message); return; }
+    await loadProducts();
+    close('addOv'); toast('Product added');
+}
+
+// ── DELETE ────────────────────────────────────────────────────
+function openDel(id) {
+    const p = products.find(q => q.id === id);
+    if (!p) return;
+    delId = id;
+    document.getElementById('delName').textContent = p.name;
+    open('delOv');
+}
+
+async function confirmDel() {
+    const p = products.find(q => q.id === delId);
+    const { error } = await sb.from('products').delete().eq('id', delId);
+    if (error) { toast('Delete failed: ' + error.message); return; }
+    delId = null;
+    await loadProducts();
+    close('delOv'); toast((p?.name || 'Product') + ' removed');
+}
+
+// ── SCRIPT GENERATOR ──────────────────────────────────────────
+async function autoScripts() {
+    const missing = products.filter(p => !p.talking_points?.trim());
+    let count = 0;
+    for (const p of missing) {
+        const tp = buildScript(p.name, p.category, p.effect, p.thc, p.price);
+        const { error } = await sb.from('products').update({ talking_points: tp }).eq('id', p.id);
+        if (!error) { p.talking_points = tp; count++; }
+    }
+    renderStats(); renderTable();
+    toast('Generated scripts for ' + count + ' product' + (count !== 1 ? 's' : ''));
+}
+
+function genScript(prefix) {
+    const n = document.getElementById(prefix + 'Name').value;
+    const c = document.getElementById(prefix + 'Cat').value;
+    const e = document.getElementById(prefix + 'Eff').value;
+    const t = document.getElementById(prefix + 'Thc').value;
+    const p = document.getElementById(prefix + 'Price').value;
+    document.getElementById(prefix + 'Tp').value = buildScript(n, c, e, t, p);
+}
+
+// ── COPY LINK ─────────────────────────────────────────────────
+function copyLink() {
+    navigator.clipboard.writeText(document.getElementById('shareUrl').textContent)
+        .then(() => toast('Cheat sheet link copied'));
+}
+
+// ── UTILITIES ─────────────────────────────────────────────────
+function open(id)  { document.getElementById(id).classList.add('open'); }
+function close(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
+
+function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+function x(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── TERPENE SCORING ENGINE ────────────────────────────────────
+// Weights derived from published terpene research
+// Positive values = correlates with this effect, negative = counterproductive
+const TW = {
+    sleep:    { t_myrcene:0.40, t_linalool:0.30, t_caryophyllene:0.15, t_limonene:-0.05, t_pinene:-0.10, t_terpinolene:-0.10 },
+    relax:    { t_myrcene:0.25, t_caryophyllene:0.30, t_linalool:0.20, t_limonene:0.15, t_pinene:0.05,  t_terpinolene:0.05  },
+    focus:    { t_limonene:0.35, t_pinene:0.35,  t_terpinolene:0.20,  t_myrcene:-0.20, t_linalool:-0.10, t_caryophyllene:0  },
+    social:   { t_limonene:0.40, t_terpinolene:0.30, t_pinene:0.20,   t_caryophyllene:0.05, t_myrcene:-0.10, t_linalool:-0.05 },
+    pain:     { t_caryophyllene:0.40, t_myrcene:0.30, t_linalool:0.15, t_pinene:0.10, t_limonene:0.05, t_terpinolene:0      },
+    balanced: { t_myrcene:0.15, t_limonene:0.15, t_caryophyllene:0.20, t_linalool:0.15, t_pinene:0.15, t_terpinolene:0.20   }
+};
+const TERPENES = ['t_myrcene','t_limonene','t_caryophyllene','t_linalool','t_pinene','t_terpinolene'];
+
+// Strain database → terpene profile (normalized 0–1)
+const ST = {
+    'granddaddy purple':  { t_myrcene:0.55, t_linalool:0.20, t_caryophyllene:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.02 },
+    'northern lights':    { t_myrcene:0.50, t_linalool:0.25, t_caryophyllene:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.02 },
+    'purple punch':       { t_myrcene:0.45, t_linalool:0.30, t_caryophyllene:0.12, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.02 },
+    'bubba kush':         { t_myrcene:0.40, t_caryophyllene:0.30, t_linalool:0.15, t_limonene:0.05, t_pinene:0.05, t_terpinolene:0.05 },
+    'og kush':            { t_myrcene:0.35, t_caryophyllene:0.30, t_limonene:0.20, t_linalool:0.08, t_pinene:0.05, t_terpinolene:0.02 },
+    'blue dream':         { t_myrcene:0.40, t_pinene:0.20, t_caryophyllene:0.15, t_limonene:0.15, t_linalool:0.05, t_terpinolene:0.05 },
+    'wedding cake':       { t_caryophyllene:0.30, t_limonene:0.25, t_linalool:0.20, t_myrcene:0.15, t_pinene:0.05, t_terpinolene:0.05 },
+    'gelato':             { t_caryophyllene:0.25, t_limonene:0.25, t_linalool:0.20, t_myrcene:0.20, t_pinene:0.05, t_terpinolene:0.05 },
+    'sour diesel':        { t_limonene:0.45, t_caryophyllene:0.20, t_myrcene:0.15, t_pinene:0.10, t_terpinolene:0.05, t_linalool:0.05 },
+    'jack herer':         { t_terpinolene:0.35, t_pinene:0.25, t_myrcene:0.20, t_limonene:0.15, t_caryophyllene:0.03, t_linalool:0.02 },
+    'green crack':        { t_myrcene:0.35, t_limonene:0.25, t_caryophyllene:0.20, t_pinene:0.10, t_terpinolene:0.05, t_linalool:0.05 },
+    'pineapple express':  { t_limonene:0.35, t_terpinolene:0.25, t_caryophyllene:0.15, t_myrcene:0.15, t_pinene:0.05, t_linalool:0.05 },
+    'tangie':             { t_limonene:0.50, t_myrcene:0.15, t_caryophyllene:0.15, t_terpinolene:0.10, t_pinene:0.05, t_linalool:0.05 },
+    'acdc':               { t_myrcene:0.35, t_pinene:0.25, t_caryophyllene:0.20, t_limonene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
+    'harlequin':          { t_myrcene:0.35, t_pinene:0.25, t_caryophyllene:0.20, t_limonene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
+    'white widow':        { t_myrcene:0.30, t_caryophyllene:0.25, t_limonene:0.20, t_pinene:0.15, t_linalool:0.05, t_terpinolene:0.05 },
+    'girl scout cookies': { t_caryophyllene:0.30, t_limonene:0.20, t_linalool:0.15, t_myrcene:0.25, t_pinene:0.05, t_terpinolene:0.05 },
+    'cannatonic':         { t_myrcene:0.30, t_caryophyllene:0.25, t_pinene:0.20, t_limonene:0.10, t_linalool:0.10, t_terpinolene:0.05 },
+    'durban poison':      { t_terpinolene:0.40, t_myrcene:0.20, t_limonene:0.20, t_pinene:0.10, t_caryophyllene:0.05, t_linalool:0.05 },
+    'zkittlez':           { t_limonene:0.30, t_caryophyllene:0.25, t_linalool:0.20, t_myrcene:0.15, t_pinene:0.05, t_terpinolene:0.05 },
+    'runtz':              { t_limonene:0.30, t_caryophyllene:0.25, t_linalool:0.20, t_myrcene:0.20, t_pinene:0.03, t_terpinolene:0.02 },
+    'gorilla glue':       { t_caryophyllene:0.30, t_myrcene:0.30, t_limonene:0.20, t_pinene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
+    'do-si-dos':          { t_linalool:0.30, t_limonene:0.25, t_caryophyllene:0.20, t_myrcene:0.15, t_pinene:0.05, t_terpinolene:0.05 },
+    'mac':                { t_limonene:0.30, t_caryophyllene:0.25, t_myrcene:0.20, t_linalool:0.15, t_pinene:0.05, t_terpinolene:0.05 },
+    'skywalker og':       { t_myrcene:0.45, t_caryophyllene:0.25, t_linalool:0.15, t_limonene:0.10, t_pinene:0.03, t_terpinolene:0.02 },
+    'purple haze':        { t_myrcene:0.35, t_limonene:0.25, t_caryophyllene:0.20, t_pinene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
+};
+
+function computeScores(product) {
+    // Check strain database first, then use any terpene values already on product
+    const strainProfile = ST[product.name?.toLowerCase()] || null;
+    const p = strainProfile ? { ...product, ...strainProfile } : product;
+    const thc = parseFloat(p.thc) || 0;
+    const cbd = parseFloat(p.cbd) || 0;
+    const scores = {};
+    for (const [effect, weights] of Object.entries(TW)) {
+        let s = 0;
+        for (const t of TERPENES) s += (parseFloat(p[t]) || 0) * (weights[t] || 0);
+        // THC / CBD modifiers
+        if (effect === 'sleep')    { if (thc >= 20) s += 0.04; if (cbd >= 3) s += 0.03; }
+        if (effect === 'pain')     { if (cbd >= 5)  s += 0.08; if (cbd > thc * 0.3) s += 0.05; }
+        if (effect === 'focus')    { if (thc <= 18) s += 0.03; }
+        if (effect === 'balanced') { if (thc >= 10 && thc <= 20) s += 0.04; }
+        scores['score_' + effect] = Math.max(0, Math.min(1, s));
+    }
+    return scores;
+}
+
+function buildScript(name, cat, eff, thc, price) {
+    const t = parseFloat(thc) || 0;
+    const p = parseFloat(price) || 0;
+    const thcLine = t === 0 ? 'This is a CBD-dominant product with minimal psychoactive effect.' :
+        t <= 10 ? `At ${t}% THC it sits on the lighter end — well-suited for beginners or daytime use.` :
+        t <= 20 ? `At ${t}% THC it is moderate potency — approachable for most consumers.` :
+        t <= 28 ? `At ${t}% THC it is higher potency — recommended for experienced consumers.` :
+                  `At ${t}% THC this is a high-potency product — recommend starting small.`;
+    const fx = {
+        sleep:'This is one of our strongest recommendations for sleep. Most customers report meaningful improvement in both onset and duration.',
+        relax:'Ideal for unwinding after a long day — relaxes the body without heavy sedation. Functional, calm, present.',
+        focus:'A reliable option for daytime focus. Works well for creative work, productivity, or anything requiring sustained mental engagement.',
+        social:'Elevates mood and lowers social friction. Works well for gatherings, concerts, or any setting where you want energy and ease.',
+        pain:'Specifically effective for pain and inflammation. Customers with chronic discomfort or muscle tension see strong results.',
+        balanced:'A well-rounded option with no strong directional lean. A solid starting point for anyone newer to cannabis or wanting versatility.'
+    };
+    const cf = {
+        flower:'As flower, effects begin within minutes and dose is easy to manage.',
+        vape:'The vape format is fast-acting — one to two draws, then wait a few minutes before reassessing.',
+        edible:'As an edible, allow 60 to 90 minutes for onset — but effects are sustained for 4 to 6 hours.',
+        preroll:'Comes ready as a pre-roll. No preparation required.',
+        concentrate:'As a concentrate, potency is high. A small amount produces significant effect.',
+        tincture:'A few drops under the tongue for faster absorption, or add to food or a beverage.',
+        topical:'Applied directly to the skin — localized relief with no systemic psychoactive effect.'
+    };
+    return `${name||'This product'} is a strong option here. ${fx[eff]||''} ${cf[cat]||''} ${thcLine}${p > 0 ? ` At $${p.toFixed(2)} it represents solid value in this category.` : ''}`.trim().replace(/\s+/g,' ');
+}
+
+init();
+</script>
+</body>
+</html>

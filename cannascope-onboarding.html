@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cannascope — Import</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --green:#10b981; --green-dim:rgba(16,185,129,0.10);
+            --bg:#080808; --surface:#111111; --surface-2:#181818;
+            --border:#1e1e1e; --border-2:#282828;
+            --text:#f0f0f0; --text-2:#909090; --text-3:#505050; --danger:#ef4444;
+        }
+        html,body { min-height:100%; font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+        .header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; }
+        .wordmark { font-size:12px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--green); }
+        .nav-links { display:flex; gap:6px; }
+        .nav-link { padding:6px 13px; border-radius:5px; font-size:12px; font-weight:600; text-decoration:none; cursor:pointer; border:1px solid var(--border-2); color:var(--text-2); transition:border-color 0.15s, color 0.15s; }
+        .nav-link:hover { border-color:var(--green); color:var(--green); }
+        .nav-link.active { background:var(--green); color:#000; border-color:var(--green); }
+        .container { max-width:740px; margin:0 auto; padding:48px 24px 80px; }
+        .step-bar { display:flex; align-items:center; justify-content:center; margin-bottom:52px; }
+        .si { display:flex; align-items:center; gap:9px; }
+        .sd { width:26px; height:26px; border-radius:50%; border:1px solid var(--border-2); background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--text-3); flex-shrink:0; transition:background 0.2s; }
+        .si.active .sd, .si.done .sd { background:var(--green); border-color:var(--green); color:#000; }
+        .sn { font-size:12px; font-weight:600; color:var(--text-3); }
+        .si.active .sn { color:var(--green); }
+        .sl { width:36px; height:1px; background:var(--border-2); margin:0 6px; flex-shrink:0; }
+        .screen { display:none; }
+        .screen.active { display:block; }
+        .screen-title { font-size:28px; font-weight:800; letter-spacing:-0.02em; margin-bottom:8px; text-align:center; }
+        .screen-sub { font-size:15px; color:var(--text-2); margin-bottom:40px; text-align:center; }
+        .card { background:var(--surface); border:1px solid var(--border-2); border-radius:10px; padding:28px; margin-bottom:16px; }
+        .method { display:flex; align-items:flex-start; gap:14px; padding:16px 18px; background:var(--bg); border:1px solid var(--border-2); border-radius:7px; cursor:pointer; transition:border-color 0.15s; margin-bottom:9px; }
+        .method:last-child { margin-bottom:0; }
+        .method:hover { border-color:var(--green); }
+        .method-icon { width:34px; height:34px; background:var(--surface); border:1px solid var(--border-2); border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--text-2); flex-shrink:0; }
+        .method-title { font-size:14px; font-weight:700; margin-bottom:2px; }
+        .method-desc { font-size:12px; color:var(--text-2); }
+        .method-tag { margin-left:auto; font-size:10px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--green); background:var(--green-dim); border:1px solid rgba(16,185,129,0.18); padding:3px 8px; border-radius:3px; white-space:nowrap; align-self:center; }
+        .method-tag.muted { color:var(--text-3); background:none; border-color:var(--border-2); }
+        .info-bar { background:var(--green-dim); border:1px solid rgba(16,185,129,0.18); color:var(--text-2); font-size:13px; line-height:1.6; padding:12px 16px; border-radius:6px; margin-bottom:20px; }
+        .info-bar strong { color:var(--green); }
+        .upload-zone { border:1px dashed var(--border-2); border-radius:7px; padding:44px 24px; text-align:center; cursor:pointer; transition:border-color 0.15s, background 0.15s; margin-bottom:20px; }
+        .upload-zone:hover, .upload-zone.drag { border-color:var(--green); background:var(--green-dim); }
+        .upload-arrow { font-size:22px; color:var(--text-3); margin-bottom:10px; }
+        .upload-title { font-size:14px; font-weight:600; margin-bottom:4px; }
+        .upload-hint { font-size:12px; color:var(--text-3); }
+        #fileInput { display:none; }
+        .file-row { display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:13px 15px; border-radius:6px; margin-bottom:20px; }
+        .file-name { font-size:13px; font-weight:600; }
+        .file-meta { font-size:11px; color:var(--text-3); margin-top:2px; }
+        .map-table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+        .map-table th, .map-table td { padding:11px 13px; text-align:left; border-bottom:1px solid var(--border); }
+        .map-table th { font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-3); font-weight:700; }
+        .fl-row { font-size:13px; font-weight:600; }
+        .req { font-size:10px; font-weight:700; color:var(--danger); background:rgba(239,68,68,0.12); padding:2px 5px; border-radius:3px; margin-left:6px; }
+        select, input[type=text] { width:100%; padding:9px 11px; background:var(--bg); border:1px solid var(--border-2); border-radius:5px; color:var(--text); font-size:13px; font-weight:500; font-family:inherit; }
+        select:focus, input[type=text]:focus { outline:none; border-color:var(--green); }
+        .prev-table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:16px; }
+        .prev-table th, .prev-table td { padding:10px 13px; text-align:left; border-bottom:1px solid var(--border); }
+        .prev-table th { background:var(--bg); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); }
+        .prev-count { font-size:12px; color:var(--text-3); text-align:center; margin-bottom:18px; }
+        .ok-icon { width:60px; height:60px; background:var(--green-dim); border:1px solid rgba(16,185,129,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto 22px; color:var(--green); }
+        .ok-title { font-size:26px; font-weight:800; letter-spacing:-0.02em; text-align:center; margin-bottom:7px; }
+        .ok-sub { font-size:14px; color:var(--text-2); text-align:center; margin-bottom:32px; }
+        .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:36px; }
+        .stat-cell { background:var(--surface-2); border:1px solid var(--border-2); border-radius:7px; padding:18px; text-align:center; }
+        .stat-val { font-size:30px; font-weight:900; color:var(--green); margin-bottom:4px; }
+        .stat-lbl { font-size:10px; font-weight:700; color:var(--text-3); letter-spacing:0.08em; text-transform:uppercase; }
+        .btn-row { display:flex; gap:10px; justify-content:center; }
+        .btn { padding:11px 22px; border:none; border-radius:5px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; letter-spacing:0.03em; transition:opacity 0.15s; }
+        .btn-primary { background:var(--green); color:#000; }
+        .btn-primary:hover { opacity:0.87; }
+        .btn-primary:disabled { opacity:0.35; cursor:not-allowed; }
+        .btn-ghost { background:var(--surface); border:1px solid var(--border-2); color:var(--text-2); }
+        .btn-ghost:hover { border-color:var(--green); color:var(--green); }
+        .btn-sm { padding:6px 13px; font-size:12px; }
+        .err-box { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); color:#f87171; padding:10px 13px; border-radius:5px; font-size:13px; margin-bottom:14px; }
+        .progress-wrap { margin:16px 0; }
+        .progress-label { font-size:12px; color:var(--text-2); margin-bottom:6px; }
+        .progress-bar { height:4px; background:var(--border-2); border-radius:2px; overflow:hidden; }
+        .progress-fill { height:100%; background:var(--green); border-radius:2px; transition:width 0.3s; }
+        @media (max-width:560px) { .stats-row { grid-template-columns:repeat(2,1fr); } .sn { display:none; } }
+    </style>
+</head>
+<body>
+
+<script>
+const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
+</script>
+
+<div class="header">
+    <div class="wordmark">Cannascope</div>
+    <div class="nav-links">
+        <a class="nav-link active">Import</a>
+        <a class="nav-link" href="cannascope-admin.html">Admin</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="step-bar">
+        <div class="si active" id="si1"><div class="sd">1</div><div class="sn">Method</div></div>
+        <div class="sl"></div>
+        <div class="si" id="si2"><div class="sd">2</div><div class="sn">Upload</div></div>
+        <div class="sl"></div>
+        <div class="si" id="si3"><div class="sd">3</div><div class="sn">Map Fields</div></div>
+        <div class="sl"></div>
+        <div class="si" id="si4"><div class="sd">4</div><div class="sn">Preview</div></div>
+        <div class="sl"></div>
+        <div class="si" id="si5"><div class="sd">5</div><div class="sn">Done</div></div>
+    </div>
+
+    <!-- S1: METHOD -->
+    <div class="screen active" id="s1">
+        <div class="screen-title">Load your inventory</div>
+        <div class="screen-sub">Choose how to import your products</div>
+        <div class="card">
+            <div class="method" onclick="toScreen(2)">
+                <div class="method-icon">CSV</div>
+                <div><div class="method-title">Upload CSV File</div><div class="method-desc">Export from Dutchie, Flowhub, Treez, or any POS — upload here</div></div>
+                <div class="method-tag">Recommended</div>
+            </div>
+            <div class="method" onclick="alert('Google Sheets sync coming soon.')">
+                <div class="method-icon">GS</div>
+                <div><div class="method-title">Google Sheets</div><div class="method-desc">Sync automatically from a shared spreadsheet</div></div>
+                <div class="method-tag muted">Coming Soon</div>
+            </div>
+            <div class="method" onclick="location.href='cannascope-admin.html'">
+                <div class="method-icon">+</div>
+                <div><div class="method-title">Add Manually</div><div class="method-desc">Add individual products from the Admin panel</div></div>
+                <div class="method-tag muted">Admin Panel</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- S2: UPLOAD -->
+    <div class="screen" id="s2">
+        <div class="screen-title">Upload your product CSV</div>
+        <div class="screen-sub">Export from your POS and drop the file here</div>
+        <div class="card">
+            <div class="info-bar"><strong>Where to find your CSV:</strong> In your POS admin panel, look for "Export Products," "Download Inventory," or "Product Catalog." Dutchie, Flowhub, and Treez all support CSV export.</div>
+            <div id="uploadZone" class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-arrow">&#8679;</div>
+                <div class="upload-title">Click to upload or drag and drop</div>
+                <div class="upload-hint">CSV only &mdash; max 5 MB</div>
+            </div>
+            <input type="file" id="fileInput" accept=".csv" onchange="handleFile(event)">
+            <div id="fileRow" style="display:none">
+                <div class="file-row">
+                    <div><div class="file-name" id="fileName"></div><div class="file-meta" id="fileMeta"></div></div>
+                    <button class="btn btn-ghost btn-sm" onclick="clearFile()">Remove</button>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-ghost" onclick="toScreen(1)">&#8592; Back</button>
+                <button class="btn btn-primary" id="btnUp" onclick="parseCSV()" disabled>Continue &#8594;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- S3: MAP -->
+    <div class="screen" id="s3">
+        <div class="screen-title">Map your columns</div>
+        <div class="screen-sub">Match your CSV columns to Cannascope fields</div>
+        <div class="card">
+            <div id="foundMsg" class="info-bar" style="margin-bottom:20px"></div>
+            <div style="overflow-x:auto">
+                <table class="map-table">
+                    <thead><tr><th>Cannascope Field</th><th>Your Column</th><th>Sample Value</th></tr></thead>
+                    <tbody id="mapBody"></tbody>
+                </table>
+            </div>
+            <div id="mapErr" class="err-box" style="display:none"></div>
+            <div class="btn-row">
+                <button class="btn btn-ghost" onclick="toScreen(2)">&#8592; Back</button>
+                <button class="btn btn-primary" onclick="buildPreview()">Preview &#8594;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- S4: PREVIEW -->
+    <div class="screen" id="s4">
+        <div class="screen-title">Review your import</div>
+        <div class="screen-sub">First 5 products — confirm everything looks correct</div>
+        <div class="card">
+            <div class="prev-count" id="prevCount"></div>
+            <div style="overflow-x:auto">
+                <table class="prev-table">
+                    <thead><tr><th>Product</th><th>Brand</th><th>Category</th><th>THC%</th><th>Price</th><th>Shelf</th></tr></thead>
+                    <tbody id="prevBody"></tbody>
+                </table>
+            </div>
+            <div class="info-bar">Products will be auto-tagged with effects using terpene profiles and strain recognition. All tags can be reviewed and adjusted in the Admin panel.</div>
+            <div class="btn-row">
+                <button class="btn btn-ghost" onclick="toScreen(3)">&#8592; Back</button>
+                <button class="btn btn-primary" onclick="confirmImport()">Import Products &#8594;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- S5: DONE -->
+    <div class="screen" id="s5">
+        <div class="ok-icon">&#10003;</div>
+        <div class="ok-title">Import complete</div>
+        <div class="ok-sub">Your products are live and ready for budtenders</div>
+        <div class="stats-row">
+            <div class="stat-cell"><div class="stat-val" id="stTotal">0</div><div class="stat-lbl">Products</div></div>
+            <div class="stat-cell"><div class="stat-val" id="stTagged">0</div><div class="stat-lbl">Effect-Tagged</div></div>
+            <div class="stat-cell"><div class="stat-val" id="stScripted">0</div><div class="stat-lbl">Scripts Written</div></div>
+        </div>
+        <div id="progressWrap" style="display:none">
+            <div class="progress-wrap">
+                <div class="progress-label" id="progressLabel">Importing…</div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+            </div>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-ghost" onclick="location.href='cannascope-admin.html'">Review in Admin</button>
+            <button class="btn btn-primary" style="font-size:14px;padding:13px 28px" onclick="location.href='cannascope-admin.html'">Go to Admin &#8594;</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let orgId = null, csvRaw = null, parsedRows = [], headers = [], mapping = {};
+
+// Auth guard
+async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'cannascope-login.html'; return; }
+    const { data: profile } = await sb.from('user_profiles').select('organization_id').eq('id', session.user.id).single();
+    if (!profile) { window.location.href = 'cannascope-login.html'; return; }
+    orgId = profile.organization_id;
+}
+init();
+
+function toScreen(n) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('s' + n).classList.add('active');
+    for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById('si' + i);
+        el.classList.remove('active','done');
+        if (i < n) el.classList.add('done'); else if (i === n) el.classList.add('active');
+    }
+}
+
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag');
+    const f = e.dataTransfer.files[0];
+    if (f?.name.endsWith('.csv')) setFile(f); else alert('Please upload a CSV file.');
+});
+function handleFile(e) { if (e.target.files[0]) setFile(e.target.files[0]); }
+function setFile(f) {
+    csvRaw = f;
+    document.getElementById('fileName').textContent = f.name;
+    document.getElementById('fileMeta').textContent = (f.size/1024).toFixed(1) + ' KB';
+    document.getElementById('fileRow').style.display = 'block';
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('btnUp').disabled = false;
+}
+function clearFile() {
+    csvRaw = null;
+    document.getElementById('fileRow').style.display = 'none';
+    document.getElementById('uploadZone').style.display = 'block';
+    document.getElementById('btnUp').disabled = true;
+    document.getElementById('fileInput').value = '';
+}
+
+function parseCSV() {
+    if (!csvRaw) return;
+    Papa.parse(csvRaw, {
+        complete(res) {
+            parsedRows = res.data.filter(r => r.some(c => c.trim() !== ''));
+            headers = parsedRows[0];
+            document.getElementById('foundMsg').innerHTML = '<strong>' + (parsedRows.length - 1) + ' products found</strong> in your CSV.';
+            buildMapTable();
+            toScreen(3);
+        },
+        error(e) { alert('CSV parse error: ' + e.message); }
+    });
+}
+
+function buildMapTable() {
+    const fields = [
+        { label:'Product Name', key:'name', req:true },
+        { label:'Brand', key:'brand', req:true },
+        { label:'Category', key:'category', req:true },
+        { label:'THC %', key:'thc', req:false },
+        { label:'CBD %', key:'cbd', req:false },
+        { label:'Price', key:'price', req:false },
+        { label:'Shelf', key:'shelf', req:false }
+    ];
+    const tbody = document.getElementById('mapBody');
+    tbody.innerHTML = '';
+    fields.forEach(f => {
+        const tr = document.createElement('tr');
+        const auto = headers.findIndex(h => h.toLowerCase().includes(f.key) || h.toLowerCase().includes(f.label.toLowerCase()));
+        const sel = document.createElement('select');
+        sel.id = 'map_' + f.key;
+        sel.innerHTML = '<option value="">— skip —</option>' + headers.map((h,i) => `<option value="${i}" ${auto===i?'selected':''}>${h}</option>`).join('');
+        const sc = document.createElement('td');
+        sc.style.cssText = 'color:var(--text-3);font-size:12px';
+        sel.addEventListener('change', () => { sc.textContent = sel.value !== '' ? parsedRows[1]?.[parseInt(sel.value)] || '—' : '—'; });
+        sel.dispatchEvent(new Event('change'));
+        const td1 = document.createElement('td');
+        td1.innerHTML = `<span class="fl-row">${f.label}</span>${f.req ? '<span class="req">Required</span>' : ''}`;
+        const td2 = document.createElement('td'); td2.appendChild(sel);
+        tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(sc);
+        tbody.appendChild(tr);
+    });
+}
+
+function buildPreview() {
+    const nm = document.getElementById('map_name').value;
+    const br = document.getElementById('map_brand').value;
+    const ct = document.getElementById('map_category').value;
+    if (!nm || !br || !ct) {
+        document.getElementById('mapErr').textContent = 'Please map all required fields: Product Name, Brand, Category.';
+        document.getElementById('mapErr').style.display = 'block'; return;
+    }
+    document.getElementById('mapErr').style.display = 'none';
+    mapping = {
+        name: parseInt(nm), brand: parseInt(br), category: parseInt(ct),
+        thc:   document.getElementById('map_thc').value   !== '' ? parseInt(document.getElementById('map_thc').value)   : null,
+        cbd:   document.getElementById('map_cbd').value   !== '' ? parseInt(document.getElementById('map_cbd').value)   : null,
+        price: document.getElementById('map_price').value !== '' ? parseInt(document.getElementById('map_price').value) : null,
+        shelf: document.getElementById('map_shelf').value !== '' ? parseInt(document.getElementById('map_shelf').value) : null
+    };
+    const tbody = document.getElementById('prevBody');
+    tbody.innerHTML = '';
+    parsedRows.slice(1,6).forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style="font-weight:600">${row[mapping.name]||'—'}</td><td>${row[mapping.brand]||'—'}</td><td>${row[mapping.category]||'—'}</td><td>${mapping.thc!==null?row[mapping.thc]||'—':'—'}</td><td>${mapping.price!==null?'$'+(row[mapping.price]||'—'):'—'}</td><td>${mapping.shelf!==null?row[mapping.shelf]||'—':'—'}</td>`;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('prevCount').textContent = 'Showing 5 of ' + (parsedRows.length - 1) + ' products';
+    toScreen(4);
+}
+
+async function confirmImport() {
+    if (!orgId) { alert('Session expired. Please sign in again.'); window.location.href = 'cannascope-login.html'; return; }
+    toScreen(5);
+    document.getElementById('progressWrap').style.display = 'block';
+
+    const rows = parsedRows.slice(1).filter(r => r[mapping.name]?.trim());
+    let tagged = 0, scripted = 0;
+    const BATCH = 20;
+
+    for (let i = 0; i < rows.length; i += BATCH) {
+        const batch = rows.slice(i, i + BATCH).map((row, idx) => {
+            const name  = row[mapping.name]?.trim() || '';
+            const cat   = (row[mapping.category] || 'flower').toLowerCase().trim();
+            const thc   = mapping.thc   !== null ? parseFloat(row[mapping.thc])   || 0 : 0;
+            const cbd   = mapping.cbd   !== null ? parseFloat(row[mapping.cbd])   || 0 : 0;
+            const price = mapping.price !== null ? parseFloat(row[mapping.price]) || 0 : 0;
+            const shelf = mapping.shelf !== null ? row[mapping.shelf]?.trim() || '' : '';
+
+            // Determine terpene profile from strain name
+            const tp = ST[name.toLowerCase()] || null;
+
+            // Score each effect
+            const scores = computeScores({ name, thc, cbd, ...(tp || {}) });
+
+            // Best effect
+            const bestEff = Object.entries(scores)
+                .map(([k,v]) => ({ eff: k.replace('score_',''), val: v }))
+                .sort((a,b) => b.val - a.val)[0].eff;
+
+            if (tp) tagged++;
+
+            const script = buildScript(name, cat, bestEff, thc, price);
+            if (script) scripted++;
+
+            return {
+                organization_id: orgId,
+                name, brand: row[mapping.brand]?.trim() || '',
+                category: cat, thc, cbd, price, shelf,
+                in_stock: true,
+                effect: bestEff,
+                talking_points: script,
+                ...(tp || {}),
+                ...scores
+            };
+        });
+
+        const { error } = await sb.from('products').upsert(batch, { onConflict: 'organization_id,name' });
+        if (error) console.error('Batch error:', error.message);
+
+        const pct = Math.round(((i + batch.length) / rows.length) * 100);
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressLabel').textContent = 'Importing ' + Math.min(i + batch.length, rows.length) + ' of ' + rows.length + '…';
+    }
+
+    document.getElementById('progressWrap').style.display = 'none';
+    document.getElementById('stTotal').textContent   = rows.length;
+    document.getElementById('stTagged').textContent  = tagged;
+    document.getElementById('stScripted').textContent = scripted;
+}
+
+// ── SHARED SCORING ENGINE (same as admin) ─────────────────────
+const TW = {
+    sleep:    { t_myrcene:0.40, t_linalool:0.30, t_caryophyllene:0.15, t_limonene:-0.05, t_pinene:-0.10, t_terpinolene:-0.10 },
+    relax:    { t_myrcene:0.25, t_caryophyllene:0.30, t_linalool:0.20, t_limonene:0.15, t_pinene:0.05,  t_terpinolene:0.05  },
+    focus:    { t_limonene:0.35, t_pinene:0.35,  t_terpinolene:0.20,  t_myrcene:-0.20, t_linalool:-0.10, t_caryophyllene:0  },
+    social:   { t_limonene:0.40, t_terpinolene:0.30, t_pinene:0.20,   t_caryophyllene:0.05, t_myrcene:-0.10, t_linalool:-0.05 },
+    pain:     { t_caryophyllene:0.40, t_myrcene:0.30, t_linalool:0.15, t_pinene:0.10, t_limonene:0.05, t_terpinolene:0      },
+    balanced: { t_myrcene:0.15, t_limonene:0.15, t_caryophyllene:0.20, t_linalool:0.15, t_pinene:0.15, t_terpinolene:0.20   }
+};
+const TERPENES = ['t_myrcene','t_limonene','t_caryophyllene','t_linalool','t_pinene','t_terpinolene'];
+const ST = {
+    'granddaddy purple':  { t_myrcene:0.55, t_linalool:0.20, t_caryophyllene:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.02 },
+    'northern lights':    { t_myrcene:0.50, t_linalool:0.25, t_caryophyllene:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.02 },
+    'purple punch':       { t_myrcene:0.45, t_linalool:0.30, t_caryophyllene:0.12, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.02 },
+    'bubba kush':         { t_myrcene:0.40, t_caryophyllene:0.30, t_linalool:0.15, t_limonene:0.05, t_pinene:0.05, t_terpinolene:0.05 },
+    'og kush':            { t_myrcene:0.35, t_caryophyllene:0.30, t_limonene:0.20, t_linalool:0.08, t_pinene:0.05, t_terpinolene:0.02 },
+    'blue dream':         { t_myrcene:0.40, t_pinene:0.20, t_caryophyllene:0.15, t_limonene:0.15, t_linalool:0.05, t_terpinolene:0.05 },
+    'wedding cake':       { t_caryophyllene:0.30, t_limonene:0.25, t_linalool:0.20, t_myrcene:0.15, t_pinene:0.05, t_terpinolene:0.05 },
+    'gelato':             { t_caryophyllene:0.25, t_limonene:0.25, t_linalool:0.20, t_myrcene:0.20, t_pinene:0.05, t_terpinolene:0.05 },
+    'sour diesel':        { t_limonene:0.45, t_caryophyllene:0.20, t_myrcene:0.15, t_pinene:0.10, t_terpinolene:0.05, t_linalool:0.05 },
+    'jack herer':         { t_terpinolene:0.35, t_pinene:0.25, t_myrcene:0.20, t_limonene:0.15, t_caryophyllene:0.03, t_linalool:0.02 },
+    'green crack':        { t_myrcene:0.35, t_limonene:0.25, t_caryophyllene:0.20, t_pinene:0.10, t_terpinolene:0.05, t_linalool:0.05 },
+    'pineapple express':  { t_limonene:0.35, t_terpinolene:0.25, t_caryophyllene:0.15, t_myrcene:0.15, t_pinene:0.05, t_linalool:0.05 },
+    'tangie':             { t_limonene:0.50, t_myrcene:0.15, t_caryophyllene:0.15, t_terpinolene:0.10, t_pinene:0.05, t_linalool:0.05 },
+    'acdc':               { t_myrcene:0.35, t_pinene:0.25, t_caryophyllene:0.20, t_limonene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
+    'harlequin':          { t_myrcene:0.35, t_pinene:0.25, t_caryophyllene:0.20, t_limonene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
+    'white widow':        { t_myrcene:0.30, t_caryophyllene:0.25, t_limonene:0.20, t_pinene:0.15, t_linalool:0.05, t_terpinolene:0.05 },
+    'girl scout cookies': { t_caryophyllene:0.30, t_limonene:0.20, t_linalool:0.15, t_myrcene:0.25, t_pinene:0.05, t_terpinolene:0.05 },
+    'cannatonic':         { t_myrcene:0.30, t_caryophyllene:0.25, t_pinene:0.20, t_limonene:0.10, t_linalool:0.10, t_terpinolene:0.05 },
+    'durban poison':      { t_terpinolene:0.40, t_myrcene:0.20, t_limonene:0.20, t_pinene:0.10, t_caryophyllene:0.05, t_linalool:0.05 },
+    'zkittlez':           { t_limonene:0.30, t_caryophyllene:0.25, t_linalool:0.20, t_myrcene:0.15, t_pinene:0.05, t_terpinolene:0.05 },
+    'runtz':              { t_limonene:0.30, t_caryophyllene:0.25, t_linalool:0.20, t_myrcene:0.20, t_pinene:0.03, t_terpinolene:0.02 },
+    'gorilla glue':       { t_caryophyllene:0.30, t_myrcene:0.30, t_limonene:0.20, t_pinene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
+    'do-si-dos':          { t_linalool:0.30, t_limonene:0.25, t_caryophyllene:0.20, t_myrcene:0.15, t_pinene:0.05, t_terpinolene:0.05 },
+    'mac':                { t_limonene:0.30, t_caryophyllene:0.25, t_myrcene:0.20, t_linalool:0.15, t_pinene:0.05, t_terpinolene:0.05 },
+    'skywalker og':       { t_myrcene:0.45, t_caryophyllene:0.25, t_linalool:0.15, t_limonene:0.10, t_pinene:0.03, t_terpinolene:0.02 },
+    'gorilla glue #4':    { t_caryophyllene:0.30, t_myrcene:0.30, t_limonene:0.20, t_pinene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
+};
+
+function computeScores(product) {
+    const strainP = ST[product.name?.toLowerCase()] || null;
+    const p = strainP ? { ...product, ...strainP } : product;
+    const thc = parseFloat(p.thc) || 0, cbd = parseFloat(p.cbd) || 0;
+    const scores = {};
+    for (const [effect, weights] of Object.entries(TW)) {
+        let s = 0;
+        for (const t of TERPENES) s += (parseFloat(p[t]) || 0) * (weights[t] || 0);
+        if (effect === 'sleep')    { if (thc >= 20) s += 0.04; if (cbd >= 3) s += 0.03; }
+        if (effect === 'pain')     { if (cbd >= 5)  s += 0.08; if (cbd > thc * 0.3) s += 0.05; }
+        if (effect === 'focus')    { if (thc <= 18) s += 0.03; }
+        if (effect === 'balanced') { if (thc >= 10 && thc <= 20) s += 0.04; }
+        scores['score_' + effect] = Math.max(0, Math.min(1, s));
+    }
+    return scores;
+}
+
+function buildScript(name, cat, eff, thc, price) {
+    const t = parseFloat(thc) || 0, p = parseFloat(price) || 0;
+    const thcLine = t === 0 ? 'This is a CBD-dominant product with minimal psychoactive effect.' :
+        t <= 10 ? `At ${t}% THC it sits on the lighter end — well-suited for beginners or daytime use.` :
+        t <= 20 ? `At ${t}% THC it is moderate potency — approachable for most consumers.` :
+        t <= 28 ? `At ${t}% THC it is higher potency — recommended for experienced consumers.` :
+                  `At ${t}% THC this is a high-potency product — recommend starting small.`;
+    const fx = { sleep:'This is one of our strongest recommendations for sleep. Most customers report meaningful improvement in both onset and duration.', relax:'Ideal for unwinding after a long day — relaxes the body without heavy sedation.', focus:'A reliable option for daytime focus. Works well for creative work or anything requiring sustained mental engagement.', social:'Elevates mood and lowers social friction — good for gatherings or any setting where you want energy and ease.', pain:'Specifically effective for pain and inflammation. Strong results for customers with chronic discomfort or muscle tension.', balanced:'A well-rounded option with no strong directional lean. Solid starting point for anyone newer to cannabis.' };
+    const cf = { flower:'As flower, effects begin within minutes.', vape:'The vape format is fast-acting — one to two draws, then wait before reassessing.', edible:'As an edible, allow 60 to 90 minutes for onset — effects are sustained for 4 to 6 hours.', preroll:'Comes ready as a pre-roll.', concentrate:'As a concentrate, a small amount produces significant effect.', tincture:'A few drops under the tongue for faster absorption.', topical:'Applied to the skin — localized relief with no systemic effect.' };
+    return `${name||'This product'} is a strong option here. ${fx[eff]||''} ${cf[cat]||''} ${thcLine}${p>0?` At $${p.toFixed(2)} it represents solid value in this category.`:''}`.trim().replace(/\s+/g,' ');
+}
+</script>
+</body>
+</html>
