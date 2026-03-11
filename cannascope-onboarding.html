@@ -448,10 +448,22 @@ const ST = {
     'gorilla glue #4':    { t_caryophyllene:0.30, t_myrcene:0.30, t_limonene:0.20, t_pinene:0.10, t_linalool:0.05, t_terpinolene:0.05 },
 };
 
+// Category affinity — edibles/tinctures suit sleep/pain, vapes suit focus/social
+const CAT_AFFINITY = {
+    sleep:    { edible:0.14, tincture:0.12, flower:0.00, preroll:-0.02, vape:-0.14, concentrate:-0.10 },
+    relax:    { edible:0.10, tincture:0.08, flower:0.03, preroll:0.02,  vape:-0.06, concentrate:-0.03 },
+    focus:    { vape:0.12,   flower:0.04,   preroll:0.03, edible:-0.10, tincture:-0.06, concentrate:0.06 },
+    social:   { vape:0.14,   flower:0.05,   preroll:0.04, edible:-0.06, tincture:-0.08, concentrate:0.04 },
+    pain:     { tincture:0.16, edible:0.12, topical:0.20, flower:0.03, vape:-0.06, preroll:0.02 },
+    balanced: { flower:0.04, tincture:0.04, edible:0.04, preroll:0.03, vape:-0.02, concentrate:-0.02 }
+};
+
 function computeScores(product) {
-    const strainP = ST[product.name?.toLowerCase()] || null;
-    const p = strainP ? { ...product, ...strainP } : product;
-    const thc = parseFloat(p.thc) || 0, cbd = parseFloat(p.cbd) || 0;
+    const strainProfile = ST[product.name?.toLowerCase()] || null;
+    const p = strainProfile ? { ...product, ...strainProfile } : product;
+    const thc = parseFloat(p.thc) || 0;
+    const cbd = parseFloat(p.cbd) || 0;
+    const cat = (p.category || '').toLowerCase();
     const scores = {};
     for (const [effect, weights] of Object.entries(TW)) {
         let s = 0;
@@ -460,6 +472,8 @@ function computeScores(product) {
         if (effect === 'pain')     { if (cbd >= 5)  s += 0.08; if (cbd > thc * 0.3) s += 0.05; }
         if (effect === 'focus')    { if (thc <= 18) s += 0.03; }
         if (effect === 'balanced') { if (thc >= 10 && thc <= 20) s += 0.04; }
+        // Category affinity — format matters for onset, duration, suitability
+        s += (CAT_AFFINITY[effect]?.[cat] || 0);
         scores['score_' + effect] = Math.max(0, Math.min(1, s));
     }
     return scores;
