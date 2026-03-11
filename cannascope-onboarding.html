@@ -416,38 +416,38 @@ async function confirmImport() {
 // © Cannascope — proprietary scoring logic.
 
 const TERPENE_EFFECTS = {
-    myrcene:       { sleep: 0.32, relax: 0.20, focus:-0.15, social:-0.08, pain: 0.25, balanced: 0.06 },
-    limonene:      { sleep:-0.12, relax: 0.14, focus: 0.28, social: 0.26, pain: 0.08, balanced: 0.10 },
-    caryophyllene: { sleep: 0.08, relax: 0.18, focus: 0.04, social: 0.04, pain: 0.32, balanced: 0.16 },
-    linalool:      { sleep: 0.34, relax: 0.16, focus:-0.10, social:-0.06, pain: 0.20, balanced: 0.08 },
-    pinene:        { sleep:-0.10, relax: 0.06, focus: 0.26, social: 0.10, pain: 0.12, balanced: 0.14 },
-    terpinolene:   { sleep: 0.04, relax: 0.10, focus: 0.12, social: 0.24, pain: 0.04, balanced: 0.18 },
-    humulene:      { sleep: 0.12, relax: 0.12, focus:-0.02, social: 0.02, pain: 0.16, balanced: 0.14 },
-    ocimene:       { sleep:-0.08, relax: 0.06, focus: 0.16, social: 0.20, pain: 0.02, balanced: 0.08 },
-    bisabolol:     { sleep: 0.24, relax: 0.14, focus:-0.06, social:-0.04, pain: 0.18, balanced: 0.12 },
-    nerolidol:     { sleep: 0.30, relax: 0.12, focus:-0.12, social:-0.08, pain: 0.14, balanced: 0.06 },
-    terpineol:     { sleep: 0.28, relax: 0.14, focus:-0.10, social:-0.06, pain: 0.12, balanced: 0.08 },
-    valencene:     { sleep:-0.04, relax: 0.08, focus: 0.14, social: 0.22, pain: 0.04, balanced: 0.10 },
-    geraniol:      { sleep: 0.22, relax: 0.10, focus:-0.06, social:-0.02, pain: 0.16, balanced: 0.10 },
-    camphene:      { sleep: 0.06, relax: 0.06, focus: 0.06, social: 0.04, pain: 0.20, balanced: 0.10 },
-    guaiol:        { sleep: 0.10, relax: 0.08, focus: 0.04, social: 0.02, pain: 0.22, balanced: 0.12 },
-    fenchol:       { sleep: 0.08, relax: 0.06, focus: 0.08, social: 0.04, pain: 0.14, balanced: 0.12 },
-    borneol:       { sleep: 0.20, relax: 0.10, focus: 0.02, social: 0.02, pain: 0.18, balanced: 0.08 },
+    myrcene:       { sleep: 0.32, relax: 0.20, focus:-0.15, social:-0.08, relief: 0.25, beginner: 0.06 },
+    limonene:      { sleep:-0.12, relax: 0.14, focus: 0.28, social: 0.26, relief: 0.08, beginner: 0.10 },
+    caryophyllene: { sleep: 0.08, relax: 0.18, focus: 0.04, social: 0.04, relief: 0.32, beginner: 0.16 },
+    linalool:      { sleep: 0.34, relax: 0.16, focus:-0.10, social:-0.06, relief: 0.20, beginner: 0.08 },
+    pinene:        { sleep:-0.10, relax: 0.06, focus: 0.26, social: 0.10, relief: 0.12, beginner: 0.14 },
+    terpinolene:   { sleep: 0.04, relax: 0.10, focus: 0.12, social: 0.24, relief: 0.04, beginner: 0.18 },
+    humulene:      { sleep: 0.12, relax: 0.12, focus:-0.02, social: 0.02, relief: 0.16, beginner: 0.14 },
+    ocimene:       { sleep:-0.08, relax: 0.06, focus: 0.16, social: 0.20, relief: 0.02, beginner: 0.08 },
+    bisabolol:     { sleep: 0.24, relax: 0.14, focus:-0.06, social:-0.04, relief: 0.18, beginner: 0.12 },
+    nerolidol:     { sleep: 0.30, relax: 0.12, focus:-0.12, social:-0.08, relief: 0.14, beginner: 0.06 },
+    terpineol:     { sleep: 0.28, relax: 0.14, focus:-0.10, social:-0.06, relief: 0.12, beginner: 0.08 },
+    valencene:     { sleep:-0.04, relax: 0.08, focus: 0.14, social: 0.22, relief: 0.04, beginner: 0.10 },
+    geraniol:      { sleep: 0.22, relax: 0.10, focus:-0.06, social:-0.02, relief: 0.16, beginner: 0.10 },
+    camphene:      { sleep: 0.06, relax: 0.06, focus: 0.06, social: 0.04, relief: 0.20, beginner: 0.10 },
+    guaiol:        { sleep: 0.10, relax: 0.08, focus: 0.04, social: 0.02, relief: 0.22, beginner: 0.12 },
+    fenchol:       { sleep: 0.08, relax: 0.06, focus: 0.08, social: 0.04, relief: 0.14, beginner: 0.12 },
+    borneol:       { sleep: 0.20, relax: 0.10, focus: 0.02, social: 0.02, relief: 0.18, beginner: 0.08 },
 };
 const TERPENE_FLOOR = 0.08;
 const SYNERGIES = [
     { pair: ['myrcene',  'linalool'],       effect: 'sleep',    bonus: 0.14 },
     { pair: ['myrcene',  'nerolidol'],       effect: 'sleep',    bonus: 0.10 },
     { pair: ['linalool', 'bisabolol'],       effect: 'sleep',    bonus: 0.12 },
-    { pair: ['myrcene',  'caryophyllene'],   effect: 'pain',     bonus: 0.12 },
-    { pair: ['caryophyllene', 'linalool'],   effect: 'pain',     bonus: 0.14 },
+    { pair: ['myrcene',  'caryophyllene'],   effect: 'relief',     bonus: 0.12 },
+    { pair: ['caryophyllene', 'linalool'],   effect: 'relief',     bonus: 0.14 },
     { pair: ['myrcene',  'caryophyllene'],   effect: 'relax',    bonus: 0.10 },
     { pair: ['limonene', 'pinene'],          effect: 'focus',    bonus: 0.14 },
     { pair: ['limonene', 'ocimene'],         effect: 'social',   bonus: 0.10 },
     { pair: ['limonene', 'terpinolene'],     effect: 'social',   bonus: 0.12 },
     { pair: ['pinene',   'terpinolene'],     effect: 'focus',    bonus: 0.08 },
     { pair: ['limonene', 'caryophyllene'],   effect: 'relax',    bonus: 0.08 },
-    { pair: ['bisabolol','caryophyllene'],   effect: 'pain',     bonus: 0.10 },
+    { pair: ['bisabolol','caryophyllene'],   effect: 'relief',     bonus: 0.10 },
 ];
 const STRAIN_DB = {
     'granddaddy purple':  { myrcene:0.56, linalool:0.22, caryophyllene:0.14, limonene:0.05, pinene:0.02, bisabolol:0.04, nerolidol:0.03 },
@@ -490,8 +490,8 @@ const FORMAT_CONTEXT = {
     relax:    { edible:0.07, tincture:0.06, flower:0.03, preroll:0.02, vape:-0.04, concentrate:-0.02, topical:0.02 },
     focus:    { vape:0.09, flower:0.04, preroll:0.03, concentrate:0.05, edible:-0.08, tincture:-0.05, topical:-0.04 },
     social:   { vape:0.10, flower:0.04, preroll:0.04, concentrate:0.03, edible:-0.05, tincture:-0.06, topical:-0.04 },
-    pain:     { topical:0.18, tincture:0.12, edible:0.10, flower:0.02, preroll:0.01, vape:-0.04, concentrate:-0.02 },
-    balanced: { flower:0.03, tincture:0.03, edible:0.03, preroll:0.02, vape:-0.01, concentrate:-0.01, topical:0.01 },
+    relief:   { topical:0.18, tincture:0.12, edible:0.10, flower:0.02, preroll:0.01, vape:-0.04, concentrate:-0.02 },
+    beginner: { flower:0.03, tincture:0.03, edible:0.03, preroll:0.02, vape:-0.01, concentrate:-0.01, topical:0.01 },
 };
 function cannabinoidScore(thc, cbd, effect) {
     let s = 0;
@@ -500,7 +500,7 @@ function cannabinoidScore(thc, cbd, effect) {
         if (thc >= 22) s += 0.06; else if (thc >= 16) s += 0.03;
         if (cbd >= 4) s += 0.05; else if (cbd >= 2) s += 0.02;
         if (ratio >= 0.2 && ratio <= 1.0) s += 0.04;
-    } else if (effect === 'pain') {
+    } else if (effect === 'relief') {
         if (cbd >= 8) s += 0.10; else if (cbd >= 4) s += 0.06; else if (cbd >= 2) s += 0.03;
         if (ratio >= 0.5) s += 0.06;
         if (thc >= 20) s += 0.03;
@@ -516,7 +516,7 @@ function cannabinoidScore(thc, cbd, effect) {
         if (thc >= 14 && thc <= 22) s += 0.05;
         else if (thc >= 23) s -= 0.03;
         if (cbd >= 2) s += 0.02;
-    } else if (effect === 'balanced') {
+    } else if (effect === 'beginner') {
         if (thc >= 10 && thc <= 20) s += 0.05;
         if (cbd >= 2 && cbd <= 8) s += 0.04;
         if (ratio >= 0.1 && ratio <= 0.8) s += 0.04;
@@ -542,7 +542,7 @@ function computeScores(product) {
     const cbd = parseFloat(product.cbd) || 0;
     const cat = (product.category || '').toLowerCase();
     const scores = {};
-    const EFFECTS = ['sleep','relax','focus','social','pain','balanced'];
+    const EFFECTS = ['sleep','relax','focus','social','relief','beginner'];
     for (const effect of EFFECTS) {
         let s = 0;
         for (const [terpene, weights] of Object.entries(TERPENE_EFFECTS)) {
@@ -567,15 +567,26 @@ function computeScores(product) {
 }
 
 function buildScript(name, cat, eff, thc, price) {
-    const t = parseFloat(thc) || 0, p = parseFloat(price) || 0;
-    const thcLine = t === 0 ? 'This is a CBD-dominant product with minimal psychoactive effect.' :
-        t <= 10 ? `At ${t}% THC it sits on the lighter end — well-suited for beginners or daytime use.` :
-        t <= 20 ? `At ${t}% THC it is moderate potency — approachable for most consumers.` :
-        t <= 28 ? `At ${t}% THC it is higher potency — recommended for experienced consumers.` :
-                  `At ${t}% THC this is a high-potency product — recommend starting small.`;
-    const fx = { sleep:'This is one of our strongest recommendations for sleep. Most customers report meaningful improvement in both onset and duration.', relax:'Ideal for unwinding after a long day — relaxes the body without heavy sedation.', focus:'A reliable option for daytime focus. Works well for creative work or anything requiring sustained mental engagement.', social:'Elevates mood and lowers social friction — good for gatherings or any setting where you want energy and ease.', pain:'Specifically effective for pain and inflammation. Strong results for customers with chronic discomfort or muscle tension.', balanced:'A well-rounded option with no strong directional lean. Solid starting point for anyone newer to cannabis.' };
-    const cf = { flower:'As flower, effects begin within minutes.', vape:'The vape format is fast-acting — one to two draws, then wait before reassessing.', edible:'As an edible, allow 60 to 90 minutes for onset — effects are sustained for 4 to 6 hours.', preroll:'Comes ready as a pre-roll.', concentrate:'As a concentrate, a small amount produces significant effect.', tincture:'A few drops under the tongue for faster absorption.', topical:'Applied to the skin — localized relief with no systemic effect.' };
-    return `${name||'This product'} is a strong option here. ${fx[eff]||''} ${cf[cat]||''} ${thcLine}${p>0?` At $${p.toFixed(2)} it represents solid value in this category.`:''}`.trim().replace(/\s+/g,' ');
+    const fx = {
+        sleep:    'Best for sleep — customers report falling asleep faster and staying asleep longer.',
+        relax:    'Best for unwinding — relieves tension without heaviness or sedation.',
+        focus:    'Best for daytime use — sharpens focus without anxiety or jitters.',
+        social:   'Best for social settings — lifts mood and makes conversation feel effortless.',
+        relief:   'Best for pain and inflammation — consistent results for chronic discomfort and muscle tension.',
+        beginner: 'Approachable and forgiving — a reliable first experience with nothing too intense.'
+    };
+    return fx[eff] || 'A solid option worth recommending.';
+}
+function getUpsell(eff) {
+    const u = {
+        sleep:    'If they want longer sleep, suggest gummies.',
+        relax:    'If they want something lighter, suggest a 5mg edible.',
+        focus:    'If they want daytime microdosing, suggest a low-dose vape.',
+        social:   'If they want something shareable, suggest prerolls.',
+        relief:   'If they want body relief, suggest a topical.',
+        beginner: 'If they want controlled dosing, suggest 2.5mg gummies.'
+    };
+    return u[eff] || '';
 }
 </script>
 </body>
