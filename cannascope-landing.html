@@ -96,7 +96,7 @@
         .hero-sub {
             font-size: 17px; font-weight: 400;
             color: var(--text-2); line-height: 1.65;
-            max-width: 540px; margin: 0 auto 40px;
+            max-width: 520px; margin: 0 auto 40px;
         }
         .hero-actions {
             display: flex; align-items: center; justify-content: center;
@@ -132,7 +132,7 @@
         .hero-meta span::before {
             content: ''; display: inline-block;
             width: 3px; height: 3px; background: var(--green);
-            border-radius: 50; opacity: 0.6;
+            border-radius: 50%; opacity: 0.6;
         }
 
         /* --- MOCKUP --- */
@@ -253,7 +253,7 @@
 
         /* --- SECTIONS SHARED --- */
         .container { max-width: 1040px; margin: 0 auto; padding: 0 40px; }
-        section { padding: 96px 0; }
+        section { padding: 88px 0; }
         .s-tag {
             font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
             text-transform: uppercase; color: var(--green); margin-bottom: 16px;
@@ -267,10 +267,6 @@
         .s-sub {
             font-size: 16px; color: var(--text-2);
             line-height: 1.65; max-width: 560px;
-        }
-        .divider {
-            width: 100%; height: 1px;
-            background: var(--border);
         }
 
         /* --- STATS BAR --- */
@@ -308,28 +304,28 @@
             gap: 1px; background: var(--border);
             border: 1px solid var(--border);
             border-radius: 12px; overflow: hidden;
-            margin-top: 56px;
+            margin-top: 48px;
         }
         .prob-card {
             background: var(--surface);
-            padding: 36px 32px;
+            padding: 32px 28px;
         }
         .prob-num {
             font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
-            text-transform: uppercase; color: var(--text-3); margin-bottom: 20px;
+            text-transform: uppercase; color: var(--text-3); margin-bottom: 16px;
         }
         .prob-title {
             font-size: 17px; font-weight: 700; color: var(--text);
-            line-height: 1.3; margin-bottom: 12px;
+            line-height: 1.3; margin-bottom: 10px;
         }
         .prob-text {
-            font-size: 14px; color: var(--text-2); line-height: 1.65;
+            font-size: 14px; color: var(--text-2); line-height: 1.6;
         }
 
         /* --- HOW IT WORKS --- */
         .steps {
             display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 40px; margin-top: 56px;
+            gap: 40px; margin-top: 48px;
         }
         .step { position: relative; }
         .step-num-wrap {
@@ -341,10 +337,10 @@
         }
         .step-title {
             font-size: 16px; font-weight: 700; color: var(--text);
-            margin-bottom: 10px; line-height: 1.3;
+            margin-bottom: 8px; line-height: 1.3;
         }
         .step-text {
-            font-size: 14px; color: var(--text-2); line-height: 1.65;
+            font-size: 14px; color: var(--text-2); line-height: 1.6;
             margin-bottom: 10px;
         }
         .step-time {
@@ -357,23 +353,23 @@
             display: grid; grid-template-columns: repeat(2, 1fr);
             gap: 1px; background: var(--border);
             border: 1px solid var(--border); border-radius: 12px;
-            overflow: hidden; margin-top: 56px;
+            overflow: hidden; margin-top: 48px;
         }
         .feat {
             background: var(--surface);
-            padding: 40px 36px;
+            padding: 36px 32px;
         }
         .feat-tag {
             font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
-            text-transform: uppercase; color: var(--text-3); margin-bottom: 14px;
+            text-transform: uppercase; color: var(--text-3); margin-bottom: 12px;
         }
         .feat-title {
-            font-size: 20px; font-weight: 700; color: var(--text);
-            line-height: 1.3; margin-bottom: 12px;
+            font-size: 19px; font-weight: 700; color: var(--text);
+            line-height: 1.3; margin-bottom: 10px;
         }
         .feat-text {
-            font-size: 14px; color: var(--text-2); line-height: 1.7;
-            margin-bottom: 20px;
+            font-size: 14px; color: var(--text-2); line-height: 1.65;
+            margin-bottom: 18px;
         }
         .feat-items { list-style: none; display: flex; flex-direction: column; gap: 8px; }
         .feat-items li {
@@ -394,7 +390,7 @@
         }
         .chem-pills {
             display: flex; flex-wrap: wrap; gap: 8px;
-            margin-top: 28px;
+            margin-top: 24px;
         }
         .chem-pill {
             font-size: 11px; font-weight: 600;
@@ -428,7 +424,7 @@
             background: var(--surface);
             border: 1px solid var(--border-2);
             border-radius: 16px; padding: 48px;
-            margin: 56px auto 0;
+            margin: 48px auto 0;
         }
         .price-main {
             font-size: 52px; font-weight: 800;
@@ -470,9 +466,102 @@
             color: var(--text-3); margin-top: 14px;
         }
 
+        /* --- ROI CALCULATOR --- */
+        .roi-calc {
+            background: var(--surface);
+            border: 1px solid var(--border-2);
+            border-radius: 16px;
+            padding: 40px 44px;
+            margin-top: 20px;
+        }
+        .roi-calc-header {
+            margin-bottom: 32px;
+        }
+        .roi-calc-title {
+            font-size: 20px; font-weight: 700; color: var(--text);
+            margin-bottom: 6px;
+        }
+        .roi-calc-sub {
+            font-size: 13px; color: var(--text-2);
+        }
+        .roi-body {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 40px; align-items: start;
+        }
+        .roi-inputs { display: flex; flex-direction: column; gap: 24px; }
+        .roi-input-group { display: flex; flex-direction: column; gap: 8px; }
+        .roi-input-label {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--text-3);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .roi-input-label em {
+            font-style: normal; font-weight: 700;
+            color: var(--text); font-size: 13px; letter-spacing: 0;
+            text-transform: none;
+        }
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 3px;
+            background: var(--border-2); border-radius: 2px;
+            outline: none; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--green); cursor: pointer;
+            border: 2px solid var(--bg);
+            box-shadow: 0 0 0 1px var(--green);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--green); cursor: pointer;
+            border: 2px solid var(--bg);
+        }
+        .roi-dollar-wrap {
+            display: flex; align-items: center;
+            background: var(--surface-2);
+            border: 1px solid var(--border-2); border-radius: 8px;
+            padding: 0 14px; gap: 6px;
+        }
+        .roi-dollar-sign { font-size: 14px; color: var(--text-3); font-weight: 500; }
+        .roi-dollar-wrap input[type="number"] {
+            background: none; border: none; outline: none;
+            font-size: 14px; font-weight: 600; color: var(--text);
+            font-family: 'Inter', sans-serif;
+            padding: 11px 0; width: 100%;
+            -moz-appearance: textfield;
+        }
+        .roi-dollar-wrap input[type="number"]::-webkit-outer-spin-button,
+        .roi-dollar-wrap input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        .roi-outputs { display: flex; flex-direction: column; gap: 0; }
+        .roi-out-item {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .roi-out-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .roi-out-label {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--text-3);
+            margin-bottom: 4px;
+        }
+        .roi-out-val {
+            font-size: 34px; font-weight: 800;
+            letter-spacing: -0.03em; color: var(--text);
+            line-height: 1;
+        }
+        .roi-out-val.green { color: var(--green); }
+        .roi-out-val.dim { font-size: 26px; color: var(--text-2); }
+        .roi-footnote {
+            font-size: 11px; color: var(--text-3);
+            margin-top: 24px; border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
         /* --- CTA --- */
         .cta-section {
-            padding: 100px 0;
+            padding: 96px 0;
             text-align: center;
         }
         .cta-section h2 {
@@ -498,34 +587,6 @@
         .footer-links a:hover { color: var(--text-2); }
         .footer-copy { font-size: 12px; color: var(--text-3); }
 
-        /* --- ROI STRIP --- */
-        .roi-strip {
-            background: var(--surface);
-            border: 1px solid var(--border-2);
-            border-radius: 12px; padding: 36px;
-            display: grid; grid-template-columns: 1fr auto;
-            gap: 40px; align-items: center;
-            margin-top: 56px;
-        }
-        .roi-left h3 {
-            font-size: 20px; font-weight: 700; color: var(--text);
-            margin-bottom: 8px;
-        }
-        .roi-left p { font-size: 14px; color: var(--text-2); line-height: 1.65; }
-        .roi-number {
-            text-align: center;
-        }
-        .roi-number .big {
-            font-size: 48px; font-weight: 800;
-            letter-spacing: -0.04em; color: var(--green);
-            line-height: 1; display: block;
-        }
-        .roi-number .label {
-            font-size: 11px; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.1em;
-            color: var(--text-3); margin-top: 6px; display: block;
-        }
-
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
             nav { padding: 0 20px; }
@@ -533,7 +594,7 @@
             .hero { padding: 120px 24px 80px; }
             .mockup-wrap { padding: 0 20px 80px; }
             .container { padding: 0 24px; }
-            section { padding: 64px 0; }
+            section { padding: 60px 0; }
             .problem-grid { grid-template-columns: 1fr; }
             .steps { grid-template-columns: 1fr; gap: 32px; }
             .features-grid { grid-template-columns: 1fr; }
@@ -543,18 +604,19 @@
             .stat-item:last-child { border-bottom: none; }
             .card-row { flex-direction: column; }
             .pricing-card { padding: 32px 24px; }
-            .roi-strip { grid-template-columns: 1fr; }
+            .roi-calc { padding: 28px 24px; }
+            .roi-body { grid-template-columns: 1fr; gap: 28px; }
             .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
         }
     </style>
 </head>
 <body>
 
-<!-- -- NAV -- -->
+<!-- NAV -->
 <nav>
     <a href="#" class="nav-logo">Cannascope</a>
     <div class="nav-links">
-        <a href="#how-it-works">How it works</a>
+        <a href="#how-it-works">How It Works</a>
         <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
         <a href="cannascope-login.html" style="color:var(--text-2)">Sign in</a>
@@ -562,7 +624,7 @@
     <a href="cannascope-login.html?signup=1" class="nav-cta">Get started</a>
 </nav>
 
-<!-- -- HERO -- -->
+<!-- HERO -->
 <div class="hero">
     <div class="hero-tag">Budtender Intelligence</div>
     <h1>Your staff recommends<br>from memory.<br><span class="hl">Revenue suffers for it.</span></h1>
@@ -581,7 +643,7 @@
     </div>
 </div>
 
-<!-- -- MOCKUP -- -->
+<!-- MOCKUP -->
 <div class="mockup-wrap">
     <div class="mockup-frame">
         <div class="mockup-bar">
@@ -651,7 +713,7 @@
     </div>
 </div>
 
-<!-- -- STATS -- -->
+<!-- STATS -->
 <div class="stats-bar">
     <div class="stats-inner">
         <div class="stat-item">
@@ -673,124 +735,116 @@
     </div>
 </div>
 
-<!-- -- PROBLEM -- -->
+<!-- PROBLEM -->
 <section id="problem">
     <div class="container">
         <div class="s-tag">The Problem</div>
         <h2>The sales floor is broken<br>at most dispensaries.</h2>
-        <p class="s-sub">Not because of bad staff. Because there's no system. And without a system, every transaction depends on whoever's working that shift.</p>
+        <p class="s-sub">Not because of bad staff &mdash; because there's no system. Every transaction depends on whoever's working that shift.</p>
         <div class="problem-grid">
             <div class="prob-card">
                 <div class="prob-num">01</div>
                 <div class="prob-title">New staff takes months to get good</div>
-                <div class="prob-text">It takes 60&ndash;90 days for a new hire to know the menu well enough to recommend confidently. Until then, they under-sell, over-apologize, and default to whatever the customer already knows.</div>
+                <div class="prob-text">It takes 60&ndash;90 days for a new hire to know the menu confidently. Until then, they under-sell and default to whatever the customer already knows.</div>
             </div>
             <div class="prob-card">
                 <div class="prob-num">02</div>
                 <div class="prob-title">Inventory moves at random</div>
-                <div class="prob-text">Managers have no reliable way to direct staff toward overstock or high-margin items. Products sit while customers walk out with whatever was recommended first &mdash; not what you need to move.</div>
+                <div class="prob-text">Managers can't reliably direct staff toward overstock or high-margin items. Products sit while customers walk out with whatever was recommended first.</div>
             </div>
             <div class="prob-card">
                 <div class="prob-num">03</div>
                 <div class="prob-title">Upsells never happen</div>
-                <div class="prob-text">Budtenders are focused on getting through the transaction. Without a systematic prompt, basket size stays flat. There's no reason to suggest an add-on &mdash; so nobody does.</div>
+                <div class="prob-text">Without a systematic prompt, basket size stays flat. Budtenders are focused on getting through the transaction &mdash; there's no reason to suggest an add-on, so nobody does.</div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- -- HOW IT WORKS -- -->
+<!-- HOW IT WORKS -->
 <section id="how-it-works" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
     <div class="container">
         <div class="s-tag">How It Works</div>
         <h2>Live in 3 minutes.<br>No IT team required.</h2>
-        <p class="s-sub">No integrations, no onboarding calls, no training sessions. Export your inventory, upload it, and you're done.</p>
+        <p class="s-sub">No integrations, no onboarding calls. Export your inventory, upload it, send your team a link &mdash; done.</p>
         <div class="steps">
             <div class="step">
                 <div class="step-num-wrap">1</div>
                 <div class="step-title">Export your inventory CSV</div>
-                <div class="step-text">Download your product list from Dutchie, Flowhub, Treez, or any other POS. Takes about 30 seconds.</div>
+                <div class="step-text">Download your product list from Dutchie, Flowhub, Treez, or any other POS.</div>
                 <div class="step-time">~30 seconds</div>
             </div>
             <div class="step">
                 <div class="step-num-wrap">2</div>
                 <div class="step-title">Upload &mdash; products are auto-tagged</div>
-                <div class="step-text">Cannascope reads your inventory, scores every product against six effect categories, and writes a talking point for each one &mdash; automatically.</div>
+                <div class="step-text">Cannascope scores every product against six effect categories and writes a talking point for each one &mdash; automatically.</div>
                 <div class="step-time">~2 minutes</div>
             </div>
             <div class="step">
                 <div class="step-num-wrap">3</div>
                 <div class="step-title">Send the link to your team</div>
-                <div class="step-text">Your budtenders open the Cannascope link on any phone or tablet. No app, no login, no training. One tap and they have the right recommendation.</div>
+                <div class="step-text">Budtenders open Cannascope on any phone or tablet. No app, no login, no training required.</div>
                 <div class="step-time">~30 seconds</div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- -- FEATURES -- -->
+<!-- FEATURES -->
 <section id="features">
     <div class="container">
         <div class="s-tag">What It Does</div>
         <h2>A real tool your team<br>will actually use mid-transaction.</h2>
-        <p class="s-sub">Not a chatbot. Not a quiz. A fast, focused interface designed for the floor &mdash; where seconds matter.</p>
+        <p class="s-sub">Not a chatbot. A fast, focused interface built for the floor &mdash; where seconds matter.</p>
         <div class="features-grid">
             <div class="feat">
                 <div class="feat-tag">01 &mdash; Recommendation Engine</div>
                 <div class="feat-title">Tap an effect. Get three products. Done.</div>
-                <div class="feat-text">Customer wants to sleep better. Budtender taps Sleep. Cannascope surfaces the top 3 products from your live inventory &mdash; scored by terpene profile, cannabinoid ratio, and delivery format.</div>
+                <div class="feat-text">Customer wants to sleep better? Budtender taps Sleep. Cannascope surfaces the top 3 from your live inventory &mdash; scored by terpene profile, cannabinoid ratio, and delivery format.</div>
                 <ul class="feat-items">
-                    <li>Six effect categories: Sleep, Relax, Focus, Social, Relief, Beginner</li>
-                    <li>Scored on real terpene data &mdash; not indica/sativa labels</li>
-                    <li>Always pulls from your current in-stock inventory</li>
-                    <li>One-sentence talking point for every product</li>
+                    <li>Six effect categories scored on real terpene data &mdash; not indica/sativa labels</li>
+                    <li>One-sentence talking point for every product, ready to say out loud</li>
                 </ul>
             </div>
             <div class="feat">
                 <div class="feat-tag">02 &mdash; Inventory Intelligence</div>
                 <div class="feat-title">Direct your staff toward the right products &mdash; silently.</div>
-                <div class="feat-text">Attach manager notes to any product: overstock, high margin, brand promo. Those notes surface on the recommendation card in a distinct color &mdash; giving budtenders the context they need without a meeting.</div>
+                <div class="feat-text">Attach manager notes to any product: overstock, high margin, brand promo. Notes appear inline on the recommendation card &mdash; giving budtenders context without a meeting.</div>
                 <ul class="feat-items">
-                    <li>Notes appear inline, right on the recommendation card</li>
-                    <li>Push slow-moving inventory without telling your staff what to say</li>
-                    <li>Change notes anytime &mdash; updates instantly across all devices</li>
-                    <li>Works for promos, upsells, and floor priorities</li>
+                    <li>Push slow-moving inventory without scripting what your staff should say</li>
+                    <li>Update notes anytime &mdash; reflects instantly across all devices</li>
                 </ul>
             </div>
             <div class="feat">
                 <div class="feat-tag">03 &mdash; Built-In Upsells</div>
                 <div class="feat-title">Every recommendation comes with a basket-size prompt.</div>
-                <div class="feat-text">Each effect category surfaces a curated upsell suggestion &mdash; based on what actually gets added to carts in that context. Not a generic "anything else?" &mdash; a specific, credible prompt.</div>
+                <div class="feat-text">Each effect category surfaces a curated upsell &mdash; based on what actually gets added to carts in that context. Not a generic &ldquo;anything else?&rdquo; &mdash; a specific, credible prompt.</div>
                 <ul class="feat-items">
                     <li>Sleep customers get prompted toward gummies for longer duration</li>
-                    <li>Relax customers get prompted toward lighter edibles</li>
-                    <li>Relief customers get prompted toward topicals</li>
                     <li>Beginners get prompted toward 2.5mg controlled-dose options</li>
                 </ul>
             </div>
             <div class="feat">
                 <div class="feat-tag">04 &mdash; Zero Friction Setup</div>
                 <div class="feat-title">No training. No integration. Works on any device.</div>
-                <div class="feat-text">Cannascope lives in the browser. Your team opens a link &mdash; that's it. No app download, no login for budtenders, no API connection to your POS. You update inventory by uploading a CSV.</div>
+                <div class="feat-text">Cannascope lives in the browser. Your team opens a link &mdash; that&rsquo;s it. No app download, no login for budtenders, no API connection to your POS.</div>
                 <ul class="feat-items">
                     <li>Any phone, tablet, or computer &mdash; no hardware required</li>
                     <li>Update inventory anytime with a fresh CSV upload</li>
-                    <li>Instant onboarding &mdash; if they can use a phone, they can use this</li>
-                    <li>One link, shareable to any number of budtenders</li>
                 </ul>
             </div>
         </div>
     </div>
 </section>
 
-<!-- -- CHEMISTRY -- -->
+<!-- CHEMISTRY -->
 <section class="chem-section">
     <div class="container">
         <div class="chem-inner">
             <div>
                 <div class="s-tag">The Science</div>
-                <h2>Recommendations built on actual chemistry.</h2>
-                <p class="s-sub" style="margin-bottom:0;">Most tools tag products as "indica" or "sativa." That's not science &mdash; it's a label. Cannascope reads the full chemical fingerprint of every product and matches it to what your customer actually needs.</p>
+                <h2>Built on actual chemistry.</h2>
+                <p class="s-sub" style="margin-bottom:0;">Most tools tag products as &ldquo;indica&rdquo; or &ldquo;sativa.&rdquo; That&rsquo;s a label, not science. Cannascope reads the full chemical fingerprint of every product and matches it to what your customer needs.</p>
                 <div class="chem-pills">
                     <span class="chem-pill active">17 terpenes</span>
                     <span class="chem-pill active">12 synergy pairs</span>
@@ -818,7 +872,7 @@
     </div>
 </section>
 
-<!-- -- PRICING -- -->
+<!-- PRICING -->
 <section id="pricing">
     <div class="container" style="text-align:center;">
         <div class="s-tag">Pricing</div>
@@ -841,20 +895,64 @@
             <a href="cannascope-login.html?signup=1" class="price-btn">Start 14-day free trial</a>
             <div class="price-note">No contract. Cancel anytime. Setup in 3 minutes.</div>
         </div>
-        <div class="roi-strip">
-            <div class="roi-left">
-                <h3>If one budtender adds one $15 upsell per shift</h3>
-                <p>A five-person floor running 6 days a week generates $23,400 in added annual revenue &mdash; from a single systematic prompt per transaction. Cannascope costs $2,388 per year.</p>
+
+        <!-- ROI CALCULATOR -->
+        <div class="roi-calc">
+            <div class="roi-calc-header">
+                <div class="roi-calc-title">Revenue Maximizer &mdash; see what Cannascope pays for itself</div>
+                <div class="roi-calc-sub">Adjust the inputs to match your floor. Numbers update live.</div>
             </div>
-            <div class="roi-number">
-                <span class="big">9.8&times;</span>
-                <span class="label">estimated ROI</span>
+            <div class="roi-body">
+                <div class="roi-inputs">
+                    <div class="roi-input-group">
+                        <div class="roi-input-label">
+                            Budtenders on floor
+                            <em id="lbl-staff">5</em>
+                        </div>
+                        <input type="range" id="roi-staff" min="1" max="20" value="5" oninput="calcROI()">
+                    </div>
+                    <div class="roi-input-group">
+                        <div class="roi-input-label">
+                            Days open per week
+                            <em id="lbl-days">6</em>
+                        </div>
+                        <input type="range" id="roi-days" min="1" max="7" value="6" oninput="calcROI()">
+                    </div>
+                    <div class="roi-input-group">
+                        <div class="roi-input-label">
+                            Average upsell value
+                        </div>
+                        <div class="roi-dollar-wrap">
+                            <span class="roi-dollar-sign">$</span>
+                            <input type="number" id="roi-upsell" min="1" max="200" value="15" oninput="calcROI()">
+                        </div>
+                    </div>
+                </div>
+                <div class="roi-outputs">
+                    <div class="roi-out-item">
+                        <div class="roi-out-label">Added annual revenue</div>
+                        <div class="roi-out-val green" id="out-revenue">$23,400</div>
+                    </div>
+                    <div class="roi-out-item">
+                        <div class="roi-out-label">Cannascope annual cost</div>
+                        <div class="roi-out-val dim">$2,388</div>
+                    </div>
+                    <div class="roi-out-item">
+                        <div class="roi-out-label">Estimated ROI</div>
+                        <div class="roi-out-val" id="out-roi">9.8&times;</div>
+                    </div>
+                    <div class="roi-out-item">
+                        <div class="roi-out-label">Pays for itself in</div>
+                        <div class="roi-out-val dim" id="out-payback">37 days</div>
+                    </div>
+                </div>
             </div>
+            <div class="roi-footnote">One systematic upsell prompt per transaction &mdash; no scripts, no pressure. Just a cue.</div>
         </div>
     </div>
 </section>
 
-<!-- -- CTA -- -->
+<!-- CTA -->
 <section class="cta-section" style="border-top:1px solid var(--border);background:var(--surface);">
     <div class="container">
         <div class="s-tag" style="display:inline-block;margin-bottom:16px;">Get Started</div>
@@ -864,7 +962,7 @@
     </div>
 </section>
 
-<!-- -- FOOTER -- -->
+<!-- FOOTER -->
 <footer>
     <div class="footer-inner">
         <span class="footer-logo">Cannascope</span>
@@ -877,5 +975,34 @@
     </div>
 </footer>
 
+<script>
+function calcROI() {
+    var staff = parseInt(document.getElementById('roi-staff').value) || 1;
+    var days = parseInt(document.getElementById('roi-days').value) || 1;
+    var upsell = parseFloat(document.getElementById('roi-upsell').value) || 0;
+
+    document.getElementById('lbl-staff').textContent = staff;
+    document.getElementById('lbl-days').textContent = days;
+
+    var annualRevenue = staff * days * 52 * upsell;
+    var annualCost = 199 * 12;
+    var roi = upsell > 0 ? annualRevenue / annualCost : 0;
+    var dailyRevenue = staff * days * upsell / 7;
+    var paybackDays = dailyRevenue > 0 ? Math.ceil(annualCost / dailyRevenue) : 0;
+
+    document.getElementById('out-revenue').textContent = '$' + Math.round(annualRevenue).toLocaleString();
+    document.getElementById('out-roi').textContent = roi > 0 ? roi.toFixed(1) + '\u00d7' : '\u2014';
+
+    if (paybackDays >= 365) {
+        var paybackMonths = Math.ceil(paybackDays / 30);
+        document.getElementById('out-payback').textContent = paybackMonths + ' months';
+    } else if (paybackDays > 0) {
+        document.getElementById('out-payback').textContent = paybackDays + ' days';
+    } else {
+        document.getElementById('out-payback').textContent = '\u2014';
+    }
+}
+calcROI();
+</script>
 </body>
 </html>
