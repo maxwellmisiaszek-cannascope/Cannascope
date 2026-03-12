@@ -3,237 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cannascope — Admin</title>
+    <title>Cannascope &mdash; Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        * { margin:0; padding:0; box-sizing:border-box; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         :root {
-            --green:#10b981; --green-dim:rgba(16,185,129,0.10);
-            --bg:#080808; --surface:#111111; --surface-2:#181818;
-            --border:#1e1e1e; --border-2:#282828;
-            --text:#f0f0f0; --text-2:#909090; --text-3:#505050;
-            --danger:#ef4444; --warning:#f59e0b;
+            --green:#10b981; --green-dim:rgba(16,185,129,0.08); --green-mid:rgba(16,185,129,0.15);
+            --bg:#070709; --bg-2:#0c0c10; --surface:#111116; --surface-2:#17171d; --surface-3:#1e1e26;
+            --border:#1c1c24; --border-2:#242430;
+            --text:#ededf0; --text-2:#8888a0; --text-3:#484860;
+            --danger:#f04444; --danger-dim:rgba(240,68,68,0.08);
+            --warning:#f59e0b; --warning-dim:rgba(245,158,11,0.08);
+            --radius:10px; --radius-sm:6px;
         }
-        html,body { min-height:100%; font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
-        .header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-        .wordmark { font-size:12px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--green); }
-        .wordmark span { color:var(--text-3); font-weight:500; margin-left:10px; font-size:11px; letter-spacing:0.04em; }
-        .header-right { display:flex; align-items:center; gap:12px; }
-        .org-name { font-size:12px; color:var(--text-3); }
-        .nav-links { display:flex; gap:6px; }
-        .nav-link { padding:6px 13px; border-radius:5px; font-size:12px; font-weight:600; text-decoration:none; cursor:pointer; border:1px solid var(--border-2); color:var(--text-2); transition:border-color 0.15s, color 0.15s; letter-spacing:0.02em; }
-        .nav-link:hover { border-color:var(--green); color:var(--green); }
-        .nav-link.active { background:var(--green); color:#000; border-color:var(--green); }
-        .signout { padding:6px 13px; border-radius:5px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border-2); color:var(--text-3); background:none; font-family:inherit; transition:border-color 0.15s, color 0.15s; }
-        .signout:hover { border-color:var(--danger); color:#f87171; }
-        .main { max-width:1160px; margin:0 auto; padding:32px 24px 80px; }
+        html,body { min-height:100%; font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; font-size:14px; }
 
-        /* ── CHEAT SHEET LINK BANNER ── */
-        .share-banner { background:var(--surface); border:1px solid var(--border-2); border-radius:8px; padding:14px 20px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-        .share-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); margin-bottom:4px; }
-        .share-url { font-size:13px; color:var(--green); font-weight:500; word-break:break-all; }
-        .copy-btn { padding:7px 14px; background:var(--green-dim); border:1px solid rgba(16,185,129,0.2); color:var(--green); border-radius:4px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; transition:background 0.15s; }
-        .copy-btn:hover { background:rgba(16,185,129,0.18); }
+        /* HEADER */
+        .header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 32px; height:52px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:200; }
+        .header-left { display:flex; align-items:center; gap:16px; }
+        .logo { display:flex; align-items:center; gap:9px; text-decoration:none; }
+        .logo-mark { width:26px; height:26px; border-radius:6px; background:linear-gradient(135deg,#10b981 0%,#059669 100%); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; color:#000; flex-shrink:0; letter-spacing:-0.03em; }
+        .logo-name { font-size:13px; font-weight:700; color:var(--text); letter-spacing:0.01em; }
+        .logo-badge { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:2px 7px; border-radius:4px; background:var(--surface-3); border:1px solid var(--border-2); color:var(--text-3); }
+        .header-org { font-size:12px; color:var(--text-3); font-weight:500; }
+        .header-right { display:flex; align-items:center; gap:8px; }
+        .hbtn { height:30px; padding:0 12px; border-radius:5px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border-2); color:var(--text-2); background:transparent; font-family:inherit; transition:all 0.15s; white-space:nowrap; display:inline-flex; align-items:center; gap:5px; text-decoration:none; }
+        .hbtn:hover { border-color:var(--green); color:var(--green); }
+        .hbtn-danger:hover { border-color:var(--danger); color:#f87171; }
 
-        /* ── STATS ── */
+        /* TABS */
+        .tab-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:0 32px; display:flex; }
+        .tab-btn { padding:0 18px; height:42px; display:inline-flex; align-items:center; font-size:13px; font-weight:600; color:var(--text-3); cursor:pointer; border:none; background:none; font-family:inherit; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 0.15s,border-color 0.15s; }
+        .tab-btn:hover { color:var(--text-2); }
+        .tab-btn.active { color:var(--text); border-bottom-color:var(--green); }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+
+        .page { max-width:1280px; margin:0 auto; padding:28px 32px 80px; }
+
+        /* SHARE BANNER */
+        .share-banner { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius); padding:14px 20px; margin-bottom:24px; }
+        .share-inner { display:flex; align-items:center; gap:12px; min-width:0; }
+        .share-dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; box-shadow:0 0 7px rgba(16,185,129,0.5); }
+        .share-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.10em; color:var(--text-3); margin-bottom:3px; }
+        .share-url { font-size:12px; color:var(--green); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:480px; }
+        .copy-btn { height:30px; padding:0 14px; background:var(--green-dim); border:1px solid rgba(16,185,129,0.18); color:var(--green); border-radius:5px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; transition:background 0.15s; flex-shrink:0; }
+        .copy-btn:hover { background:var(--green-mid); }
+
+        /* STATS */
         .stats-row { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:28px; }
-        .stat { background:var(--surface); border:1px solid var(--border-2); border-radius:8px; padding:18px 16px; }
-        .stat-val { font-size:26px; font-weight:800; color:var(--green); letter-spacing:-0.02em; line-height:1; margin-bottom:5px; }
-        .stat-val.warn { color:var(--warning); }
+        .stat { background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius); padding:20px 18px; position:relative; overflow:hidden; }
+        .stat-accent { position:absolute; top:0; left:0; right:0; height:2px; }
+        .stat-val { font-size:30px; font-weight:800; letter-spacing:-0.03em; line-height:1; margin-bottom:6px; color:var(--text); }
+        .stat-val.green  { color:var(--green); }
+        .stat-val.warn   { color:var(--warning); }
         .stat-val.danger { color:var(--danger); }
-        .stat-lbl { font-size:11px; font-weight:600; color:var(--text-3); letter-spacing:0.07em; text-transform:uppercase; }
+        .stat-val.muted  { color:var(--text-2); }
+        .stat-lbl { font-size:11px; font-weight:600; color:var(--text-3); letter-spacing:0.05em; text-transform:uppercase; }
+        .stat-sub { font-size:10px; color:var(--text-3); margin-top:4px; }
+        .stat-bar { margin-top:10px; height:3px; background:var(--border-2); border-radius:2px; overflow:hidden; }
+        .stat-bar-fill { height:100%; background:var(--green); border-radius:2px; transition:width 0.5s ease; }
 
-        /* ── TOOLBAR ── */
-        .toolbar { display:flex; gap:8px; margin-bottom:20px; align-items:center; flex-wrap:wrap; }
-        .search { flex:1; min-width:200px; padding:10px 14px; background:var(--surface); border:1px solid var(--border-2); border-radius:6px; color:var(--text); font-size:13px; font-family:inherit; }
-        .search:focus { outline:none; border-color:var(--green); }
-        .flt { padding:10px 14px; background:var(--surface); border:1px solid var(--border-2); border-radius:6px; color:var(--text); font-size:13px; font-family:inherit; cursor:pointer; }
-        .flt:focus { outline:none; border-color:var(--green); }
-        .btn { padding:10px 18px; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; letter-spacing:0.03em; white-space:nowrap; transition:opacity 0.15s; }
+        /* TOOLBAR */
+        .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:16px; flex-wrap:wrap; }
+        .section-title { font-size:11px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; }
+        .section-count { font-size:12px; color:var(--text-3); font-weight:500; }
+        .toolbar { display:flex; gap:8px; margin-bottom:16px; align-items:center; flex-wrap:wrap; }
+        .search-wrap { flex:1; min-width:180px; position:relative; }
+        .search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text-3); pointer-events:none; }
+        .search { width:100%; padding:9px 12px 9px 34px; background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius-sm); color:var(--text); font-size:13px; font-family:inherit; }
+        .search::placeholder { color:var(--text-3); }
+        .search:focus { outline:none; border-color:rgba(16,185,129,0.4); background:var(--surface-2); }
+        .flt { padding:9px 12px; background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius-sm); color:var(--text); font-size:13px; font-family:inherit; cursor:pointer; }
+        .flt:focus { outline:none; border-color:rgba(16,185,129,0.4); }
+        option { background:var(--surface); }
+        .btn { height:36px; padding:0 16px; border:none; border-radius:var(--radius-sm); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
         .btn-primary { background:var(--green); color:#000; }
-        .btn-primary:hover { opacity:0.87; }
+        .btn-primary:hover { background:#0ea572; }
         .btn-ghost { background:var(--surface); border:1px solid var(--border-2); color:var(--text-2); }
-        .btn-ghost:hover { border-color:var(--green); color:var(--green); }
-        .btn-dg { background:transparent; border:1px solid rgba(239,68,68,0.3); color:#f87171; }
-        .btn-dg:hover { border-color:var(--danger); background:rgba(239,68,68,0.06); }
-        .btn-sm { padding:5px 11px; font-size:11px; }
+        .btn-ghost:hover { border-color:rgba(16,185,129,0.35); color:var(--green); }
+        .btn-danger { background:transparent; border:1px solid rgba(240,68,68,0.25); color:#f87171; }
+        .btn-danger:hover { border-color:var(--danger); background:var(--danger-dim); }
+        .btn-sm { height:28px; padding:0 11px; font-size:11px; font-weight:600; }
 
-        .sec-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px; }
-        .sec-title { font-size:15px; font-weight:700; }
-        .sec-count { font-size:12px; color:var(--text-3); }
-
-        /* ── TABLE ── */
-        .tbl-wrap { background:var(--surface); border:1px solid var(--border-2); border-radius:10px; overflow:hidden; }
+        /* TABLE */
+        .tbl-card { background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius); overflow:hidden; }
         table { width:100%; border-collapse:collapse; }
-        thead tr { background:var(--bg); }
-        th { padding:12px 16px; text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-3); font-weight:700; white-space:nowrap; }
-        td { padding:13px 16px; border-top:1px solid var(--border); vertical-align:middle; }
-        tbody tr:hover td { background:rgba(255,255,255,0.015); }
-        .p-name { font-size:14px; font-weight:700; }
-        .p-brand { font-size:11px; color:var(--text-3); margin-top:2px; }
-        .eff { display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
-        .eff-sleep    { background:rgba(99,102,241,0.15);  color:#a5b4fc; }
-        .eff-relax    { background:rgba(16,185,129,0.13);  color:#6ee7b7; }
-        .eff-focus    { background:rgba(245,158,11,0.15);  color:#fcd34d; }
-        .eff-social   { background:rgba(236,72,153,0.13);  color:#f9a8d4; }
-        .eff-relief   { background:rgba(239,68,68,0.13);   color:#fca5a5; }
-        .eff-beginner { background:rgba(156,163,175,0.13); color:#9ca3af; }
-        .dot-row { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; }
-        .dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
-        .dot-g { background:var(--green); } .dot-w { background:var(--warning); }
-        .toggle-wrap { display:flex; align-items:center; gap:7px; cursor:pointer; }
-        .ttrack { width:34px; height:18px; border-radius:9px; background:var(--border-2); position:relative; transition:background 0.2s; flex-shrink:0; }
-        .ttrack.on { background:var(--green); }
-        .tthumb { width:12px; height:12px; background:#fff; border-radius:50%; position:absolute; top:3px; left:3px; transition:transform 0.2s; }
-        .ttrack.on .tthumb { transform:translateX(16px); }
+        thead tr { background:var(--bg-2); }
+        th { padding:10px 16px; text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.10em; color:var(--text-3); font-weight:700; white-space:nowrap; cursor:pointer; user-select:none; border-bottom:1px solid var(--border); }
+        th.no-sort { cursor:default; }
+        th.no-sort:hover { color:var(--text-3); }
+        th:hover { color:var(--text-2); }
+        th.sort-asc::after  { content:' 91'; color:var(--green); }
+        th.sort-desc::after { content:' 93'; color:var(--green); }
+        td { padding:13px 16px; border-top:1px solid var(--border); vertical-align:middle; font-size:13px; }
+        tbody tr { transition:background 0.1s; }
+        tbody tr:hover td { background:rgba(255,255,255,0.018); }
+        .cell-name-wrap { display:flex; align-items:center; gap:0; }
+        .cell-stock-bar { width:3px; height:34px; border-radius:2px; margin-right:12px; flex-shrink:0; }
+        .cell-name .pname { font-size:13px; font-weight:600; color:var(--text); }
+        .cell-name .pbrand { font-size:11px; color:var(--text-3); margin-top:2px; font-weight:500; }
+        .pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.03em; text-transform:capitalize; }
+        .pill-sleep    { background:rgba(99,102,241,0.12);  color:#a5b4fc; border:1px solid rgba(99,102,241,0.2); }
+        .pill-relax    { background:rgba(16,185,129,0.10);  color:#6ee7b7; border:1px solid rgba(16,185,129,0.18); }
+        .pill-focus    { background:rgba(245,158,11,0.12);  color:#fcd34d; border:1px solid rgba(245,158,11,0.2); }
+        .pill-social   { background:rgba(236,72,153,0.10);  color:#f9a8d4; border:1px solid rgba(236,72,153,0.18); }
+        .pill-relief   { background:rgba(240,68,68,0.10);   color:#fca5a5; border:1px solid rgba(240,68,68,0.18); }
+        .pill-beginner { background:rgba(156,163,175,0.10); color:#9ca3af; border:1px solid rgba(156,163,175,0.18); }
+        .pill-cat      { background:var(--surface-3); color:var(--text-2); border:1px solid var(--border-2); font-weight:600; }
+        .script-ready   { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--green); }
+        .script-missing { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--warning); }
+        .script-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+        .script-dot-g { background:var(--green); }
+        .script-dot-w { background:var(--warning); }
+        .toggle-wrap { display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
+        .ttrack { width:32px; height:17px; border-radius:9px; background:var(--surface-3); position:relative; transition:background 0.2s; flex-shrink:0; border:1px solid var(--border-2); }
+        .ttrack.on { background:var(--green); border-color:transparent; }
+        .tthumb { width:11px; height:11px; background:#fff; border-radius:50%; position:absolute; top:2px; left:2px; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+        .ttrack.on .tthumb { transform:translateX(15px); }
         .tlabel { font-size:11px; font-weight:600; color:var(--text-3); }
         .tlabel.on { color:var(--green); }
-        .acts { display:flex; gap:5px; }
-        .empty { text-align:center; padding:72px 20px; color:var(--text-3); }
-        .empty-title { font-size:16px; font-weight:600; margin-bottom:6px; color:var(--text-2); }
-        .empty-sub { font-size:13px; margin-bottom:24px; }
+        .row-actions { display:flex; gap:5px; opacity:0; transition:opacity 0.15s; }
+        tbody tr:hover .row-actions { opacity:1; }
+        .mnote { display:block; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; font-weight:500; color:var(--warning); }
+        .empty-state { text-align:center; padding:72px 20px; }
+        .empty-state-icon { font-size:36px; margin-bottom:14px; }
+        .empty-state-title { font-size:15px; font-weight:700; color:var(--text-2); margin-bottom:6px; }
+        .empty-state-sub { font-size:13px; color:var(--text-3); margin-bottom:22px; line-height:1.6; }
 
-        /* ── MODAL ── */
-        .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; align-items:center; justify-content:center; padding:24px; }
+        /* ANALYTICS */
+        .a-stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
+        .a-stat { background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius); padding:18px 20px; }
+        .a-stat-val { font-size:28px; font-weight:800; letter-spacing:-0.03em; color:var(--green); margin-bottom:5px; }
+        .a-stat-lbl { font-size:10px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; }
+        .analytics-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+        .card { background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius); padding:22px 24px; }
+        .card-title { font-size:10px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.10em; margin-bottom:18px; }
+        .eff-chart { display:flex; flex-direction:column; gap:11px; }
+        .eff-row { display:flex; align-items:center; gap:10px; }
+        .eff-row-label { font-size:12px; font-weight:600; width:60px; flex-shrink:0; color:var(--text-2); text-transform:capitalize; }
+        .eff-row-bar-wrap { flex:1; height:6px; background:var(--surface-3); border-radius:3px; overflow:hidden; }
+        .eff-row-bar { height:100%; border-radius:3px; min-width:2px; transition:width 0.7s cubic-bezier(0.16,1,0.3,1); }
+        .eff-row-count { width:28px; text-align:right; font-size:12px; font-weight:700; color:var(--text-2); flex-shrink:0; }
+        .bar-sleep    { background:#818cf8; }
+        .bar-relax    { background:var(--green); }
+        .bar-focus    { background:var(--warning); }
+        .bar-social   { background:#f472b6; }
+        .bar-relief   { background:#f87171; }
+        .bar-beginner { background:#9ca3af; }
+        .top-list { display:flex; flex-direction:column; }
+        .top-row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
+        .top-row:last-child { border-bottom:none; }
+        .top-rank { font-size:11px; font-weight:800; color:var(--text-3); width:18px; flex-shrink:0; }
+        .top-info { flex:1; min-width:0; }
+        .top-name { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .top-meta { font-size:11px; color:var(--text-3); margin-top:2px; }
+        .top-count { font-size:13px; font-weight:700; color:var(--green); flex-shrink:0; }
+        .feed { display:flex; flex-direction:column; }
+        .feed-row { display:flex; align-items:center; gap:14px; padding:11px 0; border-bottom:1px solid var(--border); }
+        .feed-row:last-child { border-bottom:none; }
+        .feed-time { font-size:11px; color:var(--text-3); width:72px; flex-shrink:0; }
+        .feed-body { flex:1; font-size:12px; color:var(--text-2); }
+        .feed-body strong { color:var(--text); font-weight:600; }
+        .no-data { text-align:center; padding:44px 20px; }
+        .no-data-title { font-size:14px; font-weight:600; color:var(--text-2); margin-bottom:8px; }
+        .no-data-sub { font-size:12px; color:var(--text-3); line-height:1.7; max-width:360px; margin:0 auto; }
+
+        /* MODALS */
+        .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(4px); z-index:300; align-items:center; justify-content:center; padding:24px; }
         .overlay.open { display:flex; }
-        .modal { background:var(--surface); border:1px solid var(--border-2); border-radius:12px; width:100%; max-width:580px; max-height:90vh; overflow-y:auto; }
-        .modal.sm { max-width:380px; }
-        .mhead { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
-        .mtitle { font-size:17px; font-weight:800; }
-        .mclose { width:28px; height:28px; background:var(--bg); border:1px solid var(--border-2); border-radius:5px; color:var(--text-2); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-        .mbody { padding:22px 24px; }
-        .mfoot { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
-        .fg { margin-bottom:16px; }
-        .fl { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); margin-bottom:6px; }
-        .fi, .fs, .ft { width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--border-2); border-radius:5px; color:var(--text); font-size:13px; font-family:inherit; }
-        .fi:focus, .fs:focus, .ft:focus { outline:none; border-color:var(--green); }
-        .ft { min-height:110px; resize:vertical; line-height:1.65; }
-        .frow { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-        .gen-btn { margin-top:7px; padding:7px 13px; background:var(--green-dim); border:1px solid rgba(16,185,129,0.2); color:var(--green); border-radius:4px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.15s; }
-        .gen-btn:hover { background:rgba(16,185,129,0.18); }
-        .del-name { font-size:16px; font-weight:700; margin:6px 0 10px; }
-        .del-sub { font-size:13px; color:var(--text-3); }
+        .modal { background:var(--surface); border:1px solid var(--border-2); border-radius:14px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.5); }
+        .modal.sm { max-width:400px; }
+        .mhead { padding:22px 24px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:linear-gradient(180deg,var(--surface-2) 0%,var(--surface) 100%); border-radius:14px 14px 0 0; }
+        .mtitle { font-size:16px; font-weight:800; letter-spacing:-0.01em; }
+        .mclose { width:28px; height:28px; background:var(--surface-3); border:1px solid var(--border-2); border-radius:6px; color:var(--text-3); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:inherit; transition:all 0.15s; }
+        .mclose:hover { color:var(--text); border-color:var(--text-3); }
+        .mbody { padding:24px; }
+        .section-sep { height:1px; background:var(--border); margin:20px 0; }
+        .mfoot { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; background:var(--bg-2); border-radius:0 0 14px 14px; }
+        .fg { margin-bottom:14px; }
+        .fg:last-child { margin-bottom:0; }
+        .fl { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); margin-bottom:6px; }
+        .fl-opt { font-weight:400; text-transform:none; letter-spacing:0; color:var(--text-3); margin-left:4px; font-size:10px; }
+        .fi, .fs, .fta { width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border-2); border-radius:var(--radius-sm); color:var(--text); font-size:13px; font-family:inherit; transition:border-color 0.15s; }
+        .fi:focus, .fs:focus, .fta:focus { outline:none; border-color:rgba(16,185,129,0.4); background:var(--bg-2); }
+        .fi::placeholder, .fta::placeholder { color:var(--text-3); }
+        .fta { min-height:100px; resize:vertical; line-height:1.6; }
+        .frow { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .gen-btn { margin-top:8px; height:28px; padding:0 12px; background:var(--green-dim); border:1px solid rgba(16,185,129,0.15); color:var(--green); border-radius:5px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.15s; display:inline-flex; align-items:center; gap:5px; }
+        .gen-btn:hover { background:var(--green-mid); }
+        .field-hint { font-size:11px; color:var(--text-3); margin-top:6px; line-height:1.5; }
+        .del-name { font-size:15px; font-weight:700; margin:8px 0 10px; }
+        .del-sub { font-size:13px; color:var(--text-3); line-height:1.65; }
 
-        /* ── TOAST ── */
-        .toast { position:fixed; bottom:20px; right:20px; background:var(--surface); border:1px solid var(--green); color:var(--green); padding:12px 18px; border-radius:7px; font-size:13px; font-weight:600; z-index:999; transform:translateY(80px); opacity:0; transition:all 0.25s; }
+        /* TOAST */
+        .toast { position:fixed; bottom:22px; right:22px; background:var(--surface-2); border:1px solid var(--border-2); color:var(--text); padding:11px 16px; border-radius:8px; font-size:13px; font-weight:600; z-index:999; transform:translateY(60px); opacity:0; pointer-events:none; transition:all 0.22s cubic-bezier(0.16,1,0.3,1); display:flex; align-items:center; gap:8px; box-shadow:0 8px 24px rgba(0,0,0,0.4); }
         .toast.show { transform:translateY(0); opacity:1; }
+        .toast-dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; }
+        .toast.err .toast-dot { background:var(--danger); }
 
-        @media (max-width:860px) { .stats-row { grid-template-columns:repeat(3,1fr); } }
-        @media (max-width:580px) { .stats-row { grid-template-columns:repeat(2,1fr); } .frow { grid-template-columns:1fr; } }
+        /* RESPONSIVE */
+        @media (max-width:960px) { .stats-row { grid-template-columns:repeat(3,1fr); } .analytics-grid { grid-template-columns:1fr; } .a-stats-row { grid-template-columns:repeat(2,1fr); } }
+        @media (max-width:640px) { .stats-row { grid-template-columns:repeat(2,1fr); } .frow { grid-template-columns:1fr; } .page { padding:16px 16px 60px; } .header,.tab-bar { padding:0 16px; } }
     </style>
 </head>
 <body>
 
-<!-- ── CONFIG — replace with your Supabase values ───────────── -->
+<!-- CONFIG -->
 <script>
 const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
 </script>
-<!-- ─────────────────────────────────────────────────────────── -->
 
-<div class="header">
-    <div class="wordmark">Cannascope <span>Admin</span></div>
-    <div class="header-right">
-        <span class="org-name" id="orgName"></span>
-        <div class="nav-links">
-            <a class="nav-link active">Admin</a>
-            <a class="nav-link" href="cannascope-onboarding.html">Import</a>
-            <a class="nav-link" id="budtenderViewBtn" href="cannascope-cheatsheet-v2.html" target="_blank" style="display:none">Budtender View ↗</a>
-        </div>
-        <button class="signout" onclick="signOut()">Sign Out</button>
+<header class="header">
+    <div class="header-left">
+        <a class="logo" href="#">
+            <div class="logo-mark">CS</div>
+            <span class="logo-name">Cannascope</span>
+        </a>
+        <span class="logo-badge">Admin</span>
+        <span class="header-org" id="orgName"></span>
     </div>
-</div>
+    <div class="header-right">
+        <a class="hbtn" id="budtenderViewBtn" href="cannascope-cheatsheet-v2.html" target="_blank" style="display:none">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Budtender View
+        </a>
+        <button class="hbtn hbtn-danger" onclick="signOut()">Sign Out</button>
+    </div>
+</header>
 
-<div class="main">
+<nav class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('inventory')">Inventory</button>
+    <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
+</nav>
+
+<div class="page">
+
     <div class="share-banner" id="shareBanner" style="display:none">
-        <div>
-            <div class="share-label">Budtender Cheat Sheet URL</div>
-            <div class="share-url" id="shareUrl"></div>
+        <div class="share-inner">
+            <div class="share-dot"></div>
+            <div>
+                <div class="share-label">Budtender Cheat Sheet &mdash; share this link with your floor staff</div>
+                <div class="share-url" id="shareUrl"></div>
+            </div>
         </div>
         <button class="copy-btn" onclick="copyLink()">Copy Link</button>
     </div>
 
-    <div class="stats-row">
-        <div class="stat"><div class="stat-val" id="stTotal">—</div><div class="stat-lbl">Total Products</div></div>
-        <div class="stat"><div class="stat-val" id="stIn">—</div><div class="stat-lbl">In Stock</div></div>
-        <div class="stat"><div class="stat-val danger" id="stOut">—</div><div class="stat-lbl">Out of Stock</div></div>
-        <div class="stat"><div class="stat-val warn" id="stMiss">—</div><div class="stat-lbl">Missing Scripts</div></div>
-        <div class="stat"><div class="stat-val" id="stCats">—</div><div class="stat-lbl">Categories</div></div>
-    </div>
+    <!-- TAB: INVENTORY -->
+    <div class="tab-panel active" id="tab-inventory">
 
-    <div class="toolbar">
-        <input class="search" id="searchQ" type="text" placeholder="Search products…" oninput="renderTable()">
-        <select class="flt" id="fxEff" onchange="renderTable()">
-            <option value="">All Effects</option>
-            <option value="sleep">Sleep</option><option value="relax">Relax</option>
-            <option value="focus">Focus</option><option value="social">Social</option>
-            <option value="relief">Relief</option><option value="beginner">Beginner</option>
-        </select>
-        <select class="flt" id="fxStock" onchange="renderTable()">
-            <option value="">All Stock</option>
-            <option value="in">In Stock</option><option value="out">Out of Stock</option>
-        </select>
-        <button class="btn btn-ghost" onclick="autoScripts()">Generate All Scripts</button>
-        <button class="btn btn-primary" onclick="openAdd()">+ Add Product</button>
-    </div>
-
-    <div class="sec-head">
-        <div class="sec-title">Products</div>
-        <div class="sec-count" id="secCount"></div>
-    </div>
-
-    <div class="tbl-wrap">
-        <table><thead>
-            <tr>
-                <th>Product</th><th>Category</th><th>THC</th><th>Price</th><th>Shelf</th>
-                <th>Effect</th><th>Script</th><th>Manager Note</th><th>Stock</th><th></th>
-            </tr>
-        </thead><tbody id="tBody"></tbody></table>
-        <div id="emptyState" class="empty" style="display:none">
-            <div class="empty-title">No products yet</div>
-            <div class="empty-sub">Import your inventory to get started</div>
-            <button class="btn btn-primary" onclick="location.href='cannascope-onboarding.html'">Import Inventory</button>
+        <div class="stats-row">
+            <div class="stat">
+                <div class="stat-accent" style="background:var(--green)"></div>
+                <div class="stat-val green" id="stTotal">&mdash;</div>
+                <div class="stat-lbl">Total Products</div>
+            </div>
+            <div class="stat">
+                <div class="stat-accent" style="background:var(--green)"></div>
+                <div class="stat-val" id="stIn">&mdash;</div>
+                <div class="stat-lbl">In Stock</div>
+                <div class="stat-bar"><div class="stat-bar-fill" id="stInBar" style="width:0%"></div></div>
+            </div>
+            <div class="stat">
+                <div class="stat-accent" style="background:var(--danger)"></div>
+                <div class="stat-val danger" id="stOut">&mdash;</div>
+                <div class="stat-lbl">Out of Stock</div>
+            </div>
+            <div class="stat">
+                <div class="stat-accent" style="background:var(--warning)"></div>
+                <div class="stat-val warn" id="stMiss">&mdash;</div>
+                <div class="stat-lbl">Missing Scripts</div>
+                <div class="stat-sub">need talking points</div>
+            </div>
+            <div class="stat">
+                <div class="stat-accent" style="background:var(--border-2)"></div>
+                <div class="stat-val muted" id="stVal">&mdash;</div>
+                <div class="stat-lbl">Avg In-Stock Price</div>
+            </div>
         </div>
+
+        <div class="toolbar">
+            <div class="search-wrap">
+                <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="search" id="searchQ" type="text" placeholder="Search products, brands&hellip;" oninput="renderTable()">
+            </div>
+            <select class="flt" id="fxEff" onchange="renderTable()">
+                <option value="">All Effects</option>
+                <option value="sleep">Sleep</option><option value="relax">Relax</option>
+                <option value="focus">Focus</option><option value="social">Social</option>
+                <option value="relief">Relief</option><option value="beginner">Beginner</option>
+            </select>
+            <select class="flt" id="fxCat" onchange="renderTable()">
+                <option value="">All Categories</option>
+                <option value="flower">Flower</option><option value="vape">Vape</option>
+                <option value="edible">Edible</option><option value="concentrate">Concentrate</option>
+                <option value="tincture">Tincture</option><option value="topical">Topical</option>
+                <option value="preroll">Pre-Roll</option>
+            </select>
+            <select class="flt" id="fxStock" onchange="renderTable()">
+                <option value="">All Stock</option>
+                <option value="in">In Stock</option><option value="out">Out of Stock</option>
+            </select>
+            <button class="btn btn-ghost" onclick="exportCSV()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export
+            </button>
+            <button class="btn btn-ghost" onclick="autoScripts()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                Generate Scripts
+            </button>
+            <button class="btn btn-primary" onclick="openAdd()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Product
+            </button>
+        </div>
+
+        <div class="section-header">
+            <span class="section-title">Products</span>
+            <span class="section-count" id="secCount"></span>
+        </div>
+
+        <div class="tbl-card">
+            <table>
+                <thead><tr>
+                    <th onclick="sortBy('name')">Product</th>
+                    <th class="no-sort">Category</th>
+                    <th onclick="sortBy('thc')">THC</th>
+                    <th onclick="sortBy('price')">Price</th>
+                    <th class="no-sort">Shelf</th>
+                    <th onclick="sortBy('effect')">Effect</th>
+                    <th class="no-sort">Script</th>
+                    <th class="no-sort">Manager Note</th>
+                    <th class="no-sort">Stock</th>
+                    <th class="no-sort"></th>
+                </tr></thead>
+                <tbody id="tBody"></tbody>
+            </table>
+            <div id="emptyState" style="display:none" class="empty-state">
+                <div class="empty-state-icon">&#128230;</div>
+                <div class="empty-state-title">No products yet</div>
+                <div class="empty-state-sub">Import your inventory CSV to populate the budtender cheat sheet.</div>
+                <button class="btn btn-primary" onclick="location.href='cannascope-onboarding.html'">Import Inventory</button>
+            </div>
+        </div>
+
     </div>
+
+    <!-- TAB: ANALYTICS -->
+    <div class="tab-panel" id="tab-analytics">
+
+        <div class="a-stats-row">
+            <div class="a-stat"><div class="a-stat-val" id="aTotal">&mdash;</div><div class="a-stat-lbl">Total Recommendations</div></div>
+            <div class="a-stat"><div class="a-stat-val" id="aToday">&mdash;</div><div class="a-stat-lbl">Today</div></div>
+            <div class="a-stat"><div class="a-stat-val" id="aWeek">&mdash;</div><div class="a-stat-lbl">This Week</div></div>
+            <div class="a-stat"><div class="a-stat-val" id="aTopEff" style="font-size:18px">&mdash;</div><div class="a-stat-lbl">Top Effect</div></div>
+        </div>
+
+        <div class="analytics-grid">
+            <div class="card">
+                <div class="card-title">Recommendations by Effect</div>
+                <div id="effectChart" class="eff-chart"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Top Recommended Products</div>
+                <div id="topProductsList" class="top-list"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Recent Activity</div>
+            <div id="activityFeed" class="feed"></div>
+        </div>
+
+    </div>
+
 </div>
 
 <!-- EDIT MODAL -->
 <div class="overlay" id="editOv">
     <div class="modal">
-        <div class="mhead"><div class="mtitle">Edit Product</div><button class="mclose" onclick="close('editOv')">&#215;</button></div>
+        <div class="mhead"><div class="mtitle">Edit Product</div><button class="mclose" onclick="closeModal('editOv')">&#215;</button></div>
         <div class="mbody">
             <input type="hidden" id="eId">
             <div class="frow">
-                <div class="fg"><label class="fl">Product Name</label><input class="fi" id="eName"></div>
-                <div class="fg"><label class="fl">Brand</label><input class="fi" id="eBrand"></div>
+                <div class="fg"><label class="fl">Product Name</label><input class="fi" id="eName" placeholder="e.g. Granddaddy Purple"></div>
+                <div class="fg"><label class="fl">Brand</label><input class="fi" id="eBrand" placeholder="e.g. Green Peak"></div>
             </div>
             <div class="frow">
-                <div class="fg"><label class="fl">Category</label>
-                    <select class="fs" id="eCat"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Pre-Roll</option></select>
-                </div>
-                <div class="fg"><label class="fl">Effect</label>
-                    <select class="fs" id="eEff"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="relief">Relief</option><option value="beginner">Beginner</option></select>
-                </div>
+                <div class="fg"><label class="fl">Category</label><select class="fs" id="eCat"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Pre-Roll</option></select></div>
+                <div class="fg"><label class="fl">Primary Effect</label><select class="fs" id="eEff"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="relief">Relief</option><option value="beginner">Beginner</option></select></div>
             </div>
             <div class="frow">
-                <div class="fg"><label class="fl">THC %</label><input class="fi" id="eThc" type="number" step="0.1" min="0" max="100"></div>
-                <div class="fg"><label class="fl">CBD %</label><input class="fi" id="eCbd" type="number" step="0.1" min="0" max="100"></div>
+                <div class="fg"><label class="fl">THC %</label><input class="fi" id="eThc" type="number" step="0.1" min="0" max="100" placeholder="0.0"></div>
+                <div class="fg"><label class="fl">CBD %</label><input class="fi" id="eCbd" type="number" step="0.1" min="0" max="100" placeholder="0.0"></div>
             </div>
             <div class="frow">
-                <div class="fg"><label class="fl">Price ($)</label><input class="fi" id="ePrice" type="number" step="0.01" min="0"></div>
+                <div class="fg"><label class="fl">Price ($)</label><input class="fi" id="ePrice" type="number" step="0.01" min="0" placeholder="0.00"></div>
                 <div class="fg"><label class="fl">Shelf Location</label><input class="fi" id="eShelf" placeholder="e.g. A3"></div>
             </div>
-            <div class="fg"><label class="fl">Budtender Script</label>
-                <textarea class="ft" id="eTp" placeholder="What should the budtender say to customers?"></textarea>
-                <button class="gen-btn" onclick="genScript('e')">Generate Script</button>
+            <div class="section-sep"></div>
+            <div class="fg">
+                <label class="fl">Budtender Script</label>
+                <textarea class="fta" id="eTp" placeholder="What should the budtender say about this product?"></textarea>
+                <button class="gen-btn" onclick="genScript('e')">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Generate Script
+                </button>
+                <div class="field-hint">Customer-facing. 1&ndash;2 sentences. This is what budtenders say out loud.</div>
             </div>
-            <div class="fg"><label class="fl">Manager Note <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3)">(optional — internal, visible to budtenders)</span></label>
-                <input class="fi" id="eMn" placeholder="e.g. Overstock inventory — push first, High margin product, Brand promo this week">
+            <div class="fg">
+                <label class="fl">Manager Note <span class="fl-opt">(internal &mdash; visible to budtenders)</span></label>
+                <input class="fi" id="eMn" placeholder="e.g. Overstock &mdash; push first &nbsp;|&nbsp; High margin &nbsp;|&nbsp; Brand promo this week">
             </div>
         </div>
         <div class="mfoot">
-            <button class="btn btn-ghost" onclick="close('editOv')">Cancel</button>
+            <button class="btn btn-ghost" onclick="closeModal('editOv')">Cancel</button>
             <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
         </div>
     </div>
@@ -242,91 +428,111 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 <!-- ADD MODAL -->
 <div class="overlay" id="addOv">
     <div class="modal">
-        <div class="mhead"><div class="mtitle">Add Product</div><button class="mclose" onclick="close('addOv')">&#215;</button></div>
+        <div class="mhead"><div class="mtitle">Add Product</div><button class="mclose" onclick="closeModal('addOv')">&#215;</button></div>
         <div class="mbody">
             <div class="frow">
                 <div class="fg"><label class="fl">Product Name *</label><input class="fi" id="aName" placeholder="e.g. Granddaddy Purple"></div>
                 <div class="fg"><label class="fl">Brand *</label><input class="fi" id="aBrand" placeholder="e.g. Green Peak"></div>
             </div>
             <div class="frow">
-                <div class="fg"><label class="fl">Category</label>
-                    <select class="fs" id="aCat"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Pre-Roll</option></select>
-                </div>
-                <div class="fg"><label class="fl">Effect</label>
-                    <select class="fs" id="aEff"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="relief">Relief</option><option value="beginner">Beginner</option></select>
-                </div>
+                <div class="fg"><label class="fl">Category</label><select class="fs" id="aCat"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Pre-Roll</option></select></div>
+                <div class="fg"><label class="fl">Primary Effect</label><select class="fs" id="aEff"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="relief">Relief</option><option value="beginner">Beginner</option></select></div>
             </div>
             <div class="frow">
-                <div class="fg"><label class="fl">THC %</label><input class="fi" id="aThc" type="number" step="0.1" placeholder="e.g. 22"></div>
-                <div class="fg"><label class="fl">CBD %</label><input class="fi" id="aCbd" type="number" step="0.1" placeholder="e.g. 0.5"></div>
+                <div class="fg"><label class="fl">THC %</label><input class="fi" id="aThc" type="number" step="0.1" min="0" placeholder="0.0"></div>
+                <div class="fg"><label class="fl">CBD %</label><input class="fi" id="aCbd" type="number" step="0.1" min="0" placeholder="0.0"></div>
             </div>
             <div class="frow">
-                <div class="fg"><label class="fl">Price ($)</label><input class="fi" id="aPrice" type="number" step="0.01" placeholder="e.g. 45"></div>
+                <div class="fg"><label class="fl">Price ($)</label><input class="fi" id="aPrice" type="number" step="0.01" min="0" placeholder="0.00"></div>
                 <div class="fg"><label class="fl">Shelf Location</label><input class="fi" id="aShelf" placeholder="e.g. A3"></div>
             </div>
-            <div class="fg"><label class="fl">Budtender Script</label>
-                <textarea class="ft" id="aTp" placeholder="What should the budtender say to customers?"></textarea>
-                <button class="gen-btn" onclick="genScript('a')">Generate Script</button>
+            <div class="section-sep"></div>
+            <div class="fg">
+                <label class="fl">Budtender Script</label>
+                <textarea class="fta" id="aTp" placeholder="Leave blank to auto-generate&hellip;"></textarea>
+                <button class="gen-btn" onclick="genScript('a')">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Generate Script
+                </button>
+                <div class="field-hint">Leave blank to auto-generate from the product details above.</div>
             </div>
-            <div class="fg"><label class="fl">Manager Note <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3)">(optional — internal, visible to budtenders)</span></label>
-                <input class="fi" id="aMn" placeholder="e.g. Overstock inventory — push first, High margin product, Brand promo this week">
+            <div class="fg">
+                <label class="fl">Manager Note <span class="fl-opt">(optional)</span></label>
+                <input class="fi" id="aMn" placeholder="e.g. Overstock &mdash; push first &nbsp;|&nbsp; High margin &nbsp;|&nbsp; Brand promo this week">
             </div>
         </div>
         <div class="mfoot">
-            <button class="btn btn-ghost" onclick="close('addOv')">Cancel</button>
+            <button class="btn btn-ghost" onclick="closeModal('addOv')">Cancel</button>
             <button class="btn btn-primary" onclick="saveAdd()">Add Product</button>
         </div>
     </div>
 </div>
 
-<!-- DELETE CONFIRM -->
+<!-- DELETE MODAL -->
 <div class="overlay" id="delOv">
     <div class="modal sm">
-        <div class="mhead"><div class="mtitle">Remove product?</div><button class="mclose" onclick="close('delOv')">&#215;</button></div>
+        <div class="mhead"><div class="mtitle">Remove product?</div><button class="mclose" onclick="closeModal('delOv')">&#215;</button></div>
         <div class="mbody">
-            <div style="color:var(--text-2);font-size:13px;">You are removing:</div>
+            <div style="font-size:12px;color:var(--text-3);margin-bottom:6px;">You are removing:</div>
             <div class="del-name" id="delName"></div>
-            <div class="del-sub">This will remove it from the cheat sheet immediately.</div>
+            <div class="del-sub">This removes it from the budtender cheat sheet immediately. This cannot be undone.</div>
         </div>
         <div class="mfoot">
-            <button class="btn btn-ghost" onclick="close('delOv')">Cancel</button>
-            <button class="btn btn-dg" onclick="confirmDel()">Remove</button>
+            <button class="btn btn-ghost" onclick="closeModal('delOv')">Cancel</button>
+            <button class="btn btn-danger" onclick="confirmDel()">Remove Product</button>
         </div>
     </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"><div class="toast-dot"></div><span id="toastMsg"></span></div>
 
 <script>
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let products = [], orgId = null, publicKey = null, delId = null;
+let sortCol = 'name', sortDir = 1; // 1 = asc, -1 = desc
 
-// ── AUTH GUARD ────────────────────────────────────────────────
+// -- MODAL HELPERS (named to avoid conflict with window.open / window.close) --
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
+});
+
+// -- TABS -----------------------------------------------------
+function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', b.textContent.toLowerCase() === name || (name === 'inventory' && i === 0) || (name === 'analytics' && i === 1)));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    if (name === 'analytics') loadAnalytics();
+}
+
+// -- AUTH GUARD -----------------------------------------------
 async function init() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.href = 'cannascope-login.html'; return; }
 
-    const { data: profile } = await sb.from('user_profiles').select('organization_id, organizations(name, public_key, paid_status)').eq('id', session.user.id).single();
+    const { data: profile } = await sb.from('user_profiles')
+        .select('organization_id, organizations(name, public_key, paid_status)')
+        .eq('id', session.user.id).single();
     if (!profile) { window.location.href = 'cannascope-login.html'; return; }
 
-    // Subscription gate — redirect to subscribe if not active
     const paidStatus = profile.organizations?.paid_status;
-    if (paidStatus !== 'active') {
-      window.location.href = 'cannascope-subscribe.html';
-      return;
-    }
+    if (paidStatus !== 'active') { window.location.href = 'cannascope-subscribe.html'; return; }
 
-    orgId = profile.organization_id;
-    publicKey = profile.organizations.public_key;
+    orgId      = profile.organization_id;
+    publicKey  = profile.organizations.public_key;
     document.getElementById('orgName').textContent = profile.organizations.name;
 
-    const cheatUrl = window.location.origin + window.location.pathname.replace('cannascope-admin.html', '') + 'cannascope-cheatsheet-v2.html?key=' + publicKey;
+    const cheatUrl = window.location.origin
+        + window.location.pathname.replace('cannascope-admin.html', '')
+        + 'cannascope-cheatsheet-v2.html?key=' + publicKey;
     document.getElementById('shareUrl').textContent = cheatUrl;
     document.getElementById('shareBanner').style.display = 'flex';
 
-    // Wire up the "Budtender View" nav button with the correct key URL
     const viewBtn = document.getElementById('budtenderViewBtn');
     viewBtn.href = cheatUrl;
     viewBtn.style.display = 'inline-flex';
@@ -339,10 +545,13 @@ async function signOut() {
     window.location.href = 'cannascope-login.html';
 }
 
-// ── DATA ──────────────────────────────────────────────────────
+// -- DATA -----------------------------------------------------
 async function loadProducts() {
-    const { data, error } = await sb.from('products').select('*').eq('organization_id', orgId).order('name');
-    if (error) { toast('Error loading products: ' + error.message); return; }
+    const { data, error } = await sb.from('products')
+        .select('*')
+        .eq('organization_id', orgId)
+        .order('name');
+    if (error) { showToast('Error loading products: ' + error.message, true); return; }
     products = data || [];
     renderStats();
     renderTable();
@@ -353,60 +562,144 @@ function renderStats() {
     const inN   = products.filter(p => p.in_stock).length;
     const miss  = products.filter(p => !p.talking_points?.trim()).length;
     const cats  = new Set(products.map(p => p.category)).size;
-    document.getElementById('stTotal').textContent = total;
+    const inStockPrices = products.filter(p => p.in_stock && p.price != null).map(p => Number(p.price));
+    const avgVal = inStockPrices.length > 0
+        ? (inStockPrices.reduce((a,b) => a+b, 0) / inStockPrices.length).toFixed(0)
+        : null;
+
+    document.getElementById('stTotal').textContent = total || '\u2014';
     document.getElementById('stIn').textContent    = inN;
     document.getElementById('stOut').textContent   = total - inN;
     document.getElementById('stMiss').textContent  = miss;
-    document.getElementById('stCats').textContent  = cats;
+    document.getElementById('stVal').textContent   = avgVal ? '$' + avgVal : '\u2014';
+
+    // Colour the out-of-stock stat dynamically
+    document.getElementById('stOut').className = 'stat-val' + ((total - inN) > 0 ? ' danger' : ' green');
+    document.getElementById('stMiss').className = 'stat-val' + (miss > 0 ? ' warn' : ' green');
+    document.getElementById('stIn').className = 'stat-val';
+    const pct = total > 0 ? Math.round((inN / total) * 100) : 0;
+    const barEl = document.getElementById('stInBar');
+    if (barEl) barEl.style.width = pct + '%';
 }
 
+// -- SORTING --------------------------------------------------
+function sortBy(col) {
+    if (sortCol === col) { sortDir *= -1; }
+    else { sortCol = col; sortDir = 1; }
+    document.querySelectorAll('th[onclick]').forEach(th => {
+        th.classList.remove('sort-asc','sort-desc');
+        if (th.getAttribute('onclick') === "sortBy('" + col + "')") {
+            th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+        }
+    });
+    renderTable();
+}
+
+function sortProducts(arr) {
+    return [...arr].sort((a, b) => {
+        let va = a[sortCol], vb = b[sortCol];
+        if (va == null) va = '';
+        if (vb == null) vb = '';
+        if (typeof va === 'string') return va.localeCompare(vb) * sortDir;
+        return (va - vb) * sortDir;
+    });
+}
+
+// -- TABLE RENDER ---------------------------------------------
 function renderTable() {
     const q  = document.getElementById('searchQ').value.toLowerCase();
     const fe = document.getElementById('fxEff').value;
+    const fc = document.getElementById('fxCat').value;
     const fs = document.getElementById('fxStock').value;
+
     const filtered = products.filter(p => {
         const ms = !q || p.name?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
         const me = !fe || p.effect === fe;
+        const mc = !fc || p.category === fc;
         const mk = !fs || (fs === 'in' ? p.in_stock : !p.in_stock);
-        return ms && me && mk;
+        return ms && me && mc && mk;
     });
-    document.getElementById('secCount').textContent = filtered.length + ' product' + (filtered.length !== 1 ? 's' : '');
+
+    const sorted = sortProducts(filtered);
+    document.getElementById('secCount').textContent = sorted.length + ' product' + (sorted.length !== 1 ? 's' : '');
+
     const tbody = document.getElementById('tBody');
     const empty = document.getElementById('emptyState');
-    if (products.length === 0) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+
+    if (products.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
     empty.style.display = 'none';
-    if (filtered.length === 0) { tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-3);font-size:13px">No results</td></tr>`; return; }
-    tbody.innerHTML = filtered.map(p => {
-        const cat = p.category?.charAt(0).toUpperCase() + p.category?.slice(1) || '—';
-        const hasTp = !!p.talking_points?.trim();
+
+    if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text-3);font-size:13px">No results match your filters</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = sorted.map(p => {
+        const cat      = p.category ? p.category.charAt(0).toUpperCase() + p.category.slice(1) : '\u2014';
+        const hasTp    = !!p.talking_points?.trim();
+        const eff      = p.effect || 'beginner';
+        const thcStr   = p.thc != null ? p.thc + '%' : '\u2014';
+        const priceStr = p.price != null ? '$' + Number(p.price).toFixed(2) : '\u2014';
+        const mnHtml   = p.manager_note
+            ? `<span class="mnote" title="${xe(p.manager_note)}">${xe(p.manager_note)}</span>`
+            : `<span style="color:var(--text-3);font-size:12px">\u2014</span>`;
+        const barClr   = p.in_stock ? 'var(--green)' : 'var(--surface-3)';
         return `<tr>
-            <td><div class="p-name">${x(p.name)}</div><div class="p-brand">${x(p.brand||'')}</div></td>
-            <td style="font-size:13px;color:var(--text-2)">${cat}</td>
-            <td style="font-size:13px">${p.thc != null ? p.thc + '%' : '—'}</td>
-            <td style="font-size:13px">${p.price != null ? '$' + Number(p.price).toFixed(2) : '—'}</td>
-            <td style="font-size:13px;color:var(--text-2)">${x(p.shelf||'—')}</td>
-            <td><span class="eff eff-${p.effect||'beginner'}">${p.effect||'beginner'}</span></td>
-            <td><span class="dot-row"><span class="dot ${hasTp ? 'dot-g' : 'dot-w'}"></span><span style="font-size:11px;font-weight:600;color:${hasTp ? 'var(--green)' : 'var(--warning)'}">${hasTp ? 'Ready' : 'Missing'}</span></span></td>
-            <td style="font-size:12px;color:var(--warning);max-width:180px">${p.manager_note ? `<span title="${x(p.manager_note)}" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px;font-weight:500">${x(p.manager_note)}</span>` : '<span style="color:var(--text-3)">—</span>'}</td>
-            <td><div class="toggle-wrap" onclick="toggleStock('${p.id}')"><div class="ttrack ${p.in_stock ? 'on' : ''}"><div class="tthumb"></div></div><span class="tlabel ${p.in_stock ? 'on' : ''}">${p.in_stock ? 'In Stock' : 'Out'}</span></div></td>
-            <td><div class="acts"><button class="btn btn-ghost btn-sm" onclick="openEdit('${p.id}')">Edit</button><button class="btn btn-dg btn-sm" onclick="openDel('${p.id}')">Remove</button></div></td>
+            <td>
+                <div class="cell-name-wrap">
+                    <div class="cell-stock-bar" style="background:${barClr}"></div>
+                    <div class="cell-name">
+                        <div class="pname">${xe(p.name)}</div>
+                        <div class="pbrand">${xe(p.brand||'')}</div>
+                    </div>
+                </div>
+            </td>
+            <td><span class="pill pill-cat">${cat}</span></td>
+            <td style="color:var(--text-2)">${thcStr}</td>
+            <td style="color:var(--text-2);font-weight:500">${priceStr}</td>
+            <td style="color:var(--text-3)">${xe(p.shelf||'\u2014')}</td>
+            <td><span class="pill pill-${eff}">${eff}</span></td>
+            <td>
+                ${hasTp
+                    ? `<span class="script-ready"><span class="script-dot script-dot-g"></span>Ready</span>`
+                    : `<span class="script-missing"><span class="script-dot script-dot-w"></span>Missing</span>`
+                }
+            </td>
+            <td>${mnHtml}</td>
+            <td>
+                <div class="toggle-wrap" onclick="toggleStock('${p.id}')">
+                    <div class="ttrack ${p.in_stock ? 'on' : ''}"><div class="tthumb"></div></div>
+                    <span class="tlabel ${p.in_stock ? 'on' : ''}">${p.in_stock ? 'In Stock' : 'Out'}</span>
+                </div>
+            </td>
+            <td>
+                <div class="row-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="openEdit('${p.id}')">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="openDel('${p.id}')">Remove</button>
+                </div>
+            </td>
         </tr>`;
     }).join('');
 }
 
-// ── STOCK TOGGLE ──────────────────────────────────────────────
+// -- STOCK TOGGLE ---------------------------------------------
 async function toggleStock(id) {
     const p = products.find(q => q.id === id);
     if (!p) return;
     const newVal = !p.in_stock;
     const { error } = await sb.from('products').update({ in_stock: newVal }).eq('id', id);
-    if (error) { toast('Error: ' + error.message); return; }
+    if (error) { showToast('Error: ' + error.message, true); return; }
     p.in_stock = newVal;
-    renderStats(); renderTable();
-    toast(p.name + (newVal ? ' marked in stock' : ' marked out of stock'));
+    renderStats();
+    renderTable();
+    showToast((p.name || 'Product') + (newVal ? ' marked in stock' : ' marked out of stock'));
 }
 
-// ── EDIT ──────────────────────────────────────────────────────
+// -- EDIT -----------------------------------------------------
 function openEdit(id) {
     const p = products.find(q => q.id === id);
     if (!p) return;
@@ -421,13 +714,16 @@ function openEdit(id) {
     document.getElementById('eShelf').value = p.shelf || '';
     document.getElementById('eTp').value    = p.talking_points || '';
     document.getElementById('eMn').value    = p.manager_note || '';
-    open('editOv');
+    openModal('editOv');
 }
 
 async function saveEdit() {
     const id = document.getElementById('eId').value;
+    const name = document.getElementById('eName').value.trim();
+    if (!name) { showToast('Product name is required', true); return; }
+
     const updates = {
-        name:           document.getElementById('eName').value.trim(),
+        name,
         brand:          document.getElementById('eBrand').value.trim(),
         category:       document.getElementById('eCat').value,
         effect:         document.getElementById('eEff').value,
@@ -438,144 +734,364 @@ async function saveEdit() {
         talking_points: document.getElementById('eTp').value.trim(),
         manager_note:   document.getElementById('eMn').value.trim() || null
     };
-    // Compute terpene-based effect scores
-    const scores = computeScores(updates);
-    Object.assign(updates, scores);
+    Object.assign(updates, computeScores(updates));
 
     const { error } = await sb.from('products').update(updates).eq('id', id);
-    if (error) { toast('Save failed: ' + error.message); return; }
+    if (error) { showToast('Save failed: ' + error.message, true); return; }
     await loadProducts();
-    close('editOv'); toast('Product updated');
+    closeModal('editOv');
+    showToast('Product updated');
 }
 
-// ── ADD ───────────────────────────────────────────────────────
+// -- ADD ------------------------------------------------------
 function openAdd() {
-    ['aName','aBrand','aThc','aCbd','aPrice','aShelf','aTp','aMn'].forEach(id => document.getElementById(id).value = '');
+    ['aName','aBrand','aThc','aCbd','aPrice','aShelf','aTp','aMn'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
     document.getElementById('aCat').value = 'flower';
     document.getElementById('aEff').value = 'beginner';
-    open('addOv');
+    openModal('addOv');
 }
 
 async function saveAdd() {
     const name  = document.getElementById('aName').value.trim();
     const brand = document.getElementById('aBrand').value.trim();
-    if (!name || !brand) { toast('Name and brand are required'); return; }
+    if (!name || !brand) { showToast('Name and brand are required', true); return; }
+
     const cat   = document.getElementById('aCat').value;
     const eff   = document.getElementById('aEff').value;
     const thc   = parseFloat(document.getElementById('aThc').value) || 0;
     const cbd   = parseFloat(document.getElementById('aCbd').value) || 0;
     const price = parseFloat(document.getElementById('aPrice').value) || 0;
-    const tp    = document.getElementById('aTp').value.trim() || buildScript(name, cat, eff, thc, price);
+    const shelf = document.getElementById('aShelf').value.trim();
     const mn    = document.getElementById('aMn').value.trim() || null;
-    const product = { organization_id: orgId, name, brand, category: cat, effect: eff, thc, cbd, price, shelf: document.getElementById('aShelf').value.trim(), talking_points: tp, manager_note: mn, in_stock: true };
+    const tp    = document.getElementById('aTp').value.trim() || buildScript(name, cat, eff, thc, cbd, price);
+
+    const product = { organization_id: orgId, name, brand, category: cat, effect: eff, thc, cbd, price, shelf, talking_points: tp, manager_note: mn, in_stock: true };
     Object.assign(product, computeScores(product));
+
     const { error } = await sb.from('products').insert(product);
-    if (error) { toast('Add failed: ' + error.message); return; }
+    if (error) { showToast('Add failed: ' + error.message, true); return; }
     await loadProducts();
-    close('addOv'); toast('Product added');
+    closeModal('addOv');
+    showToast(name + ' added');
 }
 
-// ── DELETE ────────────────────────────────────────────────────
+// -- DELETE ---------------------------------------------------
 function openDel(id) {
     const p = products.find(q => q.id === id);
     if (!p) return;
     delId = id;
     document.getElementById('delName').textContent = p.name;
-    open('delOv');
+    openModal('delOv');
 }
 
 async function confirmDel() {
     const p = products.find(q => q.id === delId);
     const { error } = await sb.from('products').delete().eq('id', delId);
-    if (error) { toast('Delete failed: ' + error.message); return; }
+    if (error) { showToast('Delete failed: ' + error.message, true); return; }
     delId = null;
     await loadProducts();
-    close('delOv'); toast((p?.name || 'Product') + ' removed');
+    closeModal('delOv');
+    showToast((p?.name || 'Product') + ' removed');
 }
 
-// ── SCRIPT GENERATOR ──────────────────────────────────────────
+// -- SCRIPT GENERATOR -----------------------------------------
+function genScript(prefix) {
+    const n = document.getElementById(prefix + 'Name').value.trim();
+    const c = document.getElementById(prefix + 'Cat').value;
+    const e = document.getElementById(prefix + 'Eff').value;
+    const t = parseFloat(document.getElementById(prefix + 'Thc').value) || 0;
+    const d = parseFloat(document.getElementById(prefix + 'Cbd').value) || 0;
+    const p = parseFloat(document.getElementById(prefix + 'Price').value) || 0;
+    document.getElementById(prefix + 'Tp').value = buildScript(n, c, e, t, d, p);
+}
+
 async function autoScripts() {
     const missing = products.filter(p => !p.talking_points?.trim());
+    if (missing.length === 0) { showToast('All products already have scripts'); return; }
     let count = 0;
     for (const p of missing) {
-        const tp = buildScript(p.name, p.category, p.effect, p.thc, p.price);
+        const tp = buildScript(p.name, p.category, p.effect, p.thc, p.cbd, p.price);
         const { error } = await sb.from('products').update({ talking_points: tp }).eq('id', p.id);
         if (!error) { p.talking_points = tp; count++; }
     }
-    renderStats(); renderTable();
-    toast('Generated scripts for ' + count + ' product' + (count !== 1 ? 's' : ''));
+    renderStats();
+    renderTable();
+    showToast('Generated scripts for ' + count + ' product' + (count !== 1 ? 's' : ''));
 }
 
-function genScript(prefix) {
-    const n = document.getElementById(prefix + 'Name').value;
-    const c = document.getElementById(prefix + 'Cat').value;
-    const e = document.getElementById(prefix + 'Eff').value;
-    const t = document.getElementById(prefix + 'Thc').value;
-    const p = document.getElementById(prefix + 'Price').value;
-    document.getElementById(prefix + 'Tp').value = buildScript(n, c, e, t, p);
+// -- EXPORT CSV -----------------------------------------------
+function exportCSV() {
+    if (products.length === 0) { showToast('No products to export', true); return; }
+    const cols = ['name','brand','category','effect','thc','cbd','price','shelf','in_stock','talking_points','manager_note'];
+    const headers = ['Name','Brand','Category','Effect','THC %','CBD %','Price','Shelf','In Stock','Script','Manager Note'];
+    const rows = products.map(p => cols.map(c => {
+        const v = p[c] ?? '';
+        const s = String(v);
+        return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g,'""') + '"' : s;
+    }).join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = 'cannascope-inventory.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSV downloaded');
 }
 
-// ── COPY LINK ─────────────────────────────────────────────────
+// -- COPY LINK ------------------------------------------------
 function copyLink() {
     navigator.clipboard.writeText(document.getElementById('shareUrl').textContent)
-        .then(() => toast('Cheat sheet link copied'));
+        .then(() => showToast('Cheat sheet link copied'))
+        .catch(() => showToast('Could not copy \u2014 copy the URL manually', true));
 }
 
-// ── UTILITIES ─────────────────────────────────────────────────
-function open(id)  { document.getElementById(id).classList.add('open'); }
-function close(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
+// -- ANALYTICS ------------------------------------------------
+async function loadAnalytics() {
+    document.getElementById('aTotal').textContent = '\u2026';
+    document.getElementById('aToday').textContent = '\u2026';
+    document.getElementById('aWeek').textContent  = '\u2026';
+    document.getElementById('aTopEff').textContent = '\u2026';
 
-function toast(msg) {
+    // Attempt to load recommendation events (graceful if table doesn't exist yet)
+    const { data: events, error } = await sb.from('recommendation_events')
+        .select('id, effect, product_id, created_at')
+        .eq('organization_id', orgId)
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+    if (error) {
+        renderAnalyticsEmpty('Recommendation tracking begins as soon as budtenders start using the cheat sheet.');
+        return;
+    }
+
+    const evts = events || [];
+
+    // Time buckets
+    const now   = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const weekStart  = todayStart - 6 * 86400000;
+
+    const todayEvts = evts.filter(e => new Date(e.created_at).getTime() >= todayStart);
+    const weekEvts  = evts.filter(e => new Date(e.created_at).getTime() >= weekStart);
+
+    // Effect breakdown
+    const EFFECTS = ['sleep','relax','focus','social','relief','beginner'];
+    const effCounts = {};
+    EFFECTS.forEach(e => effCounts[e] = 0);
+    evts.forEach(e => { if (effCounts[e.effect] !== undefined) effCounts[e.effect]++; });
+    const maxCount = Math.max(...Object.values(effCounts), 1);
+    const topEffect = EFFECTS.reduce((a, b) => effCounts[a] >= effCounts[b] ? a : b);
+
+    // Top products by recommendation count
+    const prodCounts = {};
+    evts.forEach(e => {
+        if (e.product_id) prodCounts[e.product_id] = (prodCounts[e.product_id] || 0) + 1;
+    });
+    const topProductIds = Object.entries(prodCounts)
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([id, cnt]) => ({ id, cnt }));
+
+    // Render top-level stats
+    document.getElementById('aTotal').textContent  = evts.length;
+    document.getElementById('aToday').textContent  = todayEvts.length;
+    document.getElementById('aWeek').textContent   = weekEvts.length;
+    document.getElementById('aTopEff').textContent = evts.length > 0
+        ? topEffect.charAt(0).toUpperCase() + topEffect.slice(1)
+        : '\u2014';
+
+    // Effect chart
+    const chartHtml = EFFECTS.map(eff => {
+        const cnt = effCounts[eff];
+        const pct = Math.round((cnt / maxCount) * 100);
+        return `<div class="eff-row">
+            <span class="eff-row-label">${eff}</span>
+            <div class="eff-row-bar-wrap">
+                <div class="eff-row-bar bar-${eff}" style="width:${cnt > 0 ? Math.max(pct, 3) : 0}%"></div>
+            </div>
+            <span class="eff-row-count">${cnt}</span>
+        </div>`;
+    }).join('');
+    document.getElementById('effectChart').innerHTML = evts.length > 0 ? chartHtml
+        : '<div style="color:var(--text-3);font-size:12px;padding:12px 0">No data yet &mdash; share the budtender URL with your floor staff.</div>';
+
+    // Top products
+    if (topProductIds.length > 0) {
+        const prodMap = {};
+        products.forEach(p => prodMap[p.id] = p);
+        const tpHtml = topProductIds.map((item, i) => {
+            const p     = prodMap[item.id];
+            const name  = p ? xe(p.name)  : 'Unknown Product';
+            const brand = p ? xe(p.brand) : '';
+            const eff   = p ? p.effect    : '';
+            return `<div class="top-row">
+                <span class="top-rank">#${i+1}</span>
+                <div class="top-info">
+                    <div class="top-name">${name}</div>
+                    <div class="top-meta">${brand}${eff ? (brand ? ' &middot; ' : '') + eff : ''}</div>
+                </div>
+                <span class="top-count">${item.cnt}</span>
+            </div>`;
+        }).join('');
+        document.getElementById('topProductsList').innerHTML = tpHtml;
+    } else {
+        document.getElementById('topProductsList').innerHTML = '<div style="color:var(--text-3);font-size:12px;padding:12px 0">No recommendation data yet.</div>';
+    }
+
+    // Recent activity feed
+    if (evts.length > 0) {
+        const prodMap = {};
+        products.forEach(p => prodMap[p.id] = p);
+        const feedHtml = evts.slice(0, 25).map(e => {
+            const p    = e.product_id ? prodMap[e.product_id] : null;
+            const name = p ? xe(p.name) : (e.product_id ? 'Product' : 'Unknown');
+            const eff  = e.effect || 'unknown';
+            const ts   = fmtTime(new Date(e.created_at));
+            return `<div class="feed-row">
+                <div class="feed-time">${ts}</div>
+                <div class="feed-body">
+                    <span class="pill pill-${eff}" style="font-size:10px;margin-right:6px">${eff}</span>
+                    shown \u2014 top pick: <strong>${name}</strong>
+                </div>
+            </div>`;
+        }).join('');
+        document.getElementById('activityFeed').innerHTML = feedHtml;
+    } else {
+        document.getElementById('activityFeed').innerHTML = '<div class="no-data"><div class="no-data-title">No activity yet</div><div class="no-data-sub">When budtenders use the cheat sheet, each customer interaction appears here. Share the Budtender URL from the banner above to get started.</div></div>';
+    }
+}
+
+function renderAnalyticsEmpty(msg) {
+    ['aTotal','aToday','aWeek'].forEach(id => document.getElementById(id).textContent = '0');
+    document.getElementById('aTopEff').textContent = '\u2014';
+    const noDataHtml = `<div class="no-data"><div class="no-data-title">Analytics Coming Soon</div><div class="no-data-sub">${msg}</div></div>`;
+    document.getElementById('effectChart').innerHTML = noDataHtml;
+    document.getElementById('topProductsList').innerHTML = '';
+    document.getElementById('activityFeed').innerHTML = noDataHtml;
+}
+
+function fmtTime(d) {
+    const now   = new Date();
+    const diff  = Math.floor((now - d) / 1000);
+    if (diff < 60)   return 'Just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return d.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+}
+
+// -- UTILITIES ------------------------------------------------
+function showToast(msg, isErr) {
     const el = document.getElementById('toast');
-    el.textContent = msg; el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2600);
+    document.getElementById('toastMsg').textContent = msg;
+    el.className = 'toast' + (isErr ? ' err' : '');
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-function x(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function xe(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-// ── CANNASCOPE V2 SCORING ENGINE ──────────────────────────────
-// Compound-aware model: terpene profiles × cannabinoid intelligence
-// × entourage synergy bonuses × delivery format context.
-// Each weight is drawn from peer-reviewed terpene/cannabinoid literature.
-// © Cannascope — proprietary scoring logic.
+// -- SCRIPT BUILDER -------------------------------------------
+// Generates a genuine 2-sentence budtender script using product attributes.
+// Called for auto-generate and the Generate Script button.
+function buildScript(name, cat, eff, thc, cbd, price) {
+    const n   = (name || 'This product').trim();
+    const t   = parseFloat(thc)   || 0;
+    const d   = parseFloat(cbd)   || 0;
+    const p   = parseFloat(price) || 0;
+    const fmt = (cat || 'flower').toLowerCase();
 
-// 17-terpene evidence-based weight matrix (per effect)
+    // Sentence 1: effect-specific opener with product name
+    const openers = {
+        sleep:    n + ' is our best option for sleep and recovery.',
+        relax:    n + ' is ideal for unwinding and relieving tension.',
+        focus:    n + ' is excellent for focus, productivity, and daytime clarity.',
+        social:   n + ' is a top pick for social situations and mood elevation.',
+        relief:   n + ' is specifically selected for pain relief and anti-inflammatory support.',
+        beginner: n + ' is one of our most approachable options for first-time customers.'
+    };
+
+    // Sentence 2: cannabinoid/format context
+    let detail = '';
+    if (d >= 8) {
+        detail = 'The high CBD content (' + d + '%) provides strong relief with minimal psychoactive effect.';
+    } else if (d >= 3) {
+        detail = 'The balanced ' + t + '% THC and ' + d + '% CBD profile keeps the experience smooth and manageable.';
+    } else if (t >= 25) {
+        detail = 'At ' + t + '% THC it\'s potent \u2014 best for experienced customers who want strong results.';
+    } else if (t >= 20) {
+        detail = 'The ' + t + '% THC delivers reliable, consistent effects without going overboard.';
+    } else if (t >= 14) {
+        detail = 'At ' + t + '% THC, it\'s approachable and consistent \u2014 works well for most people.';
+    } else if (t > 0) {
+        detail = 'The lower ' + t + '% THC makes it a gentle, controlled experience.';
+    } else {
+        detail = 'A solid, well-rounded option at a great price point.';
+    }
+
+    // Sentence 3: format context
+    const fmtNotes = {
+        edible:      'Edible format means slower onset (60\u201390 min) but longer-lasting effects through the night.',
+        tincture:    'Tincture format allows precise dosing and takes effect in 20\u201340 minutes.',
+        topical:     'Topical application targets specific areas directly with no psychoactive effects.',
+        vape:        'Vape format provides near-instant onset, great for fast-acting relief.',
+        concentrate: 'Concentrate format is high-potency \u2014 a little goes a long way.',
+        preroll:     'Ready to go right out of the pack \u2014 nothing easier for a night out.',
+        flower:      p > 0 ? 'At $' + p.toFixed(0) + ', it\'s one of our best-value options in this category.' : ''
+    };
+    const fmtNote = fmtNotes[fmt] || '';
+
+    return [openers[eff] || openers.beginner, detail, fmtNote].filter(Boolean).join(' ');
+}
+
+// ==============================================================
+// CANNASCOPE SCORING ENGINE v2
+// Compound-aware: terpene profiles x cannabinoid intelligence
+// x entourage synergy bonuses x delivery format context.
+// (c) Cannascope
+// ==============================================================
+
 const TERPENE_EFFECTS = {
-    myrcene:       { sleep: 0.32, relax: 0.20, focus:-0.15, social:-0.08, relief: 0.25, beginner: 0.06 },
-    limonene:      { sleep:-0.12, relax: 0.14, focus: 0.28, social: 0.26, relief: 0.08, beginner: 0.10 },
-    caryophyllene: { sleep: 0.08, relax: 0.18, focus: 0.04, social: 0.04, relief: 0.32, beginner: 0.16 },
-    linalool:      { sleep: 0.34, relax: 0.16, focus:-0.10, social:-0.06, relief: 0.20, beginner: 0.08 },
-    pinene:        { sleep:-0.10, relax: 0.06, focus: 0.26, social: 0.10, relief: 0.12, beginner: 0.14 },
-    terpinolene:   { sleep: 0.04, relax: 0.10, focus: 0.12, social: 0.24, relief: 0.04, beginner: 0.18 },
-    humulene:      { sleep: 0.12, relax: 0.12, focus:-0.02, social: 0.02, relief: 0.16, beginner: 0.14 },
-    ocimene:       { sleep:-0.08, relax: 0.06, focus: 0.16, social: 0.20, relief: 0.02, beginner: 0.08 },
-    bisabolol:     { sleep: 0.24, relax: 0.14, focus:-0.06, social:-0.04, relief: 0.18, beginner: 0.12 },
-    nerolidol:     { sleep: 0.30, relax: 0.12, focus:-0.12, social:-0.08, relief: 0.14, beginner: 0.06 },
-    terpineol:     { sleep: 0.28, relax: 0.14, focus:-0.10, social:-0.06, relief: 0.12, beginner: 0.08 },
-    valencene:     { sleep:-0.04, relax: 0.08, focus: 0.14, social: 0.22, relief: 0.04, beginner: 0.10 },
-    geraniol:      { sleep: 0.22, relax: 0.10, focus:-0.06, social:-0.02, relief: 0.16, beginner: 0.10 },
-    camphene:      { sleep: 0.06, relax: 0.06, focus: 0.06, social: 0.04, relief: 0.20, beginner: 0.10 },
-    guaiol:        { sleep: 0.10, relax: 0.08, focus: 0.04, social: 0.02, relief: 0.22, beginner: 0.12 },
-    fenchol:       { sleep: 0.08, relax: 0.06, focus: 0.08, social: 0.04, relief: 0.14, beginner: 0.12 },
-    borneol:       { sleep: 0.20, relax: 0.10, focus: 0.02, social: 0.02, relief: 0.18, beginner: 0.08 },
+    myrcene:       { sleep:0.32, relax:0.20, focus:-0.15, social:-0.08, relief:0.25, beginner:0.06 },
+    limonene:      { sleep:-0.12, relax:0.14, focus:0.28, social:0.26, relief:0.08, beginner:0.10 },
+    caryophyllene: { sleep:0.08, relax:0.18, focus:0.04, social:0.04, relief:0.32, beginner:0.16 },
+    linalool:      { sleep:0.34, relax:0.16, focus:-0.10, social:-0.06, relief:0.20, beginner:0.08 },
+    pinene:        { sleep:-0.10, relax:0.06, focus:0.26, social:0.10, relief:0.12, beginner:0.14 },
+    terpinolene:   { sleep:0.04, relax:0.10, focus:0.12, social:0.24, relief:0.04, beginner:0.18 },
+    humulene:      { sleep:0.12, relax:0.12, focus:-0.02, social:0.02, relief:0.16, beginner:0.14 },
+    ocimene:       { sleep:-0.08, relax:0.06, focus:0.16, social:0.20, relief:0.02, beginner:0.08 },
+    bisabolol:     { sleep:0.24, relax:0.14, focus:-0.06, social:-0.04, relief:0.18, beginner:0.12 },
+    nerolidol:     { sleep:0.30, relax:0.12, focus:-0.12, social:-0.08, relief:0.14, beginner:0.06 },
+    terpineol:     { sleep:0.28, relax:0.14, focus:-0.10, social:-0.06, relief:0.12, beginner:0.08 },
+    valencene:     { sleep:-0.04, relax:0.08, focus:0.14, social:0.22, relief:0.04, beginner:0.10 },
+    geraniol:      { sleep:0.22, relax:0.10, focus:-0.06, social:-0.02, relief:0.16, beginner:0.10 },
+    camphene:      { sleep:0.06, relax:0.06, focus:0.06, social:0.04, relief:0.20, beginner:0.10 },
+    guaiol:        { sleep:0.10, relax:0.08, focus:0.04, social:0.02, relief:0.22, beginner:0.12 },
+    fenchol:       { sleep:0.08, relax:0.06, focus:0.08, social:0.04, relief:0.14, beginner:0.12 },
+    borneol:       { sleep:0.20, relax:0.10, focus:0.02, social:0.02, relief:0.18, beginner:0.08 }
 };
 
 const TERPENE_FLOOR = 0.08;
 
 const SYNERGIES = [
-    { pair: ['myrcene',  'linalool'],       effect: 'sleep',    bonus: 0.14 },
-    { pair: ['myrcene',  'nerolidol'],       effect: 'sleep',    bonus: 0.10 },
-    { pair: ['linalool', 'bisabolol'],       effect: 'sleep',    bonus: 0.12 },
-    { pair: ['myrcene',  'caryophyllene'],   effect: 'relief',     bonus: 0.12 },
-    { pair: ['caryophyllene', 'linalool'],   effect: 'relief',     bonus: 0.14 },
-    { pair: ['myrcene',  'caryophyllene'],   effect: 'relax',    bonus: 0.10 },
-    { pair: ['limonene', 'pinene'],          effect: 'focus',    bonus: 0.14 },
-    { pair: ['limonene', 'ocimene'],         effect: 'social',   bonus: 0.10 },
-    { pair: ['limonene', 'terpinolene'],     effect: 'social',   bonus: 0.12 },
-    { pair: ['pinene',   'terpinolene'],     effect: 'focus',    bonus: 0.08 },
-    { pair: ['limonene', 'caryophyllene'],   effect: 'relax',    bonus: 0.08 },
-    { pair: ['bisabolol','caryophyllene'],   effect: 'relief',     bonus: 0.10 },
+    { pair:['myrcene','linalool'],       effect:'sleep',   bonus:0.14 },
+    { pair:['myrcene','nerolidol'],       effect:'sleep',   bonus:0.10 },
+    { pair:['linalool','bisabolol'],      effect:'sleep',   bonus:0.12 },
+    { pair:['myrcene','caryophyllene'],   effect:'relief',  bonus:0.12 },
+    { pair:['caryophyllene','linalool'],  effect:'relief',  bonus:0.14 },
+    { pair:['myrcene','caryophyllene'],   effect:'relax',   bonus:0.10 },
+    { pair:['limonene','pinene'],         effect:'focus',   bonus:0.14 },
+    { pair:['limonene','ocimene'],        effect:'social',  bonus:0.10 },
+    { pair:['limonene','terpinolene'],    effect:'social',  bonus:0.12 },
+    { pair:['pinene','terpinolene'],      effect:'focus',   bonus:0.08 },
+    { pair:['limonene','caryophyllene'],  effect:'relax',   bonus:0.08 },
+    { pair:['bisabolol','caryophyllene'], effect:'relief',  bonus:0.10 }
 ];
 
 const STRAIN_DB = {
@@ -612,7 +1128,7 @@ const STRAIN_DB = {
     'cherry pie':         { myrcene:0.40, caryophyllene:0.28, linalool:0.14, limonene:0.10, bisabolol:0.06, geraniol:0.02 },
     'amnesia haze':       { terpinolene:0.36, limonene:0.26, myrcene:0.18, caryophyllene:0.10, ocimene:0.06, pinene:0.04 },
     'bruce banner':       { limonene:0.28, caryophyllene:0.26, myrcene:0.22, linalool:0.12, terpinolene:0.08, humulene:0.04 },
-    'mimosa':             { limonene:0.44, myrcene:0.20, caryophyllene:0.14, terpinolene:0.12, valencene:0.06, pinene:0.04 },
+    'mimosa':             { limonene:0.44, myrcene:0.20, caryophyllene:0.14, terpinolene:0.12, valencene:0.06, pinene:0.04 }
 };
 
 const FORMAT_CONTEXT = {
@@ -621,7 +1137,7 @@ const FORMAT_CONTEXT = {
     focus:    { vape:0.09, flower:0.04, preroll:0.03, concentrate:0.05, edible:-0.08, tincture:-0.05, topical:-0.04 },
     social:   { vape:0.10, flower:0.04, preroll:0.04, concentrate:0.03, edible:-0.05, tincture:-0.06, topical:-0.04 },
     relief:   { topical:0.18, tincture:0.12, edible:0.10, flower:0.02, preroll:0.01, vape:-0.04, concentrate:-0.02 },
-    beginner: { flower:0.03, tincture:0.03, edible:0.03, preroll:0.02, vape:-0.01, concentrate:-0.01, topical:0.01 },
+    beginner: { flower:0.03, tincture:0.03, edible:0.03, preroll:0.02, vape:-0.01, concentrate:-0.01, topical:0.01 }
 };
 
 function cannabinoidScore(thc, cbd, effect) {
@@ -658,23 +1174,26 @@ function cannabinoidScore(thc, cbd, effect) {
 function computeScores(product) {
     const strainKey = (product.name || '').toLowerCase().trim();
     const dbProfile = STRAIN_DB[strainKey] || null;
-    const terpPct = {};
+    const terpPct   = {};
+
     for (const terpene of Object.keys(TERPENE_EFFECTS)) {
-        const key = 't_' + terpene;
-        const productVal = parseFloat(product[key]);
-        if (!isNaN(productVal) && productVal > 0) {
-            terpPct[terpene] = productVal;
+        const key      = 't_' + terpene;
+        const prodVal  = parseFloat(product[key]);
+        if (!isNaN(prodVal) && prodVal > 0) {
+            terpPct[terpene] = prodVal;
         } else if (dbProfile && dbProfile[terpene]) {
             terpPct[terpene] = dbProfile[terpene];
         } else {
             terpPct[terpene] = 0;
         }
     }
-    const thc = parseFloat(product.thc) || 0;
-    const cbd = parseFloat(product.cbd) || 0;
-    const cat = (product.category || '').toLowerCase();
+
+    const thc    = parseFloat(product.thc) || 0;
+    const cbd    = parseFloat(product.cbd) || 0;
+    const cat    = (product.category || '').toLowerCase();
     const scores = {};
     const EFFECTS = ['sleep','relax','focus','social','relief','beginner'];
+
     for (const effect of EFFECTS) {
         let s = 0;
         for (const [terpene, weights] of Object.entries(TERPENE_EFFECTS)) {
@@ -698,30 +1217,6 @@ function computeScores(product) {
     return scores;
 }
 
-function buildScript(name, cat, eff, thc, price) {
-    const fx = {
-        sleep:    'Best for sleep — customers report falling asleep faster and staying asleep longer.',
-        relax:    'Best for unwinding — relieves tension without heaviness or sedation.',
-        focus:    'Best for daytime use — sharpens focus without anxiety or jitters.',
-        social:   'Best for social settings — lifts mood and makes conversation feel effortless.',
-        relief:   'Best for pain and inflammation — consistent results for chronic discomfort and muscle tension.',
-        beginner: 'Approachable and forgiving — a reliable first experience with nothing too intense.'
-    };
-    return fx[eff] || 'A solid option worth recommending.';
-}
-function getUpsell(eff) {
-    const u = {
-        sleep:    'If they want longer sleep, suggest gummies.',
-        relax:    'If they want something lighter, suggest a 5mg edible.',
-        focus:    'If they want daytime microdosing, suggest a low-dose vape.',
-        social:   'If they want something shareable, suggest prerolls.',
-        relief:   'If they want body relief, suggest a topical.',
-        beginner: 'If they want controlled dosing, suggest 2.5mg gummies.'
-    };
-    return u[eff] || '';
-}
-
 init();
-</script>
 </body>
 </html>
