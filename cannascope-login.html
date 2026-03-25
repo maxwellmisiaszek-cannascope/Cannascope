@@ -8,34 +8,23 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         * { margin:0; padding:0; box-sizing:border-box; }
-        :root {
-            --green:#10b981; --green-dim:rgba(16,185,129,0.10);
-            --bg:#080808; --surface:#111111; --border:#1e1e1e; --border-2:#282828;
-            --text:#f0f0f0; --text-2:#909090; --text-3:#505050;
-            --danger:#ef4444;
-        }
+        :root { --green:#10b981; --green-dim:rgba(16,185,129,0.10); --bg:#080808; --surface:#111111; --border:#1e1e1e; --border-2:#282828; --text:#f0f0f0; --text-2:#909090; --text-3:#505050; --danger:#ef4444; }
         html,body { height:100%; font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
         .page { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
         .wordmark { font-size:13px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--green); margin-bottom:40px; }
         .card { background:var(--surface); border:1px solid var(--border-2); border-radius:12px; padding:32px; width:100%; max-width:380px; }
         .card-title { font-size:20px; font-weight:800; letter-spacing:-0.01em; margin-bottom:6px; }
         .card-sub { font-size:13px; color:var(--text-2); margin-bottom:28px; }
-        .tabs { display:flex; border-bottom:1px solid var(--border-2); margin-bottom:24px; }
-        .tab { flex:1; padding:10px; text-align:center; font-size:13px; font-weight:600; color:var(--text-3); cursor:pointer; border-bottom:2px solid transparent; transition:color 0.15s, border-color 0.15s; }
-        .tab.active { color:var(--green); border-bottom-color:var(--green); }
         .fg { margin-bottom:16px; }
         .fl { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); margin-bottom:7px; }
         .fi { width:100%; padding:10px 13px; background:var(--bg); border:1px solid var(--border-2); border-radius:5px; color:var(--text); font-size:13px; font-family:inherit; }
         .fi:focus { outline:none; border-color:var(--green); }
         .btn { width:100%; padding:12px; background:var(--green); border:none; border-radius:6px; color:#000; font-size:13px; font-weight:700; letter-spacing:0.04em; cursor:pointer; font-family:inherit; transition:opacity 0.15s; margin-top:4px; }
-        .btn:hover { opacity:0.87; }
         .btn:disabled { opacity:0.4; cursor:not-allowed; }
         .err { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); color:#f87171; padding:10px 13px; border-radius:5px; font-size:13px; margin-bottom:14px; display:none; }
         .ok  { background:var(--green-dim); border:1px solid rgba(16,185,129,0.2); color:var(--green); padding:10px 13px; border-radius:5px; font-size:13px; margin-bottom:14px; display:none; }
-        .divider { text-align:center; font-size:11px; color:var(--text-3); margin:16px 0; letter-spacing:0.06em; text-transform:uppercase; }
         .footer { margin-top:24px; font-size:12px; color:var(--text-3); text-align:center; }
-        .back-home { font-size:12px; color:var(--text-3); text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin-bottom:28px; transition:color 0.15s; }
-        .back-home:hover { color:var(--text-2); }
+        .back-home { font-size:12px; color:var(--text-3); text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin-bottom:28px; }
     </style>
 </head>
 <body>
@@ -43,152 +32,33 @@
     <a href="cannascope-landing.html" class="back-home">← Back to home</a>
     <a href="cannascope-landing.html" style="text-decoration:none"><div class="wordmark">Cannascope</div></a>
     <div class="card">
-        <div class="card-title" id="cardTitle">Welcome back</div>
-        <div class="card-sub" id="cardSub">Sign in to manage your dispensary</div>
-
-        <div class="tabs">
-            <div class="tab active" id="tabSignin" onclick="switchTab('signin')">Sign In</div>
-            <div class="tab" id="tabSignup" onclick="switchTab('signup')">Create Account</div>
-        </div>
-
+        <div class="card-title">Welcome back</div>
+        <div class="card-sub">Sign in to manage your dispensary</div>
         <div id="msgErr" class="err"></div>
         <div id="msgOk"  class="ok"></div>
-
-        <!-- SIGN IN -->
         <div id="formSignin">
-            <div class="fg">
-                <label class="fl">Email</label>
-                <input class="fi" id="siEmail" type="email" placeholder="you@dispensary.com" autocomplete="email">
-            </div>
-            <div class="fg">
-                <label class="fl">Password</label>
-                <input class="fi" id="siPass" type="password" placeholder="••••••••" autocomplete="current-password">
-            </div>
+            <div class="fg"><label class="fl">Email</label><input class="fi" id="siEmail" type="email" placeholder="you@dispensary.com" autocomplete="email"></div>
+            <div class="fg"><label class="fl">Password</label><input class="fi" id="siPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
             <button class="btn" id="btnSignin" onclick="signIn()">Sign In</button>
-        </div>
-
-        <!-- SIGN UP -->
-        <div id="formSignup" style="display:none">
-            <div class="fg">
-                <label class="fl">Your Name</label>
-                <input class="fi" id="suName" type="text" placeholder="e.g. Alex Rivera">
-            </div>
-            <div class="fg">
-                <label class="fl">Dispensary Name</label>
-                <input class="fi" id="suOrg" type="text" placeholder="e.g. Green Peak Amherst">
-            </div>
-            <div class="fg">
-                <label class="fl">Email</label>
-                <input class="fi" id="suEmail" type="email" placeholder="you@dispensary.com" autocomplete="email">
-            </div>
-            <div class="fg">
-                <label class="fl">Password</label>
-                <input class="fi" id="suPass" type="password" placeholder="Min. 8 characters" autocomplete="new-password">
-            </div>
-            <button class="btn" id="btnSignup" onclick="signUp()">Create Account &rarr;</button>
         </div>
     </div>
     <div class="footer">Cannascope &mdash; Budtender Intelligence Platform</div>
 </div>
-
 <script>
-// ── CONFIG — replace with your Supabase project values ────────
-const SUPABASE_URL  = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
-// ─────────────────────────────────────────────────────────────
-
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// If already logged in, go straight to admin
-sb.auth.getSession().then(({ data }) => {
-    if (data.session) window.location.href = 'cannascope-admin.html';
-});
-
-// Auto-open signup tab if ?signup=1 in URL
-if (new URLSearchParams(window.location.search).get('signup') === '1') {
-    document.getElementById('cardTitle').textContent = 'Create your account';
-    document.getElementById('cardSub').textContent   = 'Set up your dispensary in under 5 minutes';
-    switchTab('signup');
+const sb = supabase.createClient('https://nrcvpwyvxmplwvjrdoua.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls');
+sb.auth.getSession().then(({data})=>{ if(data.session) window.location.href='cannascope-admin.html'; });
+function showErr(msg){const el=document.getElementById('msgErr');el.textContent=msg;el.style.display='block';document.getElementById('msgOk').style.display='none';}
+async function signIn(){
+  const email=document.getElementById('siEmail').value.trim();
+  const pass=document.getElementById('siPass').value;
+  if(!email||!pass){showErr('Please enter your email and password.');return;}
+  const btn=document.getElementById('btnSignin');
+  btn.disabled=true;btn.textContent='Signing in…';
+  const{error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){showErr(error.message);btn.disabled=false;btn.textContent='Sign In';return;}
+  window.location.href='cannascope-admin.html';
 }
-
-function switchTab(tab) {
-    const isSignin = tab === 'signin';
-    document.getElementById('tabSignin').classList.toggle('active', isSignin);
-    document.getElementById('tabSignup').classList.toggle('active', !isSignin);
-    document.getElementById('formSignin').style.display = isSignin ? 'block' : 'none';
-    document.getElementById('formSignup').style.display = isSignin ? 'none'  : 'block';
-    document.getElementById('cardTitle').textContent = isSignin ? 'Welcome back' : 'Create your account';
-    document.getElementById('cardSub').textContent   = isSignin ? 'Sign in to manage your dispensary' : 'Set up your dispensary in under 5 minutes';
-    clearMsgs();
-}
-
-function showErr(msg) {
-    const el = document.getElementById('msgErr');
-    el.textContent = msg; el.style.display = 'block';
-    document.getElementById('msgOk').style.display = 'none';
-}
-function showOk(msg) {
-    const el = document.getElementById('msgOk');
-    el.textContent = msg; el.style.display = 'block';
-    document.getElementById('msgErr').style.display = 'none';
-}
-function clearMsgs() {
-    document.getElementById('msgErr').style.display = 'none';
-    document.getElementById('msgOk').style.display = 'none';
-}
-
-async function signIn() {
-    const email = document.getElementById('siEmail').value.trim();
-    const pass  = document.getElementById('siPass').value;
-    if (!email || !pass) { showErr('Please enter your email and password.'); return; }
-    const btn = document.getElementById('btnSignin');
-    btn.disabled = true; btn.textContent = 'Signing in…';
-    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-    if (error) { showErr(error.message); btn.disabled = false; btn.textContent = 'Sign In'; return; }
-    window.location.href = 'cannascope-admin.html';
-}
-
-async function signUp() {
-    const name  = document.getElementById('suName').value.trim();
-    const org   = document.getElementById('suOrg').value.trim();
-    const email = document.getElementById('suEmail').value.trim();
-    const pass  = document.getElementById('suPass').value;
-    if (!name || !org || !email || !pass) { showErr('All fields are required.'); return; }
-    if (pass.length < 8) { showErr('Password must be at least 8 characters.'); return; }
-    const btn = document.getElementById('btnSignup');
-    btn.disabled = true; btn.textContent = 'Creating account…';
-
-    // 1. Create auth user
-    const { data: authData, error: authErr } = await sb.auth.signUp({ email, password: pass });
-    if (authErr) { showErr(authErr.message); btn.disabled = false; btn.textContent = 'Create Account →'; return; }
-    const userId = authData.user.id;
-
-    // 2. Create organization
-    const slug = org.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    const { data: orgData, error: orgErr } = await sb
-        .from('organizations')
-        .insert({ name: org, slug })
-        .select()
-        .single();
-    if (orgErr) { showErr('Organization setup failed: ' + orgErr.message); btn.disabled = false; btn.textContent = 'Create Account →'; return; }
-
-    // 3. Create user profile
-    const { error: profileErr } = await sb
-        .from('user_profiles')
-        .insert({ id: userId, organization_id: orgData.id, role: 'owner', full_name: name });
-    if (profileErr) { showErr('Profile setup failed: ' + profileErr.message); btn.disabled = false; btn.textContent = 'Create Account →'; return; }
-
-    showOk('Account created! Setting up your inventory now…');
-    setTimeout(() => window.location.href = 'cannascope-onboarding.html', 1500);
-}
-
-// Enter key support
-document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    const isSignin = document.getElementById('formSignin').style.display !== 'none';
-    if (isSignin) signIn(); else signUp();
-});
+document.addEventListener('keydown',e=>{if(e.key==='Enter')signIn();});
 </script>
 </body>
 </html>
