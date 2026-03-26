@@ -2,204 +2,657 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cannascope — Budtender Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cannascope â Product Finder</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        * { margin:0; padding:0; box-sizing:border-box; }
-        :root {
-            --green:#10b981; --green-dim:rgba(16,185,129,0.10);
-            --amber:#f59e0b; --amber-dim:rgba(245,158,11,0.10);
-            --bg:#080808; --surface:#111111; --surface-2:#181818;
-            --border:#1e1e1e; --border-2:#282828;
-            --text:#f0f0f0; --text-2:#909090; --text-3:#505050;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
-        html,body { height:100%; font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
 
-        /* ── HEADER ── */
-        .header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; }
-        .wordmark { font-size:12px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--green); }
-        .header-right { display:flex; align-items:center; gap:16px; }
-        .org-label { font-size:11px; color:var(--text-3); font-weight:500; }
-        .mode-badge { font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; padding:3px 8px; border-radius:3px; background:var(--green-dim); color:var(--green); border:1px solid rgba(16,185,129,0.18); }
-        .product-count { font-size:11px; font-weight:500; color:var(--text-3); }
-        .product-count.loaded { color:var(--text-2); }
+        :root {
+            --accent: #059669;
+            --accent-light: #ECFDF5;
+            --accent-border: #6EE7B7;
+            --amber: #92400E;
+            --amber-light: #FFFBEB;
+            --amber-border: #FDE68A;
+            --bg: #F9FAFB;
+            --surface: #FFFFFF;
+            --surface-2: #F3F4F6;
+            --border: #E5E7EB;
+            --border-2: #D1D5DB;
+            --text: #111827;
+            --text-2: #6B7280;
+            --text-3: #9CA3AF;
+        }
 
-        /* ── HOME SCREEN ── */
-        .home-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; height:calc(100vh - 54px); padding:40px 24px; }
-        .home-eyebrow { font-size:10px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-3); margin-bottom:12px; }
-        .home-title { font-size:24px; font-weight:700; letter-spacing:-0.02em; text-align:center; color:var(--text); margin-bottom:8px; }
-        .home-sub { font-size:13px; color:var(--text-3); text-align:center; margin-bottom:44px; font-weight:400; }
-        .effect-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:100%; max-width:540px; }
-        .effect-btn { padding:24px 14px 20px; background:var(--surface); border:1px solid var(--border-2); border-radius:8px; cursor:pointer; transition:border-color 0.15s, background 0.15s; text-align:center; user-select:none; }
-        .effect-btn:hover { border-color:var(--green); background:var(--green-dim); }
-        .effect-btn:active { transform:scale(0.97); }
-        .effect-label { font-size:14px; font-weight:700; letter-spacing:-0.01em; color:var(--text); }
-        .effect-sub { font-size:11px; color:var(--text-3); margin-top:5px; font-weight:400; }
+        html, body {
+            height: 100%;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
 
-        /* ── RESULTS SCREEN ── */
-        .results-screen { display:none; height:calc(100vh - 54px); overflow-y:auto; }
-        .results-screen.active { display:block; }
-        .results-header { padding:16px 28px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--surface); position:sticky; top:0; z-index:10; }
-        .back-btn { font-size:12px; font-weight:600; color:var(--text-2); background:none; border:1px solid var(--border-2); border-radius:5px; padding:7px 14px; cursor:pointer; font-family:inherit; letter-spacing:0.02em; transition:border-color 0.15s, color 0.15s; }
-        .back-btn:hover { border-color:var(--green); color:var(--green); }
-        .results-meta { text-align:right; }
-        .results-eyebrow { font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-3); margin-bottom:2px; }
-        .results-title { font-size:20px; font-weight:800; letter-spacing:-0.02em; }
+        /* ââ HEADER ââââââââââââââââââââââââââââââââââ */
+        .header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            height: 52px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .wordmark {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+        .wordmark-accent { color: var(--accent); }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .org-label {
+            font-size: 12px;
+            color: var(--text-2);
+            font-weight: 500;
+        }
+        .inventory-badge {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-3);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            padding: 3px 10px;
+            border-radius: 100px;
+        }
+        .inventory-badge.loaded {
+            color: var(--accent);
+            background: var(--accent-light);
+            border-color: var(--accent-border);
+        }
 
-        /* ── CARDS WRAP ── */
-        .cards-wrap { padding:24px 28px 40px; display:flex; flex-direction:column; gap:12px; max-width:760px; margin:0 auto; }
+        /* ââ SCREENS âââââââââââââââââââââââââââââââââ */
+        .screen { display: none; }
+        .screen.active { display: block; }
 
-        /* ── PRODUCT CARD ── */
-        .product-card { background:var(--surface); border:1px solid var(--border-2); border-radius:10px; overflow:hidden; }
-        .product-card.top { border-color:rgba(16,185,129,0.35); }
+        /* ââ SCREEN 1: INTENT ââââââââââââââââââââââââ */
+        #screenEffect {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 20px 64px;
+            min-height: calc(100vh - 52px);
+        }
+        .screen-eyebrow {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin-bottom: 10px;
+        }
+        .screen-heading {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .screen-sub {
+            font-size: 13px;
+            color: var(--text-2);
+            text-align: center;
+            margin-bottom: 32px;
+        }
 
-        .card-rank-strip { padding:8px 22px 0; }
-        .rank-label { font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--green); }
-        .product-card:not(.top) .rank-label { color:var(--text-3); }
+        .intent-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 480px;
+        }
+        .intent-btn {
+            padding: 16px 14px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            text-align: left;
+            transition: border-color 0.12s, background 0.12s;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .intent-btn:hover {
+            border-color: var(--border-2);
+            background: var(--surface-2);
+        }
+        .intent-btn:active { transform: scale(0.98); }
+        .intent-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+        .intent-desc {
+            font-size: 11px;
+            color: var(--text-3);
+            line-height: 1.4;
+        }
 
-        .card-main { padding:10px 22px 0; }
-        .card-top-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:6px; }
-        .card-name { font-size:22px; font-weight:800; letter-spacing:-0.025em; line-height:1.1; }
-        .card-price { font-size:22px; font-weight:800; letter-spacing:-0.025em; color:var(--text); white-space:nowrap; flex-shrink:0; }
+        /* ââ SUB-HEADER (shared) âââââââââââââââââââââ */
+        .sub-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: sticky;
+            top: 52px;
+            z-index: 50;
+        }
+        .btn-back {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-2);
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.12s;
+        }
+        .btn-back:hover { border-color: var(--border-2); color: var(--text); }
+        .intent-tag {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-light);
+            border: 1px solid var(--accent-border);
+            padding: 4px 12px;
+            border-radius: 100px;
+            flex-shrink: 0;
+        }
+        .sub-header-spacer { flex: 1; }
+        .btn-primary {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            background: var(--accent);
+            border: none;
+            border-radius: 7px;
+            padding: 8px 18px;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: background 0.12s;
+        }
+        .btn-primary:hover { background: #047857; }
+        .btn-primary:active { transform: scale(0.97); }
 
-        .card-sub-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:16px; }
-        .card-meta { font-size:12px; color:var(--text-3); font-weight:500; }
-        .card-meta strong { color:var(--text-2); font-weight:600; }
-        .card-shelf { font-size:12px; font-weight:700; color:var(--text-2); letter-spacing:0.03em; background:var(--surface-2); border:1px solid var(--border-2); padding:3px 9px; border-radius:4px; white-space:nowrap; }
-        .card-cbd-note { font-size:11px; color:var(--text-3); padding-bottom:12px; }
+        /* ââ SCREEN 2: FILTERS âââââââââââââââââââââââ */
+        #screenFilters { min-height: calc(100vh - 52px); }
+        .filter-body {
+            padding: 20px 20px 48px;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+        .filter-intro {
+            font-size: 12px;
+            color: var(--text-3);
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .filter-group { margin-bottom: 22px; }
+        .filter-group-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin-bottom: 10px;
+        }
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .chip {
+            height: 34px;
+            padding: 0 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-2);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.12s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+        }
+        .chip:hover { border-color: var(--border-2); color: var(--text); }
+        .chip.active {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .btn-find-bottom {
+            display: block;
+            width: 100%;
+            height: 44px;
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.12s;
+        }
+        .btn-find-bottom:hover { background: #047857; }
 
-        /* ── TALKING POINT ── */
-        .talking-point-block { border-top:1px solid var(--border); padding:14px 22px; }
-        .tp-label { font-size:9px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--green); margin-bottom:7px; }
-        .tp-text { font-size:14px; line-height:1.72; color:var(--text); font-weight:400; }
+        /* ââ SCREEN 3: RESULTS âââââââââââââââââââââââ */
+        #screenResults { min-height: calc(100vh - 52px); }
+        .results-header-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .results-title {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--text);
+        }
+        .results-subtitle {
+            font-size: 11px;
+            color: var(--text-3);
+            margin-top: 1px;
+        }
+        .btn-ghost {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-2);
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: all 0.12s;
+        }
+        .btn-ghost:hover { border-color: var(--border-2); color: var(--text); }
 
-        /* ── MANAGER NOTE ── */
-        .manager-note-block { border-top:1px solid var(--border); padding:10px 22px 12px; background:rgba(245,158,11,0.04); border-left:2px solid var(--amber); margin-left:0; }
-        .mn-label { font-size:9px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--amber); margin-bottom:5px; }
-        .mn-text { font-size:12px; color:rgba(245,158,11,0.85); font-weight:500; line-height:1.5; }
+        .results-list {
+            padding: 14px 14px 48px;
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-        /* ── UPSELL STRIP ── */
-        .upsell-strip { background:var(--surface); border:1px solid var(--border-2); border-radius:10px; padding:16px 22px; margin-top:4px; display:flex; gap:16px; align-items:flex-start; }
-        .upsell-icon { width:28px; height:28px; flex-shrink:0; background:var(--green-dim); border:1px solid rgba(16,185,129,0.2); border-radius:5px; display:flex; align-items:center; justify-content:center; margin-top:1px; }
-        .upsell-icon svg { width:14px; height:14px; fill:none; stroke:var(--green); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-        .upsell-body {}
-        .upsell-label { font-size:9px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--green); margin-bottom:5px; }
-        .upsell-text { font-size:13px; color:var(--text-2); line-height:1.6; font-weight:400; }
+        /* ââ PRODUCT CARD ââââââââââââââââââââââââââââ */
+        .prod-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .prod-card.rank-1 {
+            border-color: var(--border-2);
+            border-left: 3px solid var(--accent);
+        }
 
-        /* ── MISC ── */
-        .empty-wrap { display:flex; align-items:center; justify-content:center; height:260px; color:var(--text-3); font-size:13px; text-align:center; padding:24px; line-height:1.6; }
-        .loading { display:flex; align-items:center; justify-content:center; height:260px; color:var(--text-3); font-size:13px; }
-        .setup-banner { max-width:460px; margin:60px auto 0; background:var(--surface); border:1px solid var(--border-2); border-radius:10px; padding:32px; text-align:center; }
-        .setup-title { font-size:18px; font-weight:700; margin-bottom:8px; }
-        .setup-sub { font-size:13px; color:var(--text-2); line-height:1.6; }
+        .card-top {
+            padding: 14px 16px 10px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .card-rank-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin-bottom: 4px;
+        }
+        .prod-card.rank-1 .card-rank-label { color: var(--accent); }
+        .card-name {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+        .card-price-block {
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .card-price {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+        .card-match-pct {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-3);
+            margin-top: 2px;
+        }
+        .prod-card.rank-1 .card-match-pct { color: var(--accent); }
 
-        @media (max-width:560px) {
-            .effect-grid { grid-template-columns:repeat(2,1fr); }
-            .card-name, .card-price { font-size:19px; }
+        .card-meta {
+            padding: 0 16px 10px;
+            font-size: 12px;
+            color: var(--text-2);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .meta-sep { color: var(--border-2); }
+
+        .card-chips {
+            padding: 0 16px 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .chip-match {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-light);
+            border: 1px solid var(--accent-border);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .chip-shelf {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-3);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .card-section {
+            border-top: 1px solid var(--border);
+            padding: 10px 16px;
+        }
+        .card-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin-bottom: 5px;
+        }
+        .card-section-text {
+            font-size: 12px;
+            color: var(--text-2);
+            line-height: 1.65;
+        }
+        .card-section.is-manager {
+            background: var(--amber-light);
+            border-top-color: var(--amber-border);
+        }
+        .card-section.is-manager .card-section-label { color: var(--amber); }
+        .card-section.is-manager .card-section-text  { color: var(--amber); }
+
+        /* ââ UPSELL BLOCK ââââââââââââââââââââââââââââ */
+        .upsell-block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .upsell-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+        .upsell-text {
+            font-size: 12px;
+            color: var(--text-2);
+            line-height: 1.65;
+        }
+
+        /* ââ STATES ââââââââââââââââââââââââââââââââââ */
+        .empty-state, .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-3);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 380px) {
+            .intent-grid { grid-template-columns: repeat(2, 1fr); }
+            .btn-primary { font-size: 12px; padding: 7px 13px; }
         }
     </style>
 </head>
 <body>
 
+<!-- ââ HEADER âââââââââââââââââââââââââââââââââââââââ -->
+<div class="header">
+    <div class="wordmark">Canna<span class="wordmark-accent">scope</span></div>
+    <div class="header-right">
+        <span class="org-label" id="orgLabel">Loadingâ¦</span>
+        <span class="inventory-badge" id="productCount">â</span>
+    </div>
+</div>
+
+<!-- ââ SCREEN 1: CUSTOMER INTENT ââââââââââââââââââââââ -->
+<div id="screenEffect" class="screen active">
+    <div class="screen-eyebrow">Customer Intent</div>
+    <div class="screen-heading">What is the customer looking for?</div>
+    <div class="screen-sub">Select the primary goal â refine by format and preference next</div>
+    <div class="intent-grid">
+        <button class="intent-btn" onclick="selectEffect('sleep')">
+            <span class="intent-name">Sleep</span>
+            <span class="intent-desc">Rest &amp; recovery</span>
+        </button>
+        <button class="intent-btn" onclick="selectEffect('relax')">
+            <span class="intent-name">Relax</span>
+            <span class="intent-desc">Unwind, decompress</span>
+        </button>
+        <button class="intent-btn" onclick="selectEffect('focus')">
+            <span class="intent-name">Focus</span>
+            <span class="intent-desc">Clarity &amp; productivity</span>
+        </button>
+        <button class="intent-btn" onclick="selectEffect('social')">
+            <span class="intent-name">Social</span>
+            <span class="intent-desc">Energy &amp; mood lift</span>
+        </button>
+        <button class="intent-btn" onclick="selectEffect('relief')">
+            <span class="intent-name">Relief</span>
+            <span class="intent-desc">Pain &amp; inflammation</span>
+        </button>
+        <button class="intent-btn" onclick="selectEffect('beginner')">
+            <span class="intent-name">Balanced</span>
+            <span class="intent-desc">First-time friendly</span>
+        </button>
+    </div>
+</div>
+
+<!-- ââ SCREEN 2: OPTIONAL FILTERS ââââââââââââââââââââ -->
+<div id="screenFilters" class="screen">
+    <div class="sub-header">
+        <button class="btn-back" onclick="goToEffect()">â Back</button>
+        <span class="intent-tag" id="selectedEffectBadge">Sleep</span>
+        <div class="sub-header-spacer"></div>
+        <button class="btn-primary" onclick="findProducts()">Show Matches</button>
+    </div>
+    <div class="filter-body">
+        <p class="filter-intro">All filters are optional â skip any that weren't mentioned by the customer</p>
+
+        <div class="filter-group">
+            <div class="filter-group-label">Format</div>
+            <div class="chip-row" id="pillsFormat">
+                <button class="chip" data-group="format" data-val="flower"      onclick="togglePill(this)">Flower</button>
+                <button class="chip" data-group="format" data-val="vape"        onclick="togglePill(this)">Vape</button>
+                <button class="chip" data-group="format" data-val="edible"      onclick="togglePill(this)">Edible</button>
+                <button class="chip" data-group="format" data-val="concentrate" onclick="togglePill(this)">Concentrate</button>
+                <button class="chip" data-group="format" data-val="preroll"     onclick="togglePill(this)">Pre-roll</button>
+                <button class="chip" data-group="format" data-val="tincture"    onclick="togglePill(this)">Tincture</button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-label">Experience Level</div>
+            <div class="chip-row" id="pillsIntensity">
+                <button class="chip" data-group="intensity" data-val="mild"     onclick="togglePill(this)">Mild &lt;15% THC</button>
+                <button class="chip" data-group="intensity" data-val="moderate" onclick="togglePill(this)">Moderate 15â22%</button>
+                <button class="chip" data-group="intensity" data-val="strong"   onclick="togglePill(this)">Strong 22%+</button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-label">Price Range</div>
+            <div class="chip-row" id="pillsPrice">
+                <button class="chip" data-group="price" data-val="20-30" onclick="togglePill(this)">$20â30</button>
+                <button class="chip" data-group="price" data-val="30-45" onclick="togglePill(this)">$30â45</button>
+                <button class="chip" data-group="price" data-val="45-60" onclick="togglePill(this)">$45â60</button>
+                <button class="chip" data-group="price" data-val="60+"   onclick="togglePill(this)">$60+</button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-label">Onset Speed</div>
+            <div class="chip-row" id="pillsOnset">
+                <button class="chip" data-group="onset" data-val="quick"    onclick="togglePill(this)">Quick (5â15 min)</button>
+                <button class="chip" data-group="onset" data-val="moderate" onclick="togglePill(this)">Standard (20â45 min)</button>
+                <button class="chip" data-group="onset" data-val="slow"     onclick="togglePill(this)">Long-lasting (4â8 hr)</button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-label">THC Level</div>
+            <div class="chip-row" id="pillsThc">
+                <button class="chip" data-group="thc" data-val="low"   onclick="togglePill(this)">Low &lt;15%</button>
+                <button class="chip" data-group="thc" data-val="med"   onclick="togglePill(this)">Medium 15â20%</button>
+                <button class="chip" data-group="thc" data-val="high"  onclick="togglePill(this)">High 20â25%</button>
+                <button class="chip" data-group="thc" data-val="vhigh" onclick="togglePill(this)">Very High 25%+</button>
+            </div>
+        </div>
+
+        <button class="btn-find-bottom" onclick="findProducts()">Show Best Matches</button>
+    </div>
+</div>
+
+<!-- ââ SCREEN 3: RESULTS ââââââââââââââââââââââââââââââ -->
+<div id="screenResults" class="screen">
+    <div class="sub-header">
+        <button class="btn-back" onclick="goToFilters()">â Filters</button>
+        <div class="results-header-info">
+            <div class="results-title" id="resultsTitle">Sleep</div>
+            <div class="results-subtitle" id="filterSummary"></div>
+        </div>
+        <div class="sub-header-spacer"></div>
+        <button class="btn-ghost" onclick="goToEffect()">New Search</button>
+    </div>
+    <div class="results-list" id="productCards">
+        <div class="loading-state">Finding best matchesâ¦</div>
+    </div>
+</div>
+
 <script>
+// ââ CONFIG ââââââââââââââââââââââââââââââââââââââââââââ
 const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
-</script>
 
-<div class="header">
-    <div class="wordmark">Cannascope</div>
-    <div class="header-right">
-        <span class="org-label" id="orgLabel"></span>
-        <span class="mode-badge">Budtender Mode</span>
-        <span class="product-count" id="productCount"></span>
-        <a href="cannascope-admin.html" id="adminLink" style="display:none;font-size:11px;font-weight:600;color:var(--text-3);text-decoration:none;border:1px solid var(--border-2);padding:5px 10px;border-radius:4px;transition:border-color 0.15s,color 0.15s;" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--border-2)';this.style.color='var(--text-3)'">Admin</a>
-    </div>
-</div>
+const EFFECT_LABELS = {
+    sleep:'Sleep', relax:'Relax', focus:'Focus',
+    social:'Social', relief:'Relief', beginner:'Balanced'
+};
 
-<div class="home-screen" id="homeScreen">
-    <div class="home-eyebrow">Inventory Recommendation Engine</div>
-    <div class="home-title">Select the customer's desired effect</div>
-    <div class="home-sub">Cannascope will show your top 3 in-stock recommendations</div>
-    <div class="effect-grid">
-        <div class="effect-btn" onclick="show('sleep')"><div class="effect-label">Sleep</div><div class="effect-sub">Rest &amp; recovery</div></div>
-        <div class="effect-btn" onclick="show('relax')"><div class="effect-label">Relax</div><div class="effect-sub">Unwind &amp; decompress</div></div>
-        <div class="effect-btn" onclick="show('focus')"><div class="effect-label">Focus</div><div class="effect-sub">Clarity &amp; energy</div></div>
-        <div class="effect-btn" onclick="show('social')"><div class="effect-label">Social</div><div class="effect-sub">Uplift &amp; connect</div></div>
-        <div class="effect-btn" onclick="show('relief')"><div class="effect-label">Relief</div><div class="effect-sub">Pain &amp; inflammation</div></div>
-        <div class="effect-btn" onclick="show('beginner')"><div class="effect-label">Beginner</div><div class="effect-sub">New to cannabis</div></div>
-    </div>
-</div>
+const UPSELL = {
+    sleep:    'Many sleep customers also add a CBD tincture or capsule for a deeper, non-psychoactive relaxation layer.',
+    relax:    'For extra relaxation without THC, suggest a high-CBD tincture alongside their main pick.',
+    focus:    'Pair with a microdose option or 1:1 CBD:THC product for sustained clarity without the edge.',
+    social:   'Suggest a fast-onset vape alongside flower for easy, controllable top-ups during their event.',
+    relief:   'Topicals layered with a systemic product (edible or tincture) provide the best dual-action relief.',
+    beginner: 'A 1:1 CBD:THC ratio product is the ideal first experience â all the comfort, fully approachable.'
+};
 
-<div class="results-screen" id="resultsScreen">
-    <div class="results-header">
-        <button class="back-btn" onclick="goHome()">&#8592; Back</button>
-        <div class="results-meta">
-            <div class="results-eyebrow">Top Recommendations</div>
-            <div class="results-title" id="resultsTitle"></div>
-        </div>
-    </div>
-    <div class="cards-wrap" id="productCards"></div>
-</div>
+const ONSET_MAP = {
+    flower:'quick', vape:'quick', concentrate:'quick', preroll:'quick',
+    tincture:'moderate', sublingual:'moderate',
+    edible:'slow', capsule:'slow', patch:'slow'
+};
 
-<script>
+// ââ STATE âââââââââââââââââââââââââââââââââââââââââââââ
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let orgId = null, orgName = '', allProducts = [];
+let selectedEffect = null;
+let filters = {};
 
-const LABELS = { sleep:'Sleep', relax:'Relax', focus:'Focus', social:'Social', relief:'Relief', beginner:'Beginner' };
-const SCORE_COL = { sleep:'score_sleep', relax:'score_relax', focus:'score_focus', social:'score_social', relief:'score_relief', beginner:'score_beginner' };
+// ââ INIT ââââââââââââââââââââââââââââââââââââââââââââââ
+(async () => {
+    const params = new URLSearchParams(location.search);
+    const key    = params.get('key');
 
-// Per-effect upsell suggestions — help budtenders increase basket size
-const UPSELL = {
-    sleep:    'If they want longer sleep, suggest gummies.',
-    relax:    'If they want something lighter, suggest a 5mg edible.',
-    focus:    'If they want daytime microdosing, suggest a low-dose vape.',
-    social:   'If they want something shareable, suggest prerolls.',
-    relief:   'If they want body relief, suggest a topical.',
-    beginner: 'If they want controlled dosing, suggest 2.5mg gummies.'
-};
-
-async function init() {
-    const params = new URLSearchParams(window.location.search);
-    const key = params.get('key');
-
-    // If manager is signed in, show the Admin back-link
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) document.getElementById('adminLink').style.display = 'inline-flex';
-
-    if (!key) {
-        showDemoMode();
-        return;
+    if (key) {
+        const { data: org } = await sb.from('organizations').select('id,name').eq('share_key', key).single();
+        if (org) {
+            orgId   = org.id;
+            orgName = org.name;
+            document.getElementById('orgLabel').textContent = org.name;
+            const { data: prods } = await sb.from('products').select('*').eq('organization_id', orgId).eq('in_stock', true);
+            allProducts = prods || [];
+            const el = document.getElementById('productCount');
+            el.textContent = allProducts.length + ' products';
+            el.classList.add('loaded');
+        } else {
+            useDemoMode();
+        }
+    } else {
+        useDemoMode();
     }
+})();
 
-    const { data: org, error: orgErr } = await sb.from('organizations').select('id, name').eq('public_key', key).single();
-    if (orgErr || !org) { showSetupBanner('Invalid or expired link. Ask your manager for an updated URL.'); return; }
-
-    orgId = org.id;
-    orgName = org.name;
-    document.getElementById('orgLabel').textContent = orgName;
-
-    const { data: products, error: prodErr } = await sb.from('products').select('*').eq('organization_id', orgId).eq('in_stock', true);
-    if (prodErr) { showSetupBanner('Error loading inventory: ' + prodErr.message); return; }
-
-    allProducts = products || [];
-    const el = document.getElementById('productCount');
-    el.textContent = allProducts.length + ' products';
-    el.classList.add('loaded');
-}
-
-function showSetupBanner(msg) {
-    document.getElementById('homeScreen').innerHTML = `
-        <div class="setup-banner">
-            <div class="setup-title">Setup Required</div>
-            <div class="setup-sub">${msg}</div>
-        </div>`;
-}
-
-function showDemoMode() {
+function useDemoMode() {
     document.getElementById('orgLabel').textContent = 'Demo Store';
     allProducts = DEMO_PRODUCTS;
     const el = document.getElementById('productCount');
@@ -207,211 +660,303 @@ function showDemoMode() {
     el.classList.add('loaded');
 }
 
-async function show(effect) {
-    document.getElementById('resultsTitle').textContent = LABELS[effect] || effect;
-    document.getElementById('productCards').innerHTML = '<div class="loading">Loading…</div>';
-    document.getElementById('homeScreen').style.display = 'none';
-    document.getElementById('resultsScreen').classList.add('active');
-    document.getElementById('resultsScreen').scrollTop = 0;
+// ââ NAVIGATION ââââââââââââââââââââââââââââââââââââââââ
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+}
 
-    let products;
+function selectEffect(eff) {
+    selectedEffect = eff;
+    filters = {};
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    document.getElementById('selectedEffectBadge').textContent = EFFECT_LABELS[eff];
+    showScreen('screenFilters');
+}
 
-    if (orgId) {
-        const scoreCol = SCORE_COL[effect];
-        products = allProducts
-            .filter(p => p.in_stock !== false)
-            .sort((a,b) => (b[scoreCol]||0) - (a[scoreCol]||0))
-            .slice(0, 3);
+function goToEffect()   { showScreen('screenEffect'); }
+function goToFilters()  { showScreen('screenFilters'); }
+
+// ââ PILL TOGGLE (single-select per group) âââââââââââââ
+function togglePill(btn) {
+    const group     = btn.dataset.group;
+    const wasActive = btn.classList.contains('active');
+    document.querySelectorAll(`.chip[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
+    if (wasActive) {
+        delete filters[group];
     } else {
-        // Demo mode — filter by effect tag, order by score
-        const scoreCol = SCORE_COL[effect];
-        products = DEMO_PRODUCTS
-            .filter(p => p.effect === effect)
-            .sort((a,b) => (b[scoreCol]||0) - (a[scoreCol]||0))
-            .slice(0, 3);
+        btn.classList.add('active');
+        filters[group] = btn.dataset.val;
+    }
+}
+
+// ââ SCORING ENGINE ââââââââââââââââââââââââââââââââââââ
+// Effect quality (score_X Ã 40)     â 0â40 pts
+// Format match                       â 0â20 pts
+// Experience/Intensity match         â 0â20 pts
+// Price range match                  â 0â10 pts
+// Onset speed match                  â 0â10 pts
+// THC preference match               â 0â10 pts
+// Skipped filters are neutral (no penalty)
+
+function scoreProduct(p, eff) {
+    const base = (p['score_' + eff] || 0) * 40;
+    let bonus = 0, maxBonus = 0;
+
+    if (filters.format) {
+        maxBonus += 20;
+        if ((p.category || '').toLowerCase() === filters.format) bonus += 20;
+    }
+    if (filters.intensity) {
+        maxBonus += 20;
+        const thc = parseFloat(p.thc) || 0;
+        const hit = (filters.intensity === 'mild'     && thc < 15)              ||
+                    (filters.intensity === 'moderate'  && thc >= 15 && thc <= 22) ||
+                    (filters.intensity === 'strong'    && thc > 22);
+        if (hit) bonus += 20;
+    }
+    if (filters.price) {
+        maxBonus += 10;
+        const price = parseFloat(p.price) || 0;
+        const hit   = (filters.price === '20-30' && price >= 20 && price <= 30) ||
+                      (filters.price === '30-45' && price >  30 && price <= 45) ||
+                      (filters.price === '45-60' && price >  45 && price <= 60) ||
+                      (filters.price === '60+'   && price >  60);
+        if (hit) bonus += 10;
+    }
+    if (filters.onset) {
+        maxBonus += 10;
+        const cat   = (p.category || '').toLowerCase();
+        const onset = ONSET_MAP[cat] || 'moderate';
+        if (onset === filters.onset) bonus += 10;
+    }
+    if (filters.thc) {
+        maxBonus += 10;
+        const thc = parseFloat(p.thc) || 0;
+        const hit = (filters.thc === 'low'   && thc < 15)              ||
+                    (filters.thc === 'med'   && thc >= 15 && thc <= 20) ||
+                    (filters.thc === 'high'  && thc >  20 && thc <= 25) ||
+                    (filters.thc === 'vhigh' && thc >  25);
+        if (hit) bonus += 10;
     }
 
-    if (products.length === 0) {
-        document.getElementById('productCards').innerHTML = '<div class="empty-wrap">No in-stock products available for this effect.<br>Ask your manager to update inventory.</div>';
+    const total    = base + bonus;
+    const maxTotal = 40 + maxBonus;
+    const pct      = maxTotal > 0
+        ? Math.round((total / maxTotal) * 100)
+        : Math.round((base / 40) * 100);
+    return { total, pct };
+}
+
+function getMatchChips(p) {
+    const chips = [];
+    const thc   = parseFloat(p.thc)   || 0;
+    const price = parseFloat(p.price) || 0;
+    const cat   = (p.category || '').toLowerCase();
+
+    if (filters.format && cat === filters.format)
+        chips.push(formatLabel(filters.format));
+    if (filters.intensity) {
+        const hit = (filters.intensity === 'mild'     && thc < 15)              ||
+                    (filters.intensity === 'moderate'  && thc >= 15 && thc <= 22) ||
+                    (filters.intensity === 'strong'    && thc > 22);
+        if (hit) chips.push(cap(filters.intensity) + ' intensity');
+    }
+    if (filters.price) {
+        const hit = (filters.price === '20-30' && price >= 20 && price <= 30) ||
+                    (filters.price === '30-45' && price >  30 && price <= 45) ||
+                    (filters.price === '45-60' && price >  45 && price <= 60) ||
+                    (filters.price === '60+'   && price >  60);
+        if (hit) chips.push('$' + filters.price.replace('+', '& up'));
+    }
+    if (filters.onset) {
+        const onset = ONSET_MAP[cat] || 'moderate';
+        if (onset === filters.onset) chips.push(onsetLabel(filters.onset));
+    }
+    return chips;
+}
+
+function formatLabel(v) {
+    const m = { flower:'Flower', vape:'Vape', edible:'Edible', concentrate:'Concentrate', preroll:'Pre-roll', tincture:'Tincture' };
+    return m[v] || v;
+}
+function onsetLabel(v) {
+    return v === 'quick' ? 'Fast onset' : v === 'slow' ? 'Long-lasting' : 'Standard onset';
+}
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+// ââ FIND PRODUCTS âââââââââââââââââââââââââââââââââââââ
+async function findProducts() {
+    if (!selectedEffect) return;
+    const eff   = selectedEffect;
+    const label = EFFECT_LABELS[eff];
+
+    document.getElementById('resultsTitle').textContent = label;
+    document.getElementById('productCards').innerHTML = '<div class="loading-state">Finding best matchesâ¦</div>';
+
+    const parts = [];
+    if (filters.format)    parts.push(formatLabel(filters.format));
+    if (filters.intensity) parts.push(cap(filters.intensity));
+    if (filters.price)     parts.push('$' + filters.price.replace('+', '& up'));
+    if (filters.onset)     parts.push(onsetLabel(filters.onset));
+    if (filters.thc)       parts.push({ low:'<15% THC', med:'15â20% THC', high:'20â25% THC', vhigh:'25%+ THC' }[filters.thc]);
+    document.getElementById('filterSummary').textContent =
+        parts.length ? parts.join(' Â· ') : 'No filters â showing top overall picks';
+
+    showScreen('screenResults');
+
+    const products = allProducts
+        .filter(p => p.in_stock !== false)
+        .map(p => ({ ...p, _score: scoreProduct(p, eff) }))
+        .sort((a, b) => b._score.total - a._score.total)
+        .slice(0, 3);
+
+    if (!products.length) {
+        document.getElementById('productCards').innerHTML =
+            '<div class="empty-state">No in-stock products found.<br>Ask your manager to update inventory.</div>';
         return;
     }
 
-    const cards = products.map((p, i) => {
-        const isTop = i === 0;
-        const cat   = (p.category||'flower').charAt(0).toUpperCase() + (p.category||'flower').slice(1);
-        const cbdNote = p.cbd && p.cbd > 0 ? `<div class="card-cbd-note">CBD ${p.cbd}%</div>` : '';
+    const rankLabels = ['#1 Best Match', '#2 Pick', '#3 Pick'];
+
+    const html = products.map((p, i) => {
+        const score       = p._score;
+        const cat         = cap(p.category || 'Flower');
+        const cbdNote     = (p.cbd && p.cbd > 0) ? ` Â· CBD ${p.cbd}%` : '';
+        const chips       = getMatchChips(p);
+        const matchHTML   = chips.map(c => `<span class="chip-match">${xe(c)} â</span>`).join('');
+        const shelfHTML   = p.shelf ? `<span class="chip-shelf">Shelf ${xe(p.shelf)}</span>` : '';
+        const chipsHTML   = (matchHTML || shelfHTML)
+            ? `<div class="card-chips">${matchHTML}${shelfHTML}</div>` : '';
 
         return `
-        <div class="product-card${isTop?' top':''}">
-            <div class="card-rank-strip">
-                <span class="rank-label">${isTop ? '#1 Recommended' : '#' + (i+1) + ' Pick'}</span>
-            </div>
-            <div class="card-main">
-                <div class="card-top-row">
-                    <div class="card-name">${x(p.name)}</div>
-                    <div class="card-price">$${Number(p.price||0).toFixed(0)}</div>
+        <div class="prod-card${i === 0 ? ' rank-1' : ''}">
+            <div class="card-top">
+                <div>
+                    <div class="card-rank-label">${rankLabels[i]}</div>
+                    <div class="card-name">${xe(p.name)}</div>
                 </div>
-                <div class="card-sub-row">
-                    <div class="card-meta">
-                        <strong>${x(p.brand||'')}</strong>&nbsp;&nbsp;·&nbsp;&nbsp;${cat}&nbsp;&nbsp;·&nbsp;&nbsp;THC ${p.thc != null ? p.thc + '%' : '—'}
-                    </div>
-                    ${p.shelf ? `<div class="card-shelf">Shelf ${x(p.shelf)}</div>` : ''}
+                <div class="card-price-block">
+                    <div class="card-price">$${Number(p.price || 0).toFixed(0)}</div>
+                    <div class="card-match-pct">${score.pct}% match</div>
                 </div>
-                ${cbdNote}
             </div>
+            <div class="card-meta">
+                <span>${xe(p.brand || '')}</span>
+                <span class="meta-sep">Â·</span>
+                <span>${cat}</span>
+                <span class="meta-sep">Â·</span>
+                <span>THC ${p.thc != null ? p.thc + '%' : 'â'}${cbdNote}</span>
+            </div>
+            ${chipsHTML}
             ${p.talking_points ? `
-            <div class="talking-point-block">
-                <div class="tp-label">Talking Point</div>
-                <div class="tp-text">${x(p.talking_points)}</div>
+            <div class="card-section">
+                <div class="card-section-label">Talking Point</div>
+                <div class="card-section-text">${xe(p.talking_points)}</div>
             </div>` : ''}
             ${p.manager_note ? `
-            <div class="manager-note-block">
-                <div class="mn-label">Manager Note</div>
-                <div class="mn-text">${x(p.manager_note)}</div>
+            <div class="card-section is-manager">
+                <div class="card-section-label">Manager Note</div>
+                <div class="card-section-text">${xe(p.manager_note)}</div>
             </div>` : ''}
         </div>`;
     }).join('');
 
     const upsell = `
-        <div class="upsell-strip">
-            <div class="upsell-icon">
-                <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-            </div>
-            <div class="upsell-body">
-                <div class="upsell-label">Upsell Opportunity</div>
-                <div class="upsell-text">${UPSELL[effect]}</div>
-            </div>
+        <div class="upsell-block">
+            <div class="upsell-label">Upsell Opportunity</div>
+            <div class="upsell-text">${xe(UPSELL[eff])}</div>
         </div>`;
 
-    document.getElementById('productCards').innerHTML = cards + upsell;
+    document.getElementById('productCards').innerHTML = html + upsell;
 
-    // Log event
     if (orgId) {
         await sb.from('recommendation_events').insert({
             organization_id: orgId,
-            effect,
+            effect: eff,
             product_id: products[0]?.id || null
         }).catch(() => {});
     }
 }
 
-function goHome() {
-    document.getElementById('homeScreen').style.display = 'flex';
-    document.getElementById('resultsScreen').classList.remove('active');
+function xe(s) {
+    return String(s || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function x(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-// ── DEMO PRODUCTS ──────────────────────────────────────────────
-// Shown when no ?key= parameter is present in the URL
+// ââ DEMO PRODUCTS âââââââââââââââââââââââââââââââââââââ
 const DEMO_PRODUCTS = [
     // Sleep
-    {
-        id:'d1', name:'Granddaddy Purple', brand:'Royal Gardens', category:'flower',
-        price:45, thc:23, cbd:0, shelf:'B3', effect:'sleep', score_sleep:0.82,
-        manager_note: 'Premium shelf — highest margin in category.',
-        talking_points:'Best for sleep — customers consistently report faster onset and longer duration.'
-    },
-    {
-        id:'d2', name:'Northern Lights', brand:'Emerald Fields', category:'flower',
-        price:40, thc:18, cbd:0, shelf:'B1', effect:'sleep', score_sleep:0.74,
-        talking_points:'Best for sensitive sleepers — calming without heaviness, most customers wake without grogginess.'
-    },
-    {
-        id:'d3', name:'Purple Punch', brand:'Green Peak', category:'edible',
-        price:25, thc:10, cbd:0, shelf:'E2', effect:'sleep', score_sleep:0.68,
-        manager_note: 'Overstock inventory — push this batch first.',
-        talking_points:'Best for deep sleep — edible format means effects last 6 to 8 hours through the night.'
-    },
+    { id:'d1', name:'Granddaddy Purple', brand:'Royal Gardens', category:'flower', price:45, thc:23, cbd:0, shelf:'B3', in_stock:true,
+      score_sleep:0.82, score_relax:0.42, score_focus:0.10, score_social:0.12, score_relief:0.38, score_beginner:0.22,
+      manager_note:'Premium shelf â highest margin in category.',
+      talking_points:'This is our most recommended for sleep. The Myrcene terpene profile produces that heavy, settled feeling most people associate with a full night of rest. Best taken 60â90 minutes before bed.' },
+    { id:'d2', name:'Northern Lights', brand:'Emerald Fields', category:'flower', price:40, thc:18, cbd:0, shelf:'B1', in_stock:true,
+      score_sleep:0.74, score_relax:0.50, score_focus:0.12, score_social:0.14, score_relief:0.32, score_beginner:0.35,
+      talking_points:'Lower potency makes this ideal for THC-sensitive customers or those new to cannabis. Calming without being overwhelming â most people report waking without grogginess.' },
+    { id:'d3', name:'Purple Punch Gummies', brand:'Green Peak', category:'edible', price:25, thc:10, cbd:0, shelf:'E2', in_stock:true,
+      score_sleep:0.68, score_relax:0.46, score_focus:0.08, score_social:0.10, score_relief:0.28, score_beginner:0.55,
+      manager_note:'Overstock â push this batch first.',
+      talking_points:'Edible format means effects last 6â8 hours. Take it 90 minutes before bed. Linalool adds a gentle calming quality similar to lavender.' },
+    { id:'d4', name:'Dream Tincture', brand:'Bloom Select', category:'tincture', price:38, thc:5, cbd:10, shelf:'T3', in_stock:true,
+      score_sleep:0.71, score_relax:0.55, score_focus:0.10, score_social:0.08, score_relief:0.44, score_beginner:0.62,
+      talking_points:'The high CBD ratio calms the nervous system while the low THC eases the mind. Sublingual onset in 20â30 minutes. Great for customers who prefer not to smoke.' },
     // Relax
-    {
-        id:'d4', name:'Blue Dream', brand:'Canopy Co', category:'flower',
-        price:42, thc:22, cbd:0, shelf:'A4', effect:'relax', score_relax:0.78,
-        manager_note: 'Overstock — push first.',
-        talking_points:'Best for after work — relieves tension without heaviness, smooth and consistent every time.'
-    },
-    {
-        id:'d5', name:'OG Kush', brand:'Canopy Co', category:'flower',
-        price:48, thc:21, cbd:0, shelf:'A2', effect:'relax', score_relax:0.72,
-        manager_note: 'High margin product.',
-        talking_points:'Best for physical tension — grounding and settled, particularly effective for stress and muscle tightness.'
-    },
-    {
-        id:'d6', name:'Wedding Cake', brand:'Summit Select', category:'vape',
-        price:55, thc:25, cbd:0, shelf:'V1', effect:'relax', score_relax:0.65,
-        talking_points:'Best for controlled relaxation — fast onset, easy dose control, and lifts enough to stay present.'
-    },
+    { id:'d5', name:'Blue Dream', brand:'Canopy Co', category:'flower', price:42, thc:22, cbd:0, shelf:'A4', in_stock:true,
+      score_sleep:0.38, score_relax:0.78, score_focus:0.40, score_social:0.44, score_relief:0.30, score_beginner:0.28,
+      manager_note:'Overstock â push first.',
+      talking_points:'The go-to after-work strain. Relaxes the body without sedation â you can still function normally. Very smooth and consistent.' },
+    { id:'d6', name:'OG Kush', brand:'Canopy Co', category:'flower', price:48, thc:21, cbd:0, shelf:'A2', in_stock:true,
+      score_sleep:0.44, score_relax:0.72, score_focus:0.22, score_social:0.28, score_relief:0.38, score_beginner:0.24,
+      manager_note:'High margin product.',
+      talking_points:'A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties â particularly good for customers carrying physical tension or stress.' },
+    { id:'d7', name:'Wedding Cake Vape', brand:'Summit Select', category:'vape', price:55, thc:25, cbd:0, shelf:'V1', in_stock:true,
+      score_sleep:0.30, score_relax:0.65, score_focus:0.38, score_social:0.50, score_relief:0.22, score_beginner:0.15,
+      talking_points:'Vape format means fast onset and easy dose control. One to two pulls, wait five minutes. Limonene adds a slight uplift that prevents sedation.' },
     // Focus
-    {
-        id:'d7', name:'Sour Diesel', brand:'Green Peak', category:'flower',
-        price:46, thc:24, cbd:0, shelf:'C3', effect:'focus', score_focus:0.80,
-        manager_note: 'Brand promotion this week.',
-        talking_points:'Best for creative work — citrus-forward energy sharpens thinking without anxiety or overstimulation.'
-    },
-    {
-        id:'d8', name:'Jack Herer', brand:'Summit Select', category:'flower',
-        price:44, thc:23, cbd:0, shelf:'C1', effect:'focus', score_focus:0.76,
-        talking_points:'Best for productivity — clear-headed, motivating, and consistent across a full work session.'
-    },
-    {
-        id:'d9', name:'Green Crack', brand:'Emerald Fields', category:'vape',
-        price:50, thc:23, cbd:0, shelf:'V3', effect:'focus', score_focus:0.70,
-        talking_points:'Best for alertness — high energy and sharp, ideal for early mornings or mid-afternoon focus dips.'
-    },
+    { id:'d8', name:'Sour Diesel', brand:'Green Peak', category:'flower', price:46, thc:24, cbd:0, shelf:'C3', in_stock:true,
+      score_sleep:0.10, score_relax:0.38, score_focus:0.80, score_social:0.55, score_relief:0.18, score_beginner:0.20,
+      manager_note:'Brand promotion this week.',
+      talking_points:'Most requested for creative focus. Limonene-dominant â that citrus-forward energy sharpens thinking without causing anxiety. Works well for writing, design, or anything requiring mental engagement.' },
+    { id:'d9', name:'Jack Herer', brand:'Harvest Gold', category:'flower', price:44, thc:19, cbd:1, shelf:'C1', in_stock:true,
+      score_sleep:0.12, score_relax:0.42, score_focus:0.74, score_social:0.52, score_relief:0.20, score_beginner:0.32,
+      talking_points:'Legendary for clear-headed creativity. Terpinolene and pinene create a focused, alert experience without the edge of higher-THC sativas. Excellent for daytime productivity.' },
+    { id:'d10', name:'Green Crack Vape', brand:'Summit Select', category:'vape', price:50, thc:21, cbd:0, shelf:'V2', in_stock:true,
+      score_sleep:0.08, score_relax:0.30, score_focus:0.70, score_social:0.60, score_relief:0.15, score_beginner:0.18,
+      talking_points:'Fast-acting vape that delivers clean, energetic focus within minutes. Great for customers who need to stay functional and sharp throughout the day.' },
     // Social
-    {
-        id:'d10', name:'Pineapple Express', brand:'Summit Select', category:'flower',
-        price:45, thc:24, cbd:0, shelf:'D2', effect:'social', score_social:0.79,
-        talking_points:'Best for social settings — mood lifts, conversation flows, perfect for concerts and gatherings.'
-    },
-    {
-        id:'d11', name:'Gelato', brand:'Emerald Fields', category:'flower',
-        price:50, thc:25, cbd:0, shelf:'D4', effect:'social', score_social:0.73,
-        manager_note: 'Best seller this month.',
-        talking_points:'Best for dinner parties — euphoric but not overwhelming, sociable and fully present.'
-    },
-    {
-        id:'d12', name:'Tangie', brand:'Royal Gardens', category:'vape',
-        price:52, thc:22, cbd:0, shelf:'V2', effect:'social', score_social:0.67,
-        talking_points:'Best for uplifting energy — citrus-forward, fast-acting, one of our most consistent social options.'
-    },
-    // Pain
-    {
-        id:'d13', name:'ACDC', brand:'Green Peak', category:'flower',
-        price:38, thc:6, cbd:12, shelf:'F1', effect:'relief', score_relief:0.83,
-        manager_note: 'Recommended upsell — pair with any flower purchase.',
-        talking_points:'Best for daytime relief — high CBD with minimal THC means no impairment while managing chronic pain.'
-    },
-    {
-        id:'d14', name:'Bubba Kush', brand:'Royal Gardens', category:'flower',
-        price:44, thc:19, cbd:0, shelf:'F3', effect:'relief', score_relief:0.74,
-        talking_points:'Best for nighttime relief — heavy full-body effect, anti-inflammatory, best used before bed.'
-    },
-    {
-        id:'d15', name:'Harlequin', brand:'Canopy Co', category:'vape',
-        price:48, thc:8, cbd:14, shelf:'V4', effect:'relief', score_relief:0.69,
-        talking_points:'Best for fast relief — 2:1 CBD:THC ratio targets pain quickly with minimal psychoactive effect.'
-    },
-    // Balanced
-    {
-        id:'d16', name:'White Widow', brand:'Emerald Fields', category:'flower',
-        price:43, thc:20, cbd:0, shelf:'G2', effect:'beginner', score_beginner:0.71,
-        manager_note: 'End of batch — prioritize over new stock.',
-        talking_points:'Best first experience — not too sedating, not too energizing, a true starting point for anyone new.'
-    },
-    {
-        id:'d17', name:'Girl Scout Cookies', brand:'Green Peak', category:'flower',
-        price:48, thc:26, cbd:0, shelf:'G4', effect:'beginner', score_beginner:0.68,
-        talking_points:'Most popular in the store — euphoric and uplifting without tipping into sedation, works for almost anyone.'
-    },
-    {
-        id:'d18', name:'Cannatonic', brand:'Summit Select', category:'vape',
-        price:45, thc:10, cbd:10, shelf:'V5', effect:'beginner', score_beginner:0.65,
-        talking_points:'Best low-intensity option — 1:1 CBD:THC keeps the experience gentle while still providing meaningful relief.'
-    }
+    { id:'d11', name:'Pineapple Express', brand:'Coastal Farms', category:'flower', price:43, thc:20, cbd:0, shelf:'D2', in_stock:true,
+      score_sleep:0.15, score_relax:0.48, score_focus:0.46, score_social:0.78, score_relief:0.20, score_beginner:0.30,
+      talking_points:'Classic uplifting strain with a tropical, euphoric lift. Keeps energy levels up and conversation flowing. Very consistent and widely loved.' },
+    { id:'d12', name:'Tangie Vape', brand:'Summit Select', category:'vape', price:52, thc:22, cbd:0, shelf:'V3', in_stock:true,
+      score_sleep:0.08, score_relax:0.35, score_focus:0.48, score_social:0.75, score_relief:0.14, score_beginner:0.22,
+      talking_points:'High limonene content equals elevated mood and social energy. Vape format is discreet and fast â perfect for events where they need a quick refresh.' },
+    { id:'d13', name:'Mimosa', brand:'Canopy Co', category:'flower', price:48, thc:22, cbd:0, shelf:'D4', in_stock:true,
+      score_sleep:0.10, score_relax:0.42, score_focus:0.50, score_social:0.72, score_relief:0.16, score_beginner:0.28,
+      talking_points:'Great daytime, social-setting strain. The citrus-dominant terpene profile creates a bubbly, uplifted feeling. Popular choice for Weekend activities and gatherings.' },
+    // Relief
+    { id:'d14', name:'ACDC', brand:'Remedy Farms', category:'flower', price:50, thc:2, cbd:14, shelf:'R1', in_stock:true,
+      score_sleep:0.38, score_relax:0.60, score_focus:0.30, score_social:0.20, score_relief:0.88, score_beginner:0.72,
+      talking_points:'One of the highest-CBD flower options we carry. 14% CBD with minimal THC means strong anti-inflammatory relief without psychoactive effects. Best for daytime pain management.' },
+    { id:'d15', name:'Harlequin', brand:'Remedy Farms', category:'flower', price:46, thc:6, cbd:10, shelf:'R2', in_stock:true,
+      score_sleep:0.42, score_relax:0.62, score_focus:0.35, score_social:0.22, score_relief:0.82, score_beginner:0.68,
+      talking_points:'The 1:2 THC:CBD ratio delivers functional pain relief while still allowing full clarity. Excellent for chronic pain customers who need to stay sharp during the day.' },
+    { id:'d16', name:'Relief Topical', brand:'Bloom Select', category:'topical', price:35, thc:0, cbd:500, shelf:'T1', in_stock:true,
+      score_sleep:0.10, score_relax:0.30, score_focus:0.10, score_social:0.05, score_relief:0.76, score_beginner:0.80,
+      talking_points:'Targets specific areas directly. No psychoactive effect whatsoever â apply directly to joints, muscles, or areas of tension. Works in 15â20 minutes. Great add-on for any pain customer.' },
+    // Beginner / Balanced
+    { id:'d17', name:'Harlequin 1:1', brand:'Remedy Farms', category:'tincture', price:40, thc:5, cbd:5, shelf:'T2', in_stock:true,
+      score_sleep:0.42, score_relax:0.62, score_focus:0.38, score_social:0.30, score_relief:0.58, score_beginner:0.84,
+      talking_points:'The 1:1 CBD:THC ratio is the most forgiving introduction to cannabis. CBD tempers the psychoactive effect while enhancing the therapeutic benefits. Predictable, gentle, and reliable.' },
+    { id:'d18', name:"Charlotte's Web", brand:'Green Gate', category:'edible', price:28, thc:5, cbd:5, shelf:'E1', in_stock:true,
+      score_sleep:0.48, score_relax:0.58, score_focus:0.32, score_social:0.28, score_relief:0.52, score_beginner:0.78,
+      talking_points:'Low dose, balanced edible for first-timers. Take half a piece, wait 90 minutes before deciding if they want more. The balanced ratio makes overconsumption very unlikely.' },
+    { id:'d19', name:'Northern Lights Low-Dose', brand:'Emerald Fields', category:'preroll', price:22, thc:12, cbd:2, shelf:'P1', in_stock:true,
+      score_sleep:0.55, score_relax:0.50, score_focus:0.28, score_social:0.32, score_relief:0.35, score_beginner:0.75,
+      talking_points:'Low THC, pre-measured dose â perfect for someone trying flower for the first time. Take one or two puffs and wait 10 minutes before deciding if they want more.' }
 ];
-
-init();
 </script>
 </body>
 </html>
