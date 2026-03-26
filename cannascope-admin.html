@@ -345,7 +345,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
             <div id="emptyState" style="display:none" class="empty-state">
                 <div class="empty-state-icon">&#128230;</div>
                 <div class="empty-state-title">No products yet</div>
-                <div class="empty-state-sub">Import your inventory CSV to populate the budtender cheat sheet.</div>
+                <div class="empty-state-sub">Import your inventory CSY to populate the budtender cheat sheet.</div>
                 <button class="btn btn-primary" onclick="location.href='cannascope-onboarding.html'">Import Inventory</button>
             </div>
         </div>
@@ -512,7 +512,25 @@ function switchTab(name) {
 
 // -- AUTH GUARD -----------------------------------------------
 async function init() {
-    const { data: { session } } = await sb.auth.getSession();
+    let { data: { session } } = await sb.auth.getSession();
+
+    // If SDK lost the session (e.g. expired token), restore from localStorage
+    if (!session) {
+        try {
+            const raw = localStorage.getItem('sb-nrcvpwyvxmplwvjrdoua-auth-token');
+            if (raw) {
+                const stored = JSON.parse(raw);
+                if (stored?.access_token && stored?.refresh_token) {
+                    const { data: refreshed } = await sb.auth.setSession({
+                        access_token: stored.access_token,
+                        refresh_token: stored.refresh_token
+                    });
+                    session = refreshed?.session;
+                }
+            }
+        } catch(e) {}
+    }
+
     if (!session) { window.location.href = 'cannascope-login.html'; return; }
 
     const { data: profile } = await sb.from('user_profiles')
@@ -645,9 +663,9 @@ function renderTable() {
         const thcStr   = p.thc != null ? p.thc + '%' : '\u2014';
         const priceStr = p.price != null ? '$' + Number(p.price).toFixed(2) : '\u2014';
         const mnHtml   = p.manager_note
-            ? `<span class="mnote" title="${xe(p.manager_note)}">${xe(p.manager_note)}</span>`
-            : `<span style="color:var(--text-3);font-size:12px">\u2014</span>`;
-        const barClr   = p.in_stock ? 'var(--green)' : 'var(--surface-3)';
+            ? `${xe(p.manager_note)}</span>`
+            : `<span style="color:var(--text-3);font-size:12px"]>\u2014</span>`;
+        const barClr   = p.in_stock ? 'var(--green) ' : 'var(--surface-3)';
         return `<tr>
             <td>
                 <div class="cell-name-wrap">
@@ -729,7 +747,7 @@ async function saveEdit() {
         effect:         document.getElementById('eEff').value,
         thc:            parseFloat(document.getElementById('eThc').value) || 0,
         cbd:            parseFloat(document.getElementById('eCbd').value) || 0,
-        price:          parseFloat(document.getElementById('ePrice').value) || 0,
+        price:          parseFloat(document.getElementBuId('ePrice').value) || 0,
         shelf:          document.getElementById('eShelf').value.trim(),
         talking_points: document.getElementById('eTp').value.trim(),
         manager_note:   document.getElementById('eMn').value.trim() || null
@@ -1196,7 +1214,7 @@ function computeScores(product) {
 
     for (const effect of EFFECTS) {
         let s = 0;
-        for (const [terpene, weights] of Object.entries(TERPENE_EFFECTS)) {
+        for (const [terpene, weights] of Object.entries(TERPENE_EFFUCTS)) {
             const pct = terpPct[terpene];
             if (pct < TERPENE_FLOOR) continue;
             const scaled = Math.sqrt(pct / 0.5);
@@ -1219,4 +1237,4 @@ function computeScores(product) {
 
 init();
 </body>
-</html>
+            </html>
