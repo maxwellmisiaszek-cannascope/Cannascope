@@ -8,7 +8,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         * { margin:0; padding:0; box-sizing:border-box; }
-        :root { --green:#10b981; --green-dim:rgba(16,185,129,0.10); --bg:#080808; --surface:#111111; --border:#1e1e1e; --border-2:#282828; --text:#f0f0f0; --text-2:#909090; --text-3:#505050; --danger:#ef4444; }
+        :root { --green:#10b981; --green-dim:rgba(16,185,129,0.10); --bg:#080808; --surface:#111111; --border:#1e1e1e; --border-2:#282828; --text:#f0f0f0; --text-2:#909090; --text-3:#505050; }
         html,body { height:100%; font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
         .page { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
         .wordmark { font-size:13px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--green); margin-bottom:40px; }
@@ -20,11 +20,11 @@
         .fi { width:100%; padding:10px 13px; background:var(--bg); border:1px solid var(--border-2); border-radius:5px; color:var(--text); font-size:13px; font-family:inherit; }
         .fi:focus { outline:none; border-color:var(--green); }
         .btn { width:100%; padding:12px; background:var(--green); border:none; border-radius:6px; color:#000; font-size:13px; font-weight:700; letter-spacing:0.04em; cursor:pointer; font-family:inherit; transition:opacity 0.15s; margin-top:4px; }
-        .btn:disabled { opacity:0.4; cursor:not-allowed; }
+        .btn:hover { opacity:0.87; } .btn:disabled { opacity:0.4; cursor:not-allowed; }
         .err { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); color:#f87171; padding:10px 13px; border-radius:5px; font-size:13px; margin-bottom:14px; display:none; }
-        .ok  { background:var(--green-dim); border:1px solid rgba(16,185,129,0.2); color:var(--green); padding:10px 13px; border-radius:5px; font-size:13px; margin-bottom:14px; display:none; }
         .footer { margin-top:24px; font-size:12px; color:var(--text-3); text-align:center; }
-        .back-home { font-size:12px; color:var(--text-3); text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin-bottom:28px; }
+        .back-home { font-size:12px; color:var(--text-3); text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin-bottom:28px; transition:color 0.15s; }
+        .back-home:hover { color:var(--text-2); }
     </style>
 </head>
 <body>
@@ -35,7 +35,6 @@
         <div class="card-title">Welcome back</div>
         <div class="card-sub">Sign in to manage your dispensary</div>
         <div id="msgErr" class="err"></div>
-        <div id="msgOk"  class="ok"></div>
         <div id="formSignin">
             <div class="fg"><label class="fl">Email</label><input class="fi" id="siEmail" type="email" placeholder="you@dispensary.com" autocomplete="email"></div>
             <div class="fg"><label class="fl">Password</label><input class="fi" id="siPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
@@ -45,20 +44,38 @@
     <div class="footer">Cannascope &mdash; Budtender Intelligence Platform</div>
 </div>
 <script>
-const sb = supabase.createClient('https://nrcvpwyvxmplwvjrdoua.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls');
-sb.auth.getSession().then(({data})=>{ if(data.session) window.location.href='cannascope-admin.html'; });
-function showErr(msg){const el=document.getElementById('msgErr');el.textContent=msg;el.style.display='block';document.getElementById('msgOk').style.display='none';}
-async function signIn(){
-  const email=document.getElementById('siEmail').value.trim();
-  const pass=document.getElementById('siPass').value;
-  if(!email||!pass){showErr('Please enter your email and password.');return;}
-  const btn=document.getElementById('btnSignin');
-  btn.disabled=true;btn.textContent='Signing in…';
-  const{error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){showErr(error.message);btn.disabled=false;btn.textContent='Sign In';return;}
-  window.location.href='cannascope-admin.html';
+const SUPABASE_URL='https://nrcvpwyvxmplwvjrdoua.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+(async () => {
+    let { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+        try {
+            const raw = localStorage.getItem('sb-nrcvpwyvxmplwvjrdoua-auth-token');
+            if (raw) {
+                const stored = JSON.parse(raw);
+                if (stored?.access_token && stored?.refresh_token) {
+                    const { data: refreshed } = await sb.auth.setSession({ access_token: stored.access_token, refresh_token: stored.refresh_token });
+                    session = refreshed?.session;
+                }
+            }
+        } catch(e) {}
+    }
+    if (session) window.location.href = 'cannascope-admin.html';
+})();
+function showErr(msg) { const el=document.getElementById('msgErr'); el.textContent=msg; el.style.display='block'; }
+async function signIn() {
+    const email=document.getElementById('siEmail').value.trim();
+    const pass=document.getElementById('siPass').value;
+    if (!email||!pass) { showErr('Please enter your email and password.'); return; }
+    const btn=document.getElementById('btnSignin');
+    btn.disabled=true; btn.textContent='Signing in…';
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) { showErr(error.message); btn.disabled=false; btn.textContent='Sign In'; return; }
+    window.location.href='cannascope-admin.html';
 }
-document.addEventListener('keydown',e=>{if(e.key==='Enter')signIn();});
+document.addEventListener('keydown', e => { if (e.key==='Enter') signIn(); });
 </script>
 </body>
 </html>
