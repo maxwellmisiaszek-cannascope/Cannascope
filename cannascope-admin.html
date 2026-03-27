@@ -1,1240 +1,742 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cannascope &mdash; Admin</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        :root {
-            --green:#10b981; --green-dim:rgba(16,185,129,0.08); --green-mid:rgba(16,185,129,0.15);
-            --bg:#070709; --bg-2:#0c0c10; --surface:#111116; --surface-2:#17171d; --surface-3:#1e1e26;
-            --border:#1c1c24; --border-2:#242430;
-            --text:#ededf0; --text-2:#8888a0; --text-3:#484860;
-            --danger:#f04444; --danger-dim:rgba(240,68,68,0.08);
-            --warning:#f59e0b; --warning-dim:rgba(245,158,11,0.08);
-            --radius:10px; --radius-sm:6px;
-        }
-        html,body { min-height:100%; font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; font-size:14px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cannascope &mdash; Store Intelligence</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090b;--surface:#111115;--surface-hover:#17171c;--surface-el:#1c1c22;
+  --border:rgba(255,255,255,0.06);--border-h:rgba(255,255,255,0.12);
+  --txt:#f1f1f5;--txt2:#8a8a9a;--txt3:#4a4a58;
+  --green:#22c55e;--green-d:rgba(34,197,94,0.12);
+  --red:#ef4444;--red-d:rgba(239,68,68,0.12);
+  --amber:#f59e0b;--amber-d:rgba(245,158,11,0.12);
+  --blue:#3b82f6;--blue-d:rgba(59,130,246,0.12);
+  --purple:#a78bfa;--purple-d:rgba(167,139,250,0.12);
+  --r:8px;--rs:5px;--rl:12px;
+  --font:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code','Cascadia Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);min-height:100vh;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 
-        /* HEADER */
-        .header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 32px; height:52px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:200; }
-        .header-left { display:flex; align-items:center; gap:16px; }
-        .logo { display:flex; align-items:center; gap:9px; text-decoration:none; }
-        .logo-mark { width:26px; height:26px; border-radius:6px; background:linear-gradient(135deg,#10b981 0%,#059669 100%); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900; color:#000; flex-shrink:0; letter-spacing:-0.03em; }
-        .logo-name { font-size:13px; font-weight:700; color:var(--text); letter-spacing:0.01em; }
-        .logo-badge { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:2px 7px; border-radius:4px; background:var(--surface-3); border:1px solid var(--border-2); color:var(--text-3); }
-        .header-org { font-size:12px; color:var(--text-3); font-weight:500; }
-        .header-right { display:flex; align-items:center; gap:8px; }
-        .hbtn { height:30px; padding:0 12px; border-radius:5px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border-2); color:var(--text-2); background:transparent; font-family:inherit; transition:all 0.15s; white-space:nowrap; display:inline-flex; align-items:center; gap:5px; text-decoration:none; }
-        .hbtn:hover { border-color:var(--green); color:var(--green); }
-        .hbtn-danger:hover { border-color:var(--danger); color:#f87171; }
+/* HEADER */
+.header{position:sticky;top:0;z-index:100;background:rgba(9,9,11,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{width:30px;height:30px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#000;letter-spacing:-.5px}
+.logo-name{font-weight:600;font-size:15px;color:var(--txt)}
+.logo-name span{color:var(--green)}
+.h-badge{background:var(--green-d);color:var(--green);border:1px solid rgba(34,197,94,0.2);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.org-tag{color:var(--txt2);font-size:13px;padding-left:12px;border-left:1px solid var(--border)}
+.header-right{display:flex;align-items:center;gap:8px}
+.hbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--rs);font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .15s;border:1px solid var(--border);background:var(--surface);color:var(--txt2);font-family:var(--font)}
+.hbtn:hover{background:var(--surface-el);color:var(--txt);border-color:var(--border-h)}
+.hbtn.primary{background:var(--green);color:#000;border-color:transparent;font-weight:600}
+.hbtn.primary:hover{background:#16a34a}
+.hbtn.ghost{background:transparent;border-color:transparent}
+.hbtn.ghost:hover{background:var(--surface)}
+.sep{width:1px;height:20px;background:var(--border)}
 
-        /* TABS */
-        .tab-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:0 32px; display:flex; }
-        .tab-btn { padding:0 18px; height:42px; display:inline-flex; align-items:center; font-size:13px; font-weight:600; color:var(--text-3); cursor:pointer; border:none; background:none; font-family:inherit; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color 0.15s,border-color 0.15s; }
-        .tab-btn:hover { color:var(--text-2); }
-        .tab-btn.active { color:var(--text); border-bottom-color:var(--green); }
-        .tab-panel { display:none; }
-        .tab-panel.active { display:block; }
+/* PAGE TITLE */
+.pg-head{padding:24px 24px 0}
+.pg-title{font-size:22px;font-weight:700;letter-spacing:-.5px}
+.pg-sub{color:var(--txt2);font-size:13px;margin-top:3px}
 
-        .page { max-width:1280px; margin:0 auto; padding:28px 32px 80px; }
+/* KPI STRIP */
+.kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--rl);margin:20px 24px 0;overflow:hidden}
+.kpi-card{background:var(--surface);padding:16px 18px;transition:background .15s}
+.kpi-card:hover{background:var(--surface-hover)}
+.kpi-label{font-size:11px;font-weight:500;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-val{font-size:24px;font-weight:700;letter-spacing:-1px;line-height:1;color:var(--txt)}
+.kpi-val.g{color:var(--green)}.kpi-val.a{color:var(--amber)}.kpi-val.r{color:var(--red)}
+.kpi-meta{font-size:11px;color:var(--txt3);margin-top:4px}
 
-        /* SHARE BANNER */
-        .share-banner { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius); padding:14px 20px; margin-bottom:24px; }
-        .share-inner { display:flex; align-items:center; gap:12px; min-width:0; }
-        .share-dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; box-shadow:0 0 7px rgba(16,185,129,0.5); }
-        .share-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.10em; color:var(--text-3); margin-bottom:3px; }
-        .share-url { font-size:12px; color:var(--green); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:480px; }
-        .copy-btn { height:30px; padding:0 14px; background:var(--green-dim); border:1px solid rgba(16,185,129,0.18); color:var(--green); border-radius:5px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; transition:background 0.15s; flex-shrink:0; }
-        .copy-btn:hover { background:var(--green-mid); }
+/* TABS */
+.tabs-bar{display:flex;padding:20px 24px 0;border-bottom:1px solid var(--border)}
+.tab-btn{padding:10px 16px;font-size:13px;font-weight:500;color:var(--txt2);background:transparent;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:6px;font-family:var(--font)}
+.tab-btn:hover{color:var(--txt)}
+.tab-btn.active{color:var(--txt);border-bottom-color:var(--green)}
+.t-badge{background:var(--surface-el);color:var(--txt2);padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600}
+.t-badge.alert{background:var(--red-d);color:var(--red)}
 
-        /* STATS */
-        .stats-row { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:28px; }
-        .stat { background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius); padding:20px 18px; position:relative; overflow:hidden; }
-        .stat-accent { position:absolute; top:0; left:0; right:0; height:2px; }
-        .stat-val { font-size:30px; font-weight:800; letter-spacing:-0.03em; line-height:1; margin-bottom:6px; color:var(--text); }
-        .stat-val.green  { color:var(--green); }
-        .stat-val.warn   { color:var(--warning); }
-        .stat-val.danger { color:var(--danger); }
-        .stat-val.muted  { color:var(--text-2); }
-        .stat-lbl { font-size:11px; font-weight:600; color:var(--text-3); letter-spacing:0.05em; text-transform:uppercase; }
-        .stat-sub { font-size:10px; color:var(--text-3); margin-top:4px; }
-        .stat-bar { margin-top:10px; height:3px; background:var(--border-2); border-radius:2px; overflow:hidden; }
-        .stat-bar-fill { height:100%; background:var(--green); border-radius:2px; transition:width 0.5s ease; }
+/* CONTENT */
+.tab-pane{display:none}.tab-pane.active{display:block}
+.pad{padding:24px}
 
-        /* TOOLBAR */
-        .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:16px; flex-wrap:wrap; }
-        .section-title { font-size:11px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; }
-        .section-count { font-size:12px; color:var(--text-3); font-weight:500; }
-        .toolbar { display:flex; gap:8px; margin-bottom:16px; align-items:center; flex-wrap:wrap; }
-        .search-wrap { flex:1; min-width:180px; position:relative; }
-        .search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text-3); pointer-events:none; }
-        .search { width:100%; padding:9px 12px 9px 34px; background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius-sm); color:var(--text); font-size:13px; font-family:inherit; }
-        .search::placeholder { color:var(--text-3); }
-        .search:focus { outline:none; border-color:rgba(16,185,129,0.4); background:var(--surface-2); }
-        .flt { padding:9px 12px; background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius-sm); color:var(--text); font-size:13px; font-family:inherit; cursor:pointer; }
-        .flt:focus { outline:none; border-color:rgba(16,185,129,0.4); }
-        option { background:var(--surface); }
-        .btn { height:36px; padding:0 16px; border:none; border-radius:var(--radius-sm); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
-        .btn-primary { background:var(--green); color:#000; }
-        .btn-primary:hover { background:#0ea572; }
-        .btn-ghost { background:var(--surface); border:1px solid var(--border-2); color:var(--text-2); }
-        .btn-ghost:hover { border-color:rgba(16,185,129,0.35); color:var(--green); }
-        .btn-danger { background:transparent; border:1px solid rgba(240,68,68,0.25); color:#f87171; }
-        .btn-danger:hover { border-color:var(--danger); background:var(--danger-dim); }
-        .btn-sm { height:28px; padding:0 11px; font-size:11px; font-weight:600; }
+/* INSIGHT BAR */
+.insight-bar{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;flex-wrap:wrap}
+.ins-label{font-size:11px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:3px 9px;border-radius:20px;cursor:pointer}
+.chip-a{background:var(--amber-d);color:var(--amber)}
+.chip-r{background:var(--red-d);color:var(--red)}
+.chip-b{background:var(--blue-d);color:var(--blue)}
+.chip-g{background:var(--green-d);color:var(--green)}
 
-        /* TABLE */
-        .tbl-card { background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius); overflow:hidden; }
-        table { width:100%; border-collapse:collapse; }
-        thead tr { background:var(--bg-2); }
-        th { padding:10px 16px; text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.10em; color:var(--text-3); font-weight:700; white-space:nowrap; cursor:pointer; user-select:none; border-bottom:1px solid var(--border); }
-        th.no-sort { cursor:default; }
-        th.no-sort:hover { color:var(--text-3); }
-        th:hover { color:var(--text-2); }
-        th.sort-asc::after  { content:' 91'; color:var(--green); }
-        th.sort-desc::after { content:' 93'; color:var(--green); }
-        td { padding:13px 16px; border-top:1px solid var(--border); vertical-align:middle; font-size:13px; }
-        tbody tr { transition:background 0.1s; }
-        tbody tr:hover td { background:rgba(255,255,255,0.018); }
-        .cell-name-wrap { display:flex; align-items:center; gap:0; }
-        .cell-stock-bar { width:3px; height:34px; border-radius:2px; margin-right:12px; flex-shrink:0; }
-        .cell-name .pname { font-size:13px; font-weight:600; color:var(--text); }
-        .cell-name .pbrand { font-size:11px; color:var(--text-3); margin-top:2px; font-weight:500; }
-        .pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.03em; text-transform:capitalize; }
-        .pill-sleep    { background:rgba(99,102,241,0.12);  color:#a5b4fc; border:1px solid rgba(99,102,241,0.2); }
-        .pill-relax    { background:rgba(16,185,129,0.10);  color:#6ee7b7; border:1px solid rgba(16,185,129,0.18); }
-        .pill-focus    { background:rgba(245,158,11,0.12);  color:#fcd34d; border:1px solid rgba(245,158,11,0.2); }
-        .pill-social   { background:rgba(236,72,153,0.10);  color:#f9a8d4; border:1px solid rgba(236,72,153,0.18); }
-        .pill-relief   { background:rgba(240,68,68,0.10);   color:#fca5a5; border:1px solid rgba(240,68,68,0.18); }
-        .pill-beginner { background:rgba(156,163,175,0.10); color:#9ca3af; border:1px solid rgba(156,163,175,0.18); }
-        .pill-cat      { background:var(--surface-3); color:var(--text-2); border:1px solid var(--border-2); font-weight:600; }
-        .script-ready   { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--green); }
-        .script-missing { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--warning); }
-        .script-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
-        .script-dot-g { background:var(--green); }
-        .script-dot-w { background:var(--warning); }
-        .toggle-wrap { display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
-        .ttrack { width:32px; height:17px; border-radius:9px; background:var(--surface-3); position:relative; transition:background 0.2s; flex-shrink:0; border:1px solid var(--border-2); }
-        .ttrack.on { background:var(--green); border-color:transparent; }
-        .tthumb { width:11px; height:11px; background:#fff; border-radius:50%; position:absolute; top:2px; left:2px; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
-        .ttrack.on .tthumb { transform:translateX(15px); }
-        .tlabel { font-size:11px; font-weight:600; color:var(--text-3); }
-        .tlabel.on { color:var(--green); }
-        .row-actions { display:flex; gap:5px; opacity:0; transition:opacity 0.15s; }
-        tbody tr:hover .row-actions { opacity:1; }
-        .mnote { display:block; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; font-weight:500; color:var(--warning); }
-        .empty-state { text-align:center; padding:72px 20px; }
-        .empty-state-icon { font-size:36px; margin-bottom:14px; }
-        .empty-state-title { font-size:15px; font-weight:700; color:var(--text-2); margin-bottom:6px; }
-        .empty-state-sub { font-size:13px; color:var(--text-3); margin-bottom:22px; line-height:1.6; }
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.srch-wrap{position:relative;flex:1;min-width:200px;max-width:320px}
+.srch-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--txt3);pointer-events:none}
+.srch{width:100%;padding:8px 10px 8px 34px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);color:var(--txt);font-size:13px;font-family:var(--font);outline:none;transition:border-color .15s}
+.srch:focus{border-color:var(--green)}
+.srch::placeholder{color:var(--txt3)}
+select.fsel{padding:7px 28px 7px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);color:var(--txt2);font-size:12px;font-family:var(--font);outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;transition:border-color .15s}
+select.fsel:focus{border-color:var(--green);outline:none}
+.f-spacer{flex:1}
 
-        /* ANALYTICS */
-        .a-stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
-        .a-stat { background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius); padding:18px 20px; }
-        .a-stat-val { font-size:28px; font-weight:800; letter-spacing:-0.03em; color:var(--green); margin-bottom:5px; }
-        .a-stat-lbl { font-size:10px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.08em; }
-        .analytics-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-        .card { background:var(--surface); border:1px solid var(--border-2); border-radius:var(--radius); padding:22px 24px; }
-        .card-title { font-size:10px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.10em; margin-bottom:18px; }
-        .eff-chart { display:flex; flex-direction:column; gap:11px; }
-        .eff-row { display:flex; align-items:center; gap:10px; }
-        .eff-row-label { font-size:12px; font-weight:600; width:60px; flex-shrink:0; color:var(--text-2); text-transform:capitalize; }
-        .eff-row-bar-wrap { flex:1; height:6px; background:var(--surface-3); border-radius:3px; overflow:hidden; }
-        .eff-row-bar { height:100%; border-radius:3px; min-width:2px; transition:width 0.7s cubic-bezier(0.16,1,0.3,1); }
-        .eff-row-count { width:28px; text-align:right; font-size:12px; font-weight:700; color:var(--text-2); flex-shrink:0; }
-        .bar-sleep    { background:#818cf8; }
-        .bar-relax    { background:var(--green); }
-        .bar-focus    { background:var(--warning); }
-        .bar-social   { background:#f472b6; }
-        .bar-relief   { background:#f87171; }
-        .bar-beginner { background:#9ca3af; }
-        .top-list { display:flex; flex-direction:column; }
-        .top-row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
-        .top-row:last-child { border-bottom:none; }
-        .top-rank { font-size:11px; font-weight:800; color:var(--text-3); width:18px; flex-shrink:0; }
-        .top-info { flex:1; min-width:0; }
-        .top-name { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .top-meta { font-size:11px; color:var(--text-3); margin-top:2px; }
-        .top-count { font-size:13px; font-weight:700; color:var(--green); flex-shrink:0; }
-        .feed { display:flex; flex-direction:column; }
-        .feed-row { display:flex; align-items:center; gap:14px; padding:11px 0; border-bottom:1px solid var(--border); }
-        .feed-row:last-child { border-bottom:none; }
-        .feed-time { font-size:11px; color:var(--text-3); width:72px; flex-shrink:0; }
-        .feed-body { flex:1; font-size:12px; color:var(--text-2); }
-        .feed-body strong { color:var(--text); font-weight:600; }
-        .no-data { text-align:center; padding:44px 20px; }
-        .no-data-title { font-size:14px; font-weight:600; color:var(--text-2); margin-bottom:8px; }
-        .no-data-sub { font-size:12px; color:var(--text-3); line-height:1.7; max-width:360px; margin:0 auto; }
+/* TABLE */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden}
+.tbl-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.tbl-count{font-size:12px;color:var(--txt3);font-weight:500}
+table.ptbl{width:100%;border-collapse:collapse}
+table.ptbl th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);background:var(--bg);cursor:pointer;user-select:none;white-space:nowrap}
+table.ptbl th:hover{color:var(--txt2)}
+table.ptbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+table.ptbl tr:last-child td{border-bottom:none}
+table.ptbl tbody tr{transition:background .1s}
+table.ptbl tbody tr:hover{background:var(--surface-hover)}
+.p-name{font-weight:600;font-size:13px;color:var(--txt)}
+.p-brand{font-size:11px;color:var(--txt3);margin-top:1px}
+.mono{font-family:var(--mono);font-size:12px;color:var(--txt2)}
 
-        /* MODALS */
-        .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(4px); z-index:300; align-items:center; justify-content:center; padding:24px; }
-        .overlay.open { display:flex; }
-        .modal { background:var(--surface); border:1px solid var(--border-2); border-radius:14px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.5); }
-        .modal.sm { max-width:400px; }
-        .mhead { padding:22px 24px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:linear-gradient(180deg,var(--surface-2) 0%,var(--surface) 100%); border-radius:14px 14px 0 0; }
-        .mtitle { font-size:16px; font-weight:800; letter-spacing:-0.01em; }
-        .mclose { width:28px; height:28px; background:var(--surface-3); border:1px solid var(--border-2); border-radius:6px; color:var(--text-3); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:inherit; transition:all 0.15s; }
-        .mclose:hover { color:var(--text); border-color:var(--text-3); }
-        .mbody { padding:24px; }
-        .section-sep { height:1px; background:var(--border); margin:20px 0; }
-        .mfoot { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; background:var(--bg-2); border-radius:0 0 14px 14px; }
-        .fg { margin-bottom:14px; }
-        .fg:last-child { margin-bottom:0; }
-        .fl { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); margin-bottom:6px; }
-        .fl-opt { font-weight:400; text-transform:none; letter-spacing:0; color:var(--text-3); margin-left:4px; font-size:10px; }
-        .fi, .fs, .fta { width:100%; padding:9px 12px; background:var(--bg); border:1px solid var(--border-2); border-radius:var(--radius-sm); color:var(--text); font-size:13px; font-family:inherit; transition:border-color 0.15s; }
-        .fi:focus, .fs:focus, .fta:focus { outline:none; border-color:rgba(16,185,129,0.4); background:var(--bg-2); }
-        .fi::placeholder, .fta::placeholder { color:var(--text-3); }
-        .fta { min-height:100px; resize:vertical; line-height:1.6; }
-        .frow { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-        .gen-btn { margin-top:8px; height:28px; padding:0 12px; background:var(--green-dim); border:1px solid rgba(16,185,129,0.15); color:var(--green); border-radius:5px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.15s; display:inline-flex; align-items:center; gap:5px; }
-        .gen-btn:hover { background:var(--green-mid); }
-        .field-hint { font-size:11px; color:var(--text-3); margin-top:6px; line-height:1.5; }
-        .del-name { font-size:15px; font-weight:700; margin:8px 0 10px; }
-        .del-sub { font-size:13px; color:var(--text-3); line-height:1.65; }
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500;white-space:nowrap}
+.bg{background:var(--green-d);color:var(--green)}
+.br{background:var(--red-d);color:var(--red)}
+.ba{background:var(--amber-d);color:var(--amber)}
+.bb{background:var(--blue-d);color:var(--blue)}
+.bm{background:rgba(255,255,255,0.04);color:var(--txt3)}
+.eff-sleep{background:rgba(139,92,246,.12);color:#a78bfa}
+.eff-relax{background:rgba(34,197,94,.1);color:#4ade80}
+.eff-focus{background:rgba(59,130,246,.12);color:#60a5fa}
+.eff-social{background:rgba(245,158,11,.12);color:#fbbf24}
+.eff-relief{background:rgba(239,68,68,.12);color:#f87171}
+.eff-beginner{background:rgba(20,184,166,.12);color:#2dd4bf}
+.cat-flower{background:rgba(34,197,94,.08);color:#4ade80}
+.cat-vape{background:rgba(59,130,246,.08);color:#93c5fd}
+.cat-edible{background:rgba(245,158,11,.08);color:#fcd34d}
+.cat-concentrate{background:rgba(239,68,68,.08);color:#fca5a5}
+.cat-tincture{background:rgba(139,92,246,.08);color:#c4b5fd}
+.cat-topical{background:rgba(20,184,166,.08);color:#5eead4}
+.cat-preroll{background:rgba(249,115,22,.08);color:#fdba74}
 
-        /* TOAST */
-        .toast { position:fixed; bottom:22px; right:22px; background:var(--surface-2); border:1px solid var(--border-2); color:var(--text); padding:11px 16px; border-radius:8px; font-size:13px; font-weight:600; z-index:999; transform:translateY(60px); opacity:0; pointer-events:none; transition:all 0.22s cubic-bezier(0.16,1,0.3,1); display:flex; align-items:center; gap:8px; box-shadow:0 8px 24px rgba(0,0,0,0.4); }
-        .toast.show { transform:translateY(0); opacity:1; }
-        .toast-dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; }
-        .toast.err .toast-dot { background:var(--danger); }
+/* PUSH TOGGLE */
+.push-tog{width:32px;height:18px;background:var(--surface-el);border:1px solid var(--border);border-radius:10px;cursor:pointer;position:relative;transition:all .2s;flex-shrink:0;display:inline-block}
+.push-tog::after{content:'';position:absolute;width:12px;height:12px;background:var(--txt3);border-radius:50%;top:2px;left:2px;transition:all .2s}
+.push-tog.on{background:var(--green-d);border-color:var(--green)}
+.push-tog.on::after{left:16px;background:var(--green)}
 
-        /* RESPONSIVE */
-        @media (max-width:960px) { .stats-row { grid-template-columns:repeat(3,1fr); } .analytics-grid { grid-template-columns:1fr; } .a-stats-row { grid-template-columns:repeat(2,1fr); } }
-        @media (max-width:640px) { .stats-row { grid-template-columns:repeat(2,1fr); } .frow { grid-template-columns:1fr; } .page { padding:16px 16px 60px; } .header,.tab-bar { padding:0 16px; } }
-    </style>
+/* ROW ACTIONS */
+.row-acts{display:flex;gap:4px;opacity:0;transition:opacity .15s}
+tr:hover .row-acts{opacity:1}
+.row-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid transparent;border-radius:var(--rs);cursor:pointer;color:var(--txt3);transition:all .15s}
+.row-btn:hover{background:var(--surface-el);border-color:var(--border);color:var(--txt)}
+.row-btn.del:hover{background:var(--red-d);border-color:rgba(239,68,68,.2);color:var(--red)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:60px 20px;color:var(--txt3)}
+.empty-ico{width:40px;height:40px;margin:0 auto 12px;opacity:.3}
+.empty h3{font-size:15px;color:var(--txt2);margin-bottom:6px}
+.empty p{font-size:13px}
+
+/* ANALYTICS */
+.a-grid{display:grid;gap:16px}
+.a-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px}
+.a-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.a-title{font-size:13px;font-weight:600}
+.a-sub{font-size:11px;color:var(--txt3);margin-top:2px}
+.a-badge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.big-n{font-size:36px;font-weight:800;letter-spacing:-2px;line-height:1}
+.big-meta{font-size:12px;color:var(--txt3);margin-top:4px}
+
+/* BAR CHART */
+.bar-chart{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-lbl{font-size:12px;color:var(--txt2);width:72px;flex-shrink:0;text-align:right;text-transform:capitalize}
+.bar-track{flex:1;height:6px;background:var(--surface-el);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.bar-val{font-size:11px;color:var(--txt3);width:36px;text-align:right;font-family:var(--mono)}
+
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-leg{display:flex;flex-direction:column;gap:8px}
+.leg-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.leg-lbl{color:var(--txt2)}
+.leg-val{color:var(--txt);font-weight:600;margin-left:auto;font-family:var(--mono)}
+
+/* RANK LIST */
+.rank-list{display:flex;flex-direction:column;gap:2px}
+.rank-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--rs);transition:background .1s}
+.rank-item:hover{background:var(--surface-hover)}
+.rank-num{font-size:11px;color:var(--txt3);font-family:var(--mono);width:16px;flex-shrink:0}
+.rank-info{flex:1;min-width:0}
+.rank-name{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-sub{font-size:11px;color:var(--txt3)}
+
+/* ACTION CENTER */
+.act-list{display:flex;flex-direction:column;gap:8px}
+.act-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s}
+.act-item:hover{border-color:var(--border-h);background:var(--surface-hover)}
+.act-ico{width:32px;height:32px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+.ai-a{background:var(--amber-d)}.ai-g{background:var(--green-d)}.ai-r{background:var(--red-d)}.ai-b{background:var(--blue-d)}.ai-p{background:var(--purple-d)}
+.act-text{flex:1}
+.act-title{font-size:13px;font-weight:500;color:var(--txt)}
+.act-desc{font-size:11px;color:var(--txt3);margin-top:1px}
+
+/* READINESS */
+.read-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0}
+.read-score{font-size:52px;font-weight:800;letter-spacing:-3px;line-height:1;margin-bottom:4px}
+.read-lbl{font-size:12px;color:var(--txt3)}
+.read-bar{width:100%;height:6px;background:var(--surface-el);border-radius:3px;overflow:hidden;margin-top:12px}
+.read-fill{height:100%;border-radius:3px}
+
+/* SEG BAR */
+.seg-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px;margin:12px 0}
+.seg{border-radius:2px}
+
+/* PUSH GRID */
+.push-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.push-card{background:var(--surface-el);border:1px solid var(--border);border-radius:var(--r);padding:12px;cursor:pointer;transition:all .15s}
+.push-card:hover{border-color:var(--green)}
+.push-card-name{font-size:13px;font-weight:600;color:var(--txt)}
+.push-card-brand{font-size:11px;color:var(--txt3);margin-top:2px}
+.push-card-meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+
+/* COV GRID */
+.cov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cov-cell{background:var(--surface-el);border:1px solid var(--border);border-radius:var(--rs);padding:10px;text-align:center}
+.cov-pct{font-size:18px;font-weight:700;letter-spacing:-1px}
+.cov-lbl{font-size:10px;color:var(--txt3);margin-top:2px;text-transform:capitalize}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);width:90%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 4px 24px rgba(0,0,0,.5)}
+.modal-hd{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700}
+.modal-x{width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;color:var(--txt3);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-x:hover{background:var(--surface-el);color:var(--txt)}
+.modal-bd{padding:20px}
+.modal-ft{padding:16px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:8px}
+
+/* FORM */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.f-grp{display:flex;flex-direction:column;gap:5px}
+.f-grp.full{grid-column:span 2}
+.f-lbl{font-size:11px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.f-inp,.f-sel,.f-ta{width:100%;padding:8px 10px;background:var(--surface-el);border:1px solid var(--border);border-radius:var(--rs);color:var(--txt);font-size:13px;font-family:var(--font);outline:none;transition:border-color .15s}
+.f-inp:focus,.f-sel:focus,.f-ta:focus{border-color:var(--green)}
+.f-ta{resize:vertical;min-height:80px}
+.f-sel{appearance:none;cursor:pointer}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface-el);border:1px solid var(--border);color:var(--txt);padding:10px 16px;border-radius:var(--r);font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
+"toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.kpi-strip{grid-template-columns:repeat(2,1fr)};.pad{padding:16px};.header{padding:0 16px}}
+</style>
 </head>
 <body>
 
-<!-- CONFIG -->
-<script>
-const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
-</script>
-
+<!-- HEADER -->
 <header class="header">
-    <div class="header-left">
-        <a class="logo" href="#">
-            <div class="logo-mark">CS</div>
-            <span class="logo-name">Cannascope</span>
-        </a>
-        <span class="logo-badge">Admin</span>
-        <span class="header-org" id="orgName"></span>
-    </div>
-    <div class="header-right">
-        <a class="hbtn" id="budtenderViewBtn" href="cannascope-cheatsheet-v2.html" target="_blank"  >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Budtender View
-        </a>
-        <button class="hbtn hbtn-danger" onclick="signOut()">Sign Out</button>
-    </div>
+  <div class="header-left">
+    <a class="logo" href="#"><div class="logo-mark">CS</div><span class="logo-name">Canna<span>scope</span></span></a>
+    <span class="h-badge">Manager</span>
+    <span class="org-tag" id="orgName"></span>
+  </div>
+  <div class="header-right">
+    <a class="hbtn" id="budtenderViewBtn" href="cannascope-cheatsheet-v2.html" target="_blank">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Budtender View
+    </a>
+    <div class="sep"></div>
+    <button class="hbtn ghost" onclick="signOut()">Sign Out</button>
+  </div>
 </header>
 
-<nav class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('inventory')">Inventory</button>
-    <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
-</nav>
+<!-- PAGE HEADER -->
+<div class="pg-head">
+  <div class="pg-title">Store Intelligence</div>
+  <div class="pg-sub">Control recommendations, scripts, and inventory strategy from one place.</div>
+</div>
 
-<div class="page">
+<!-- KPI STRIP -->
+<div class="kpi-strip">
+  <div class="kpi-card"><div class="kpi-label">Active Products</div><div class="kpi-val" id="kpiTotal">&#8212;</div><div class="kpi-meta">in catalog</div></div>
+  <div class="kpi-card"><div class="kpi-label">In Stock Rate</div><div class="kpi-val" id="kpiRate">&#8212;</div><div class="kpi-meta" id="kpiRateMeta">of catalog available</div></div>
+  <div class="kpi-card"><div class="kpi-label">Script Coverage</div><div class="kpi-val" id="kpiCov">&#8212;</div><div class="kpi-meta" id="kpiCovMeta">products ready</div></div>
+  <div class="kpi-card"><div class="kpi-label">Missing Scripts</div><div class="kpi-val a" id="kpiMiss">&#8212;</div><div class="kpi-meta">need talking points</div></div>
+  <div class="kpi-card"><div class="kpi-label">Push This Week</div><div class="kpi-val g" id="kpiPush">&#8212;</div><div class="kpi-meta">products prioritized</div></div>
+  <div class="kpi-card"><div class="kpi-label">Readiness Score</div><div class="kpi-val" id="kpiReady">&#8212;</div><div class="kpi-meta">recommendation health</div></div>
+</div>
 
-    <div class="share-banner" id="shareBanner" style="display:none">
-        <div class="share-inner">
-            <div class="share-dot"></div>
-            <div>
-                <div class="share-label">Budtender Cheat Sheet &mdash; share this link with your floor staff</div>
-                <div class="share-url" id="shareUrl"></div>
-            </div>
-        </div>
-        <button class="copy-btn" onclick="copyLink()">Copy Link</button>
+<!-- TABS -->
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="switchTab('inv')" id="tb-inv">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Inventory
+  </button>
+  <button class="tab-btn" onclick="switchTab('anl')" id="tb-anl">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Analytics
+    <span class="t-badge" id="anlBadge"></span>
+  </button>
+</div>
+
+<!-- INVENTORY TAB -->
+<div class="tab-pane active pad" id="tp-inv">
+  <div class="insight-bar" id="insBar" style="display:none"><span class="ins-label">Insights</span><span id="insChips"></span></div>
+  <div class="filter-bar">
+    <div class="srch-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="srch" type="text" id="searchQ" placeholder="Search products, brands..." oninput="renderTable()">
     </div>
+    <select class="fsel" id="fxEff" onchange="renderTable()"><option value="">All Effects</option><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="relief">Relief</option><option value="beginner">Beginner</option></select>
+    <select class="fsel" id="fxCat" onchange="renderTable()"><option value="">All Categories</option><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Preroll</option></select>
+    <select class="fsel" id="fxStock" onchange="renderTable()"><option value="">All Stock</option><option value="in">In Stock</option><option value="out">Out of Stock</option></select>
+    <select class="fsel" id="fxScript" onchange="renderTable()"><option value="">All Scripts</option><option value="has">Has Script</option><option value="miss">Needs Script</option></select>
+    <div class="f-spacer"></div>
+    <button class="hbtn" onclick="exportCSV()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
+    <button class="hbtn" onclick="autoScripts()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Generate Scripts</button>
+    <button class="hbtn primary" onclick="openAdd()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product</button>
+  </div>
+  <div class="tbl-wrap">
+    <div class="tbl-top"><span class="tbl-count" id="tblCount">Loading...</span></div>
+    <table class="ptbl">
+      <thead><tr>
+        <th onclick="sortBy('name')">Product</th>
+        <th onclick="sortBy('category')">Category</th>
+        <th onclick="sortBy('thc')">THC / CBD</th>
+        <th onclick="sortBy('price')">Price</th>
+        <th>Effect</th>
+        <th>Script</th>
+        <th onclick="sortBy('in_stock')">Stock</th>
+        <th>Push</th>
+        <th>Manager Note</th>
+        <th style="width:80px"></th>
+      </tr></thead>
+      <tbody id="ptbody"><tr><td colspan="10"><div class="empty"><h3>Loading inventory...</h3></div></td></tr></tbody>
+    </table>
+  </div>
+</div>
 
-    <!-- TAB: INVENTORY -->
-    <div class="tab-panel active" id="tab-inventory">
+<!-- ANALYTICS TAB -->
+<div class="tab-pane pad" id="tp-anl"><div id="anlContent"></div></div>
 
-        <div class="stats-row">
-            <div class="stat">
-                <div class="stat-accent" style="background:var(--green)"></div>
-                <div class="stat-val green" id="stTotal">&mdash;</div>
-                <div class="stat-lbl">Total Products</div>
-            </div>
-            <div class="stat">
-                <div class="stat-accent" style="background:var(--green)"></div>
-                <div class="stat-val" id="stIn">&mdash;</div>
-                <div class="stat-lbl">In Stock</div>
-                <div class="stat-bar"><div class="stat-bar-fill" id="stInBar" style="width:0%"></div></div>
-            </div>
-            <div class="stat">
-                <div class="stat-accent" style="background:var(--danger)"></div>
-                <div class="stat-val danger" id="stOut">&mdash;</div>
-                <div class="stat-lbl">Out of Stock</div>
-            </div>
-            <div class="stat">
-                <div class="stat-accent" style="background:var(--warning)"></div>
-                <div class="stat-val warn" id="stMiss">&mdash;</div>
-                <div class="stat-lbl">Missing Scripts</div>
-                <div class="stat-sub">need talking points</div>
-            </div>
-            <div class="stat">
-                <div class="stat-accent" style="background:var(--border-2)"></div>
-                <div class="stat-val muted" id="stVal">&mdash;</div>
-                <div class="stat-lbl">Avg In-Stock Price</div>
-            </div>
-        </div>
-
-        <div class="toolbar">
-            <div class="search-wrap">
-                <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input class="search" id="searchQ" type="text" placeholder="Search products, brands&hellip;" oninput="renderTable()">
-            </div>
-            <select class="flt" id="fxEff" onchange="renderTable()">
-                <option value="">All Effects</option>
-                <option value="sleep">Sleep</option><option value="relax">Relax</option>
-                <option value="focus">Focus</option><option value="social">Social</option>
-                <option value="relief">Relief</option><option value="beginner">Beginner</option>
-            </select>
-            <select class="flt" id="fxCat" onchange="renderTable()">
-                <option value="">All Categories</option>
-                <option value="flower">Flower</option><option value="vape">Vape</option>
-                <option value="edible">Edible</option><option value="concentrate">Concentrate</option>
-                <option value="tincture">Tincture</option><option value="topical">Topical</option>
-                <option value="preroll">Pre-Roll</option>
-            </select>
-            <select class="flt" id="fxStock" onchange="renderTable()">
-                <option value="">All Stock</option>
-                <option value="in">In Stock</option><option value="out">Out of Stock</option>
-            </select>
-            <button class="btn btn-ghost" onclick="exportCSV()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Export
-            </button>
-            <button class="btn btn-ghost" onclick="autoScripts()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                Generate Scripts
-            </button>
-            <button class="btn btn-primary" onclick="openAdd()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Add Product
-            </button>
-        </div>
-
-        <div class="section-header">
-            <span class="section-title">Products</span>
-            <span class="section-count" id="secCount"></span>
-        </div>
-
-        <div class="tbl-card">
-            <table>
-                <thead><tr>
-                    <th onclick="sortBy('name')">Product</th>
-                    <th class="no-sort">Category</th>
-                    <th onclick="sortBy('thc')">THC</th>
-                    <th onclick="sortBy('price')">Price</th>
-                    <th class="no-sort">Shelf</th>
-                    <th onclick="sortBy('effect')">Effect</th>
-                    <th class="no-sort">Script</th>
-                    <th class="no-sort">Manager Note</th>
-                    <th class="no-sort">Stock</th>
-                    <th class="no-sort"></th>
-                </tr></thead>
-                <tbody id="tBody"></tbody>
-            </table>
-            <div id="emptyState" style="display:none" class="empty-state">
-                <div class="empty-state-icon">&#128230;</div>
-                <div class="empty-state-title">No products yet</div>
-                <div class="empty-state-sub">Import your inventory CSY to populate the budtender cheat sheet.</div>
-                <button class="btn btn-primary" onclick="location.href='cannascope-onboarding.html'">Import Inventory</button>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- TAB: ANALYTICS -->
-    <div class="tab-panel" id="tab-analytics">
-
-        <div class="a-stats-row">
-            <div class="a-stat"><div class="a-stat-val" id="aTotal">&mdash;</div><div class="a-stat-lbl">Total Recommendations</div></div>
-            <div class="a-stat"><div class="a-stat-val" id="aToday">&mdash;</div><div class="a-stat-lbl">Today</div></div>
-            <div class="a-stat"><div class="a-stat-val" id="aWeek">&mdash;</div><div class="a-stat-lbl">This Week</div></div>
-            <div class="a-stat"><div class="a-stat-val" id="aTopEff" style="font-size:18px">&mdash;</div><div class="a-stat-lbl">Top Effect</div></div>
-        </div>
-
-        <div class="analytics-grid">
-            <div class="card">
-                <div class="card-title">Recommendations by Effect</div>
-                <div id="effectChart" class="eff-chart"></div>
-            </div>
-            <div class="card">
-                <div class="card-title">Top Recommended Products</div>
-                <div id="topProductsList" class="top-list"></div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title">Recent Activity</div>
-            <div id="activityFeed" class="feed"></div>
-        </div>
-
-    </div>
-
+<!-- ADD MODAL -->
+<div class="modal-ov" id="addModal">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">Add Product</span><button class="modal-x" onclick="closeM('addModal')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-bd"><div class="fg">
+      <div class="f-grp"><label class="f-lbl">Name</label><input class="f-inp" id="aN" placeholder="e.g. Blue Dream"></div>
+      <div class="f-grp"><label class="f-lbl">Brand</label><input class="f-inp" id="aB" placeholder="e.g. Jeeter"></div>
+      <div class="f-grp"><label class="f-lbl">Category</label><select class="f-sel" id="aC"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Preroll</option></select></div>
+      <div class="f-grp"><label class="f-lbl">Effect</label><select class="f-sel" id="aE"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="relief">Relief</option><option value="beginner">Beginner</option></select></div>
+      <div class="f-grp"><label class="f-lbl">THC %</label><input class="f-inp" id="aThc" type="number" step="0.1" placeholder="24.5"></div>
+      <div class="f-grp"><label class="f-lbl">CBD %</label><input class="f-inp" id="aCbd" type="number" step="0.1" placeholder="0.5"></div>
+      <div class="f-grp"><label class="f-lbl">Price ($)</label><input class="f-inp" id="aPr" type="number" step="0.01" placeholder="45.00"></div>
+      <div class="f-grp"><label class="f-lbl">Shelf</label><input class="f-inp" id="aSh" placeholder="Top Shelf"></div>
+      <div class="f-grp full"><label class="f-lbl">Talking Points / Script</label><textarea class="f-ta" id="aTp" placeholder="Key selling points for budtenders..."></textarea></div>
+      <div class="f-grp full"><label class="f-lbl">Manager Note</label><input class="f-inp" id="aMn" placeholder="Internal note..."></div>
+    </div></div>
+    <div class="modal-ft"><button class="hbtn ghost" onclick="closeM('addModal')">Cancel</button><button class="hbtn primary" onclick="saveAdd()">Add Product</button></div>
+  </div>
 </div>
 
 <!-- EDIT MODAL -->
-<div class="overlay" id="editOv">
-    <div class="modal">
-        <div class="mhead"><div class="mtitle">Edit Product</div><button class="mclose" onclick="closeModal('editOv')">&#215;</button></div>
-        <div class="mbody">
-            <input type="hidden" id="eId">
-            <div class="frow">
-                <div class="fg"><label class="fl">Product Name</label><input class="fi" id="eName" placeholder="e.g. Granddaddy Purple"></div>
-                <div class="fg"><label class="fl">Brand</label><input class="fi" id="eBrand" placeholder="e.g. Green Peak"></div>
-            </div>
-            <div class="frow">
-                <div class="fg"><label class="fl">Category</label><select class="fs" id="eCat"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Pre-Roll</option></select></div>
-                <div class="fg"><label class="fl">Primary Effect</label><select class="fs" id="eEff"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="relief">Relief</option><option value="beginner">Beginner</option></select></div>
-            </div>
-            <div class="frow">
-                <div class="fg"><label class="fl">THC %</label><input class="fi" id="eThc" type="number" step="0.1" min="0" max="100" placeholder="0.0"></div>
-                <div class="fg"><label class="fl">CBD %</label><input class="fi" id="eCbd" type="number" step="0.1" min="0" max="100" placeholder="0.0"></div>
-            </div>
-            <div class="frow">
-                <div class="fg"><label class="fl">Price ($)</label><input class="fi" id="ePrice" type="number" step="0.01" min="0" placeholder="0.00"></div>
-                <div class="fg"><label class="fl">Shelf Location</label><input class="fi" id="eShelf" placeholder="e.g. A3"></div>
-            </div>
-            <div class="section-sep"></div>
-            <div class="fg">
-                <label class="fl">Budtender Script</label>
-                <textarea class="fta" id="eTp" placeholder="What should the budtender say about this product?"></textarea>
-                <button class="gen-btn" onclick="genScript('e')">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Generate Script
-                </button>
-                <div class="field-hint">Customer-facing. 1&ndash;2 sentences. This is what budtenders say out loud.</div>
-            </div>
-            <div class="fg">
-                <label class="fl">Manager Note <span class="fl-opt">(internal &mdash; visible to budtenders)</span></label>
-                <input class="fi" id="eMn" placeholder="e.g. Overstock &mdash; push first &nbsp;|&nbsp; High margin &nbsp;|&nbsp; Brand promo this week">
-            </div>
-        </div>
-        <div class="mfoot">
-            <button class="btn btn-ghost" onclick="closeModal('editOv')">Cancel</button>
-            <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
-        </div>
-    </div>
-</div>
-
-<!-- ADD MODAL -->
-<div class="overlay" id="addOv">
-    <div class="modal">
-        <div class="mhead"><div class="mtitle">Add Product</div><button class="mclose" onclick="closeModal('addOv')">&#215;</button></div>
-        <div class="mbody">
-            <div class="frow">
-                <div class="fg"><label class="fl">Product Name *</label><input class="fi" id="aName" placeholder="e.g. Granddaddy Purple"></div>
-                <div class="fg"><label class="fl">Brand *</label><input class="fi" id="aBrand" placeholder="e.g. Green Peak"></div>
-            </div>
-            <div class="frow">
-                <div class="fg"><label class="fl">Category</label><select class="fs" id="aCat"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Pre-Roll</option></select></div>
-                <div class="fg"><label class="fl">Primary Effect</label><select class="fs" id="aEff"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="relief">Relief</option><option value="beginner">Beginner</option></select></div>
-            </div>
-            <div class="frow">
-                <div class="fg"><label class="fl">THC %</label><input class="fi" id="aThc" type="number" step="0.1" min="0" placeholder="0.0"></div>
-                <div class="fg"><label class="fl">CBD %</label><input class="fi" id="aCbd" type="number" step="0.1" min="0" placeholder="0.0"></div>
-            </div>
-            <div class="frow">
-                <div class="fg"><label class="fl">Price ($)</label><input class="fi" id="aPrice" type="number" step="0.01" min="0" placeholder="0.00"></div>
-                <div class="fg"><label class="fl">Shelf Location</label><input class="fi" id="aShelf" placeholder="e.g. A3"></div>
-            </div>
-            <div class="section-sep"></div>
-            <div class="fg">
-                <label class="fl">Budtender Script</label>
-                <textarea class="fta" id="aTp" placeholder="Leave blank to auto-generate&hellip;"></textarea>
-                <button class="gen-btn" onclick="genScript('a')">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Generate Script
-                </button>
-                <div class="field-hint">Leave blank to auto-generate from the product details above.</div>
-            </div>
-            <div class="fg">
-                <label class="fl">Manager Note <span class="fl-opt">(optional)</span></label>
-                <input class="fi" id="aMn" placeholder="e.g. Overstock &mdash; push first &nbsp;|&nbsp; High margin &nbsp;|&nbsp; Brand promo this week">
-            </div>
-        </div>
-        <div class="mfoot">
-            <button class="btn btn-ghost" onclick="closeModal('addOv')">Cancel</button>
-            <button class="btn btn-primary" onclick="saveAdd()">Add Product</button>
-        </div>
-    </div>
+<div class="modal-ov" id="editModal">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">Edit Product</span><button class="modal-x" onclick="closeM('editModal')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-bd"><input type="hidden" id="eId"><div class="fg">
+      <div class="f-grp"><label class="f-lbl">Name</label><input class="f-inp" id="eN"></div>
+      <div class="f-grp"><label class="f-lbl">Brand</label><input class="f-inp" id="eB"></div>
+      <div class="f-grp"><label class="f-lbl">Category</label><select class="f-sel" id="eC"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Preroll</option></select></div>
+      <div class="f-grp"><label class="f-lbl">Effect</label><select class="f-sel" id="eE"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="relief">Relief</option><option value="beginner">Beginner</option></select></div>
+      <div class="f-grp"><label class="f-lbl">THC %</label><input class="f-inp" id="eThc" type="number" step="0.1"></div>
+      <div class="f-grp"><label class="f-lbl">CBD %</label><input class="f-inp" id="eCbd" type="number" step="0.1"></div>
+      <div class="f-grp"><label class="f-lbl">Price ($)</label><input class="f-inp" id="ePr" type="number" step="0.01"></div>
+      <div class="f-grp"><label class="f-lbl">Shelf</label><input class="f-inp" id="eSh"></div>
+      <div class="f-grp full"><label class="f-lbl">Talking Points / Script</label><textarea class="f-ta" id="eTp"></textarea></div>
+      <div class="f-grp full"><label class="f-lbl">Manager Note</label><input class="f-inp" id="eMn"></div>
+    </div></div>
+    <div class="modal-ft"><button class="hbtn ghost" onclick="closeM('editModal')">Cancel</button><button class="hbtn primary" onclick="saveEdit()">Save Changes</button></div>
+  </div>
 </div>
 
 <!-- DELETE MODAL -->
-<div class="overlay" id="delOv">
-    <div class="modal sm">
-        <div class="mhead"><div class="mtitle">Remove product?</div><button class="mclose" onclick="closeModal('delOv')">&#215;</button></div>
-        <div class="mbody">
-            <div style="font-size:12px;color:var(--text-3);margin-bottom:6px;">You are removing:</div>
-            <div class="del-name" id="delName"></div>
-            <div class="del-sub">This removes it from the budtender cheat sheet immediately. This cannot be undone.</div>
-        </div>
-        <div class="mfoot">
-            <button class="btn btn-ghost" onclick="closeModal('delOv')">Cancel</button>
-            <button class="btn btn-danger" onclick="confirmDel()">Remove Product</button>
-        </div>
-    </div>
+<div class="modal-ov" id="delModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-hd"><span class="modal-title">Remove Product</span><button class="modal-x" onclick="closeM('delModal')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-bd"><p style="color:var(--txt2);font-size:13px;line-height:1.6">Remove <strong id="delName" style="color:var(--txt)"></strong> from your inventory? This cannot be undone.</p></div>
+    <div class="modal-ft"><button class="hbtn ghost" onclick="closeM('delModal')">Cancel</button><button class="hbtn" style="background:var(--red-d);color:var(--red);border-color:rgba(239,68,68,.2)" onclick="confirmDel()">Remove</button></div>
+  </div>
 </div>
 
-<div class="toast" id="toast"><div class="toast-dot"></div><span id="toastMsg"></span></div>
+<!-- SCRIPT MODAL -->
+<div class="modal-ov" id="scriptModal">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">Talking Points</span><button class="modal-x" onclick="closeM('scriptModal')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-bd"><p id="scriptTxt" style="font-size:13px;line-height:1.8;color:var(--txt2);white-space:pre-wrap"></p></div>
+    <div class="modal-ft"><button class="hbtn primary" onclick="closeM('scriptModal')">Done</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <script>
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const SURL='https://nrcvpwyvxmplwvjrdoua.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
+const sb=supabase.createClient(SURL,SKEY);
 
-let products = [], orgId = null, publicKey = null, delId = null;
-let sortCol = 'name', sortDir = 1; // 1 = asc, -1 = desc
+let products=[],sortCol='name',sortDir='asc',delTarget=null,anlDone=false;
 
-// -- MODAL HELPERS (named to avoid conflict with window.open / window.close) --
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.overlay').forEach(o => {
-    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
-});
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
-});
-
-// -- TABS -----------------------------------------------------
-function switchTab(name) {
-    document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', b.textContent.toLowerCase() === name || (name === 'inventory' && i === 0) || (name === 'analytics' && i === 1)));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    if (name === 'analytics') loadAnalytics();
+// ââ INIT ââââââââââââââââââââââââââââââââââââââââââ
+async function init(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='cannascope-login.html';return;}
+  const {data:prof}=await sb.from('user_profiles').select('org_name').t bar=document.getElementById('insBar');
+  document.getElementById('insChips').innerHTML=chips.join('');
+  bar.style.display=chips.length?'flex':'none';
 }
 
-// -- AUTH GUARD -----------------------------------------------
-async function init() {
-    let { data: { session } } = await sb.auth.getSession();
-
-    // If SDK lost the session (e.g. expired token), restore from localStorage
-    if (!session) {
-        try {
-            const raw = localStorage.getItem('sb-nrcvpwyvxmplwvjrdoua-auth-token');
-            if (raw) {
-                const stored = JSON.parse(raw);
-                if (stored?.access_token && stored?.refresh_token) {
-                    const { data: refreshed } = await sb.auth.setSession({
-                        access_token: stored.access_token,
-                        refresh_token: stored.refresh_token
-                    });
-                    session = refreshed?.session;
-                }
-            }
-        } catch(e) {}
-    }
-
-    if (!session) { window.location.href = 'cannascope-login.html'; return; }
-
-    const { data: profile } = await sb.from('user_profiles')
-        .select('organization_id, organizations(name, public_key, paid_status)')
-        .eq('id', session.user.id).single();
-    if (!profile) { window.location.href = 'cannascope-login.html'; return; }
-
-    const paidStatus = profile.organizations?.paid_status;
-    if (paidStatus !== 'active') { window.location.href = 'cannascope-subscribe.html'; return; }
-
-    orgId      = profile.organization_id;
-    publicKey  = profile.organizations.public_key;
-    document.getElementById('orgName').textContent = profile.organizations.name;
-
-    const cheatUrl = window.location.origin
-        + window.location.pathname.replace('cannascope-admin.html', '')
-        + 'cannascope-cheatsheet-v2.html?key=' + publicKey;
-    document.getElementById('shareUrl').textContent = cheatUrl;
-    document.getElementById('shareBanner').style.display = 'flex';
-
-    const viewBtn = document.getElementById('budtenderViewBtn');
-    viewBtn.href = cheatUrl;
-    viewBtn.style.display = 'inline-flex';
-
-    await loadProducts();
+// ââ TABLE âââââââââââââââââââââââââââââââââââââââââ
+function renderTable(){
+  const q=v('searchQ').toLowerCase(),fe=v('fxEff'),fc=v('fxCat'),fs=v('fxStock'),fsc=v('fxScript');
+  let rows=products.filter(p=>{
+    if(q&&!(p.name+' '+(p.brand||'')).toLowerCase().includes(q))return false;
+    if(fe&&p.effect!==fe)return false;
+    if(fc&&p.category!==fc)return false;
+    if(fs==='in'&&!p.in_stock)return false;
+    if(fs==='out'&&p.in_stock)return false;
+    if(fsc==='has'&&!p.talking_points?.trim())return false;
+    if(fsc==='miss'&&p.talking_points?.trim())return false;
+    return true;
+  });
+  rows=rows.slice().sort((a,b)=>{
+    let va=a[sortCol]??'',vb=b[sortCol]??'';
+    if(typeof va==='string')va=va.toLowerCase();if(typeof vb==='string')vb=vb.toLowerCase();
+    return sortDir==='asc'?(va<vb?-1:va>vb?1:0):(va<vb?1:va>vb?-1:0);
+  });
+  document.getElementById('tblCount').textContent=rows.length+' product'+(rows.length!==1?'s':'');
+  const tbody=document.getElementById('ptbody');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><h3>No products match</h3><p>Try adjusting your filters</p></div></td></tr>';return;}
+  tbody.innerHTML=rows.map(p=>{
+    const hs=!!(p.talking_points?.trim());
+    const thc=p.thc?p.thc+'%':'&#8212;';
+    const cbd=p.cbd?' / '+p.cbd+'%':'';
+    const pr=p.price?'$'+Number(p.price).toFixed(2):'&#8212;';
+    const mn=p.manager_note||'';
+    return `<tr>
+      <td><div class="p-name">${xe(p.name||'')}</div><div class="p-brand">${xe(p.brand||'')}</div></td>
+      <td><span class="badge cat-${p.category||'flower'}">${p.category||''}</span></td>
+      <td><span class="mono">${thc}${cbd}</span></td>
+      <td><span class="mono">${pr}</span></td>
+      <td><span class="badge eff-${p.effect||'relax'}">${p.effect||''}</span></td>
+      <td>${hs?`<t bar=document.getElementById('insBar');
+  document.getElementById('insChips').innerHTML=chips.join('');
+  bar.style.display=chips.length?'flex':'none';
 }
 
-async function signOut() {
-    await sb.auth.signOut();
-    window.location.href = 'cannascope-login.html';
+// ââ TABLE âââââââââââââââââââââââââââââââââââââââââ
+function renderTable(){
+  const q=v('searchQ').toLowerCase(),fe=v('fxEff'),fc=v('fxCat'),fs=v('fxStock'),fsc=v('fxScript');
+  let rows=products.filter(p=>{
+    if(q&&!(p.name+' '+(p.brand||'')).toLowerCase().includes(q))return false;
+    if(fe&&p.effect!==fe)return false;
+    if(fc&&p.category!==fc)return false;
+    if(fs==='in'&&!p.in_stock)return false;
+    if(fs==='out'&&p.in_stock)return false;
+    if(fsc==='has'&&!p.talking_points?.trim())return false;
+    if(fsc==='miss'&&p.talking_points?.trim())return false;
+    return true;
+  });
+  rows=rows.slice().sort((a,b)=>{
+    let va=a[sortCol]??'',vb=b[sortCol]??'';
+    if(typeof va==='string')va=va.toLowerCase();if(typeof vb==='string')vb=vb.toLowerCase();
+    return sortDir==='asc'?(va<vb?-1:va>vb?1:0):(va<vb?1:va>vb?-1:0);
+  });
+  document.getElementById('tblCount').textContent=rows.length+' product'+(rows.length!==1?'s':'');
+  const tbody=document.getElementById('ptbody');
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><h3>No products match</h3><p>Try adjusting your filters</p></div></td></tr>';return;}
+  tbody.innerHTML=rows.map(p=>{
+    const hs=!!(p.talking_points?.trim());
+    const thc=p.thc?p.thc+'%':'&#8212;';
+    const cbd=p.cbd?' / '+p.cbd+'%':'';
+    const pr=p.price?'$'+Number(p.price).toFixed(2):'&#8212;';
+    const mn=p.manager_note||'';
+    return `<tr>
+      <td><div class="p-name">${xe(p.name||'')}</div><div class="p-brand">${xe(p.brand||'')}</div></td>
+      <td><span class="badge cat-${p.category||'flower'}">${p.category||''}</span></td>
+      <td><span class="mono">${thc}${cbd}</span></td>
+      <td><span class="mono">${pr}</span></td>
+      <td><span class="badge eff-${p.effect||'relax'}">${p.effect||''}</span></td>
+      <td>${hs?`<span class="badge bg" style="cursor:pointer" onclick="viewScript('${p.id}')"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Ready</span>`:`<span class="badge ba" style="cursor:pointer" onclick="openEdit('${p.id}')"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Missing</span>`}</td>
+      <td>${p.in_stock?'<span class="badge bg">In Stock</span>':'<span class="badge br">Out of Stock</span>'}</td>
+      <td><div class="push-tog${p.push_this_week?' on':''}" onclick="togglePush('${p.id}')" title="Push this week"></div></td>
+      <td><span style="font-size:12px;color:var(--txt3);max-width:130px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${xe(mn)}">${xe(mn)||'<span style="opacity:.4">&#8212;</span>'}</span></td>
+      <td><div class="row-acts">
+        <button class="row-btn" onclick="openEdit('${p.id}')" title="Edit"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="row-btn" onclick="toggleStock('${p.id}')" title="Toggle stock"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg></button>
+        <button class="row-btn del" onclick="openDel('${p.id}')" title="Delete"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+      </div></td>
+    </tr>`;
+  }).join('');
 }
 
-// -- DATA -----------------------------------------------------
-async function loadProducts() {
-    const { data, error } = await sb.from('products')
-        .select('*')
-        .eq('organization_id', orgId)
-        .order('name');
-    if (error) { showToast('Error loading products: ' + error.message, true); return; }
-    products = data || [];
-    renderStats();
-    renderTable();
+function v(id){return document.getElementById(id)?.value||''}
+
+// ââ SORT ââââââââââââââââââââââââââââââââââââââââââ
+function sortBy(col){
+  if(sortCol===col)sortDir=sortDir==='asc'?'desc':'asc';
+  else{sortCol=col;sortDir='asc';}
+  renderTable();
 }
 
-function renderStats() {
-    const total = products.length;
-    const inN   = products.filter(p => p.in_stock).length;
-    const miss  = products.filter(p => !p.talking_points?.trim()).length;
-    const cats  = new Set(products.map(p => p.category)).size;
-    const inStockPrices = products.filter(p => p.in_stock && p.price != null).map(p => Number(p.price));
-    const avgVal = inStockPrices.length > 0
-        ? (inStockPrices.reduce((a,b) => a+b, 0) / inStockPrices.length).toFixed(0)
-        : null;
-
-    document.getElementById('stTotal').textContent = total || '\u2014';
-    document.getElementById('stIn').textContent    = inN;
-    document.getElementById('stOut').textContent   = total - inN;
-    document.getElementById('stMiss').textContent  = miss;
-    document.getElementById('stVal').textContent   = avgVal ? '$' + avgVal : '\u2014';
-
-    // Colour the out-of-stock stat dynamically
-    document.getElementById('stOut').className = 'stat-val' + ((total - inN) > 0 ? ' danger' : ' green');
-    document.getElementById('stMiss').className = 'stat-val' + (miss > 0 ? ' warn' : ' green');
-    document.getElementById('stIn').className = 'stat-val';
-    const pct = total > 0 ? Math.round((inN / total) * 100) : 0;
-    const barEl = document.getElementById('stInBar');
-    if (barEl) barEl.style.width = pct + '%';
+// ââ STOCK / PUSH ââââââââââââââââââââââââââââââââââ
+async function toggleStock(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  const {error}=await sb.from('products').update({in_stock:!p.in_stock}).eq('id',id);
+  if(error){showToast('Error');return;}
+  p.in_stock=!p.in_stock;renderKPIs();renderTable();renderInsights();
+  showToast(p.in_stock?'Marked in stock':'Marked out of stock');
 }
 
-// -- SORTING --------------------------------------------------
-function sortBy(col) {
-    if (sortCol === col) { sortDir *= -1; }
-    else { sortCol = col; sortDir = 1; }
-    document.querySelectorAll('th[onclick]').forEach(th => {
-        th.classList.remove('sort-asc','sort-desc');
-        if (th.getAttribute('onclick') === "sortBy('" + col + "')") {
-            th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
-        }
-    });
-    renderTable();
+async function togglePush(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  const nv=!p.push_this_week;
+  await sb.from('products').update({push_this_week:nv}).eq('id',id);
+  p.push_this_week=nv;renderKPIs();renderTable();
+  showToast(nv?'Added to Push This Week':'Removed from push list');
 }
 
-function sortProducts(arr) {
-    return [...arr].sort((a, b) => {
-        let va = a[sortCol], vb = b[sortCol];
-        if (va == null) va = '';
-        if (vb == null) vb = '';
-        if (typeof va === 'string') return va.localeCompare(vb) * sortDir;
-        return (va - vb) * sortDir;
-    });
+// ââ SCRIPT VIEW âââââââââââââââââââââââââââââââââââ
+function viewScript(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  document.getElementById('scriptTxt').textContent=p.talking_points||'(No script)';
+  openM('scriptModal');
 }
 
-// -- TABLE RENDER ---------------------------------------------
-function renderTable() {
-    const q  = document.getElementById('searchQ').value.toLowerCase();
-    const fe = document.getElementById('fxEff').value;
-    const fc = document.getElementById('fxCat').value;
-    const fs = document.getElementById('fxStock').value;
-
-    const filtered = products.filter(p => {
-        const ms = !q || p.name?.toLowerCase().includes(q) || p.brand?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
-        const me = !fe || p.effect === fe;
-        const mc = !fc || p.category === fc;
-        const mk = !fs || (fs === 'in' ? p.in_stock : !p.in_stock);
-        return ms && me && mc && mk;
-    });
-
-    const sorted = sortProducts(filtered);
-    document.getElementById('secCount').textContent = sorted.length + ' product' + (sorted.length !== 1 ? 's' : '');
-
-    const tbody = document.getElementById('tBody');
-    const empty = document.getElementById('emptyState');
-
-    if (products.length === 0) {
-        tbody.innerHTML = '';
-        empty.style.display = 'block';
-        return;
-    }
-    empty.style.display = 'none';
-
-    if (sorted.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text-3);font-size:13px">No results match your filters</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = sorted.map(p => {
-        const cat      = p.category ? p.category.charAt(0).toUpperCase() + p.category.slice(1) : '\u2014';
-        const hasTp    = !!p.talking_points?.trim();
-        const eff      = p.effect || 'beginner';
-        const thcStr   = p.thc != null ? p.thc + '%' : '\u2014';
-        const priceStr = p.price != null ? '$' + Number(p.price).toFixed(2) : '\u2014';
-        const mnHtml   = p.manager_note
-            ? `${xe(p.manager_note)}</span>`
-            : `<span style="color:var(--text-3);font-size:12px"]>\u2014</span>`;
-        const barClr   = p.in_stock ? 'var(--green) ' : 'var(--surface-3)';
-        return `<tr>
-            <td>
-                <div class="cell-name-wrap">
-                    <div class="cell-stock-bar" style="background:${barClr}"></div>
-                    <div class="cell-name">
-                        <div class="pname">${xe(p.name)}</div>
-                        <div class="pbrand">${xe(p.brand||'')}</div>
-                    </div>
-                </div>
-            </td>
-            <td><span class="pill pill-cat">${cat}</span></td>
-            <td style="color:var(--text-2)">${thcStr}</td>
-            <td style="color:var(--text-2);font-weight:500">${priceStr}</td>
-            <td style="color:var(--text-3)">${xe(p.shelf||'\u2014')}</td>
-            <td><span class="pill pill-${eff}">${eff}</span></td>
-            <td>
-                ${hasTp
-                    ? `<span class="script-ready"><span class="script-dot script-dot-g"></span>Ready</span>`
-                    : `<span class="script-missing"><span class="script-dot script-dot-w"></span>Missing</span>`
-                }
-            </td>
-            <td>${mnHtml}</td>
-            <td>
-                <div class="toggle-wrap" onclick="toggleStock('${p.id}')">
-                    <div class="ttrack ${p.in_stock ? 'on' : ''}"><div class="tthumb"></div></div>
-                    <span class="tlabel ${p.in_stock ? 'on' : ''}">${p.in_stock ? 'In Stock' : 'Out'}</span>
-                </div>
-            </td>
-            <td>
-                <div class="row-actions">
-                    <button class="btn btn-ghost btn-sm" onclick="openEdit('${p.id}')">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="openDel('${p.id}')">Remove</button>
-                </div>
-            </td>
-        </tr>`;
-    }).join('');
+// ââ EDIT ââââââââââââââââââââââââââââââââââââââââââ
+function openEdit(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  document.getElementById('eId').value=p.id;
+  document.getElementById('eN').value=p.name||'';
+  document.getElementById('eB').value=p.brand||'';
+  document.getElementById('eC').value=p.category||'flower';
+  document.getElementById('eE').value=p.effect||'relax';
+  document.getElementById('eThc').value=p.thc||'';
+  document.getElementById('eCbd').value=p.cbd||'';
+  document.getElementById('ePr').value=p.price||'';
+  document.getElementById('eSh').value=p.shelf||'';
+  document.getElementById('eTp').value=p.talking_points||'';
+  document.getElementById('eMn').value=p.manager_note||'';
+  openM('editModal');
 }
 
-// -- STOCK TOGGLE ---------------------------------------------
-async function toggleStock(id) {
-    const p = products.find(q => q.id === id);
-    if (!p) return;
-    const newVal = !p.in_stock;
-    const { error } = await sb.from('products').update({ in_stock: newVal }).eq('id', id);
-    if (error) { showToast('Error: ' + error.message, true); return; }
-    p.in_stock = newVal;
-    renderStats();
-    renderTable();
-    showToast((p.name || 'Product') + (newVal ? ' marked in stock' : ' marked out of stock'));
+async function saveEdit(){
+  const id=document.getElementById('eId').value;
+  const u={name:document.getElementById('eN').value,brand:document.getElementById('eB').value,category:document.getElementById('eC').value,effect:document.getElementById('eE').value,thc:parseFloat(document.getElementById('eThc').value)||null,cbd:parseFloat(document.getElementById('eCbd').value)||null,price:parseFloat(document.getElementById('ePr').value)||null,shelf:document.getElementById('eSh').value,talking_points:document.getElementById('eTp').value,manager_note:document.getElementById('eMn').value};
+  const {error}=await sb.from('products').update(u).eq('id',id);
+  if(error){showToast('Error saving');return;}
+  Object.assign(products.find(p=>p.id===id)||{},u);
+  closeM('editModal');renderKPIs();renderTable();renderInsights();showToast('Product updated');
 }
 
-// -- EDIT -----------------------------------------------------
-function openEdit(id) {
-    const p = products.find(q => q.id === id);
-    if (!p) return;
-    document.getElementById('eId').value    = id;
-    document.getElementById('eName').value  = p.name || '';
-    document.getElementById('eBrand').value = p.brand || '';
-    document.getElementById('eCat').value   = p.category || 'flower';
-    document.getElementById('eEff').value   = p.effect || 'beginner';
-    document.getElementById('eThc').value   = p.thc ?? '';
-    document.getElementById('eCbd').value   = p.cbd ?? '';
-    document.getElementById('ePrice').value = p.price ?? '';
-    document.getElementById('eShelf').value = p.shelf || '';
-    document.getElementById('eTp').value    = p.talking_points || '';
-    document.getElementById('eMn').value    = p.manager_note || '';
-    openModal('editOv');
+// ââ ADD âââââââââââââââââââââââââââââââââââââââââââ
+function openAdd(){
+  ['aN','aB','aThc','aCbd','aPr','aSh','aTp','aMn'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  openM('addModal');
 }
 
-async function saveEdit() {
-    const id = document.getElementById('eId').value;
-    const name = document.getElementById('eName').value.trim();
-    if (!name) { showToast('Product name is required', true); return; }
-
-    const updates = {
-        name,
-        brand:          document.getElementById('eBrand').value.trim(),
-        category:       document.getElementById('eCat').value,
-        effect:         document.getElementById('eEff').value,
-        thc:            parseFloat(document.getElementById('eThc').value) || 0,
-        cbd:            parseFloat(document.getElementById('eCbd').value) || 0,
-        price:          parseFloat(document.getElementBuId('ePrice').value) || 0,
-        shelf:          document.getElementById('eShelf').value.trim(),
-        talking_points: document.getElementById('eTp').value.trim(),
-        manager_note:   document.getElementById('eMn').value.trim() || null
-    };
-    Object.assign(updates, computeScores(updates));
-
-    const { error } = await sb.from('products').update(updates).eq('id', id);
-    if (error) { showToast('Save failed: ' + error.message, true); return; }
-    await loadProducts();
-    closeModal('editOv');
-    showToast('Product updated');
+async function saveAdd(){
+  const prod={name:document.getElementById('aN').value,brand:document.getElementById('aB').value,category:document.getElementById('aC').value,effect:document.getElementById('aE').value,thc:parseFloat(document.getElementById('aThc').value)||null,cbd:parseFloat(document.getElementById('aCbd').value)||null,price:parseFloat(document.getElementById('aPr').value)||null,shelf:document.getElementById('aSh').value,talking_points:document.getElementById('aTp').value,manager_note:document.getElementById('aMn').value,in_stock:true};
+  if(!prod.name){showToast('Name required');return;}
+  const {error}=await sb.from('products').insert([prod]);
+  if(error){showToast('Error adding product');return;}
+  closeM('addModal');await loadProducts();showToast('Product added');
 }
 
-// -- ADD ------------------------------------------------------
-function openAdd() {
-    ['aName','aBrand','aThc','aCbd','aPrice','aShelf','aTp','aMn'].forEach(id => {
-        document.getElementById(id).value = '';
-    });
-    document.getElementById('aCat').value = 'flower';
-    document.getElementById('aEff').value = 'beginner';
-    openModal('addOv');
+// ââ DELETE ââââââââââââââââââââââââââââââââââââââââ
+function openDel(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  delTarget=id;document.getElementById('delName').textContent=p.name;openM('delModal');
 }
 
-async function saveAdd() {
-    const name  = document.getElementById('aName').value.trim();
-    const brand = document.getElementById('aBrand').value.trim();
-    if (!name || !brand) { showToast('Name and brand are required', true); return; }
-
-    const cat   = document.getElementById('aCat').value;
-    const eff   = document.getElementById('aEff').value;
-    const thc   = parseFloat(document.getElementById('aThc').value) || 0;
-    const cbd   = parseFloat(document.getElementById('aCbd').value) || 0;
-    const price = parseFloat(document.getElementById('aPrice').value) || 0;
-    const shelf = document.getElementById('aShelf').value.trim();
-    const mn    = document.getElementById('aMn').value.trim() || null;
-    const tp    = document.getElementById('aTp').value.trim() || buildScript(name, cat, eff, thc, cbd, price);
-
-    const product = { organization_id: orgId, name, brand, category: cat, effect: eff, thc, cbd, price, shelf, talking_points: tp, manager_note: mn, in_stock: true };
-    Object.assign(product, computeScores(product));
-
-    const { error } = await sb.from('products').insert(product);
-    if (error) { showToast('Add failed: ' + error.message, true); return; }
-    await loadProducts();
-    closeModal('addOv');
-    showToast(name + ' added');
+async function confirmDel(){
+  if(!delTarget)return;
+  const {error}=await sb.from('products').delete().eq('id',delTarget);
+  if(error){showToast('Error');return;}
+  products=products.filter(p=>p.id!==delTarget);delTarget=null;
+  closeM('delModal');renderKPIs();renderTable();renderInsights();showToast('Product removed');
 }
 
-// -- DELETE ---------------------------------------------------
-function openDel(id) {
-    const p = products.find(q => q.id === id);
-    if (!p) return;
-    delId = id;
-    document.getElementById('delName').textContent = p.name;
-    openModal('delOv');
+// ââ SCRIPTS âââââââââââââââââââââââââââââââââââââââ
+async function autoScripts(){
+  const miss=products.filter(p=>!p.talking_points?.trim());
+  if(!miss.length){showToast('All products have scripts!');return;}
+  showToast('Generating scripts for '+miss.length+' products...');
+  for(const p of miss){
+    const s=buildScript(p);
+    await sb.from('products').update({talking_points:s}).eq('id',p.id);
+    p.talking_points=s;
+  }
+  renderKPIs();renderTable();renderInsights();showToast('Scripts generated');anlDone=false;
 }
 
-async function confirmDel() {
-    const p = products.find(q => q.id === delId);
-    const { error } = await sb.from('products').delete().eq('id', delId);
-    if (error) { showToast('Delete failed: ' + error.message, true); return; }
-    delId = null;
-    await loadProducts();
-    closeModal('delOv');
-    showToast((p?.name || 'Product') + ' removed');
+function buildScript(p){
+  const em={sleep:'ideal for winding down and restful sleep',relax:'perfect for stress relief and relaxation',focus:'great for staying sharp and productive',social:'a social, uplifting experience',relief:'effective for managing discomfort and tension',beginner:'a gentle, approachable option for new consumers'};
+  const cm={flower:'This flower',vape:'This vape cartridge',edible:'This edible',concentrate:'This concentrate',tincture:'This tincture',topical:'This topical',preroll:'This pre-roll'};
+  const cl=cm[p.category]||'This product';const el=em[p.effect]||'a well-rounded choice';
+  const tn=p.thc?' At '+p.thc+'% THC'+(p.cbd?' and '+p.cbd+'% CBD':'')+', it':' It';
+  const sn=p.shelf?' from our '+p.shelf+'.':'.';
+  return `${cl} from ${p.brand||'the brand'} is ${el}.${tn} delivers a balanced experience for most consumers${sn}${p.manager_note?'\n\nManager note: '+p.manager_note:''}`;
 }
 
-// -- SCRIPT GENERATOR -----------------------------------------
-function genScript(prefix) {
-    const n = document.getElementById(prefix + 'Name').value.trim();
-    const c = document.getElementById(prefix + 'Cat').value;
-    const e = document.getElementById(prefix + 'Eff').value;
-    const t = parseFloat(document.getElementById(prefix + 'Thc').value) || 0;
-    const d = parseFloat(document.getElementById(prefix + 'Cbd').value) || 0;
-    const p = parseFloat(document.getElementById(prefix + 'Price').value) || 0;
-    document.getElementById(prefix + 'Tp').value = buildScript(n, c, e, t, d, p);
+// ââ EXPORT ââââââââââââââââââââââââââââââââââââââââ
+function exportCSV(){
+  const h=['Name','Brand','Category','Effect','THC','CBD','Price','Shelf','In Stock','Has Script','Manager Note'];
+  const r=products.map(p=>[p.name,p.brand,p.category,p.effect,p.thc,p.cbd,p.price,p.shelf,p.in_stock?'Yes':'No',p.talking_points?'Yes':'No',p.manager_note].map(x=>'"'+String(x||'').replace(/"/g,'""')+'"'));
+  const csv=[h.join(','),...r.map(x=>x.join(','))].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='inventory.csv';a.click();
+  showToast('Exported');
 }
 
-async function autoScripts() {
-    const missing = products.filter(p => !p.talking_points?.trim());
-    if (missing.length === 0) { showToast('All products already have scripts'); return; }
-    let count = 0;
-    for (const p of missing) {
-        const tp = buildScript(p.name, p.category, p.effect, p.thc, p.cbd, p.price);
-        const { error } = await sb.from('products').update({ talking_points: tp }).eq('id', p.id);
-        if (!error) { p.talking_points = tp; count++; }
-    }
-    renderStats();
-    renderTable();
-    showToast('Generated scripts for ' + count + ' product' + (count !== 1 ? 's' : ''));
+// ââ TABS ââââââââââââââââââââââââââââââââââââââââââ
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tb-'+tab).classList.add('active');
+  document.getElementById('tp-'+tab).classList.add('active');
+  if(tab==='anl'&&!anlDone){renderAnalytics();anlDone=true;}
 }
 
-// -- EXPORT CSV -----------------------------------------------
-function exportCSV() {
-    if (products.length === 0) { showToast('No products to export', true); return; }
-    const cols = ['name','brand','category','effect','thc','cbd','price','shelf','in_stock','talking_points','manager_note'];
-    const headers = ['Name','Brand','Category','Effect','THC %','CBD %','Price','Shelf','In Stock','Script','Manager Note'];
-    const rows = products.map(p => cols.map(c => {
-        const v = p[c] ?? '';
-        const s = String(v);
-        return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g,'""') + '"' : s;
-    }).join(','));
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    a.download = 'cannascope-inventory.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('CSV downloaded');
+// ââ ANALYTICS âââââââââââââââââââââââââââââââââââââ
+function renderAnalytics(){
+  const t=products.length;
+  if(!t){document.getElementById('anlContent').innerHTML='<div style="text-align:center;padding:80px 20px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:16px">&#128202;</div><div style="font-size:16px;color:var(--txt2);font-weight:600;margin-bottom:8px">No data yet</div><div style="font-size:13px">Add products to see analytics.</div><button class="hbtn primary" style="margin-top:16px" onclick="switchTab(\'inv\');openAdd()">Add First Product</button></div>';return;}
+
+  const ins=products.filter(p=>p.in_stock).length;
+  const scr=products.filter(p=>p.talking_points?.trim()).length;
+  const miss=t-scr,push=products.filter(p=>p.push_this_week);
+  const rate=Math.round(ins/t*100),cov=Math.round(scr/t*100);
+  const ready=Math.round(rate*.4+cov*.6);
+  const rc=ready>=70?'#22c55e':ready>=50?'#f59e0b':'#ef4444';
+
+  const effs=['sleep','relax','focus','social','relief','beginner'];
+  const ecol={sleep:'#a78bfa',relax:'#4ade80',focus:'#60a5fa',social:'#fbbf24',relief:'#f87171',beginner:'#2dd4bf'};
+  const cats=['flower','vape','edible','concentrate','tincture','topical','preroll'];
+
+  const effCnt={};effs.forEach(e=>effCnt[e]=0);products.forEach(p=>{if(p.effect&&effCnt[p.effect]!==undefined)effCnt[p.effect]++;});
+  const maxE=Math.max(...Object.values(effCnt),1);
+
+  const effScr={};effs.forEach(e=>{const tot=products.filter(p=>p.effect===e).length;const s=products.filter(p=>p.effect===e&&p.talking_points?.trim()).length;effScr[e]=tot?Math.round(s/tot*100):null;});
+  const catScr={};cats.forEach(c=>{const tot=products.filter(p=>p.category===c).length;const s=products.filter(p=>p.category===c&&p.talking_points?.trim()).length;catScr[c]=tot?Math.round(s/tot*100):null;});
+
+  const scored=products.map(p=>({...p,sc:(p.in_stock?2:0)+(p.talking_points?.trim()?1:0)})).sort((a,b)=>b.sc-a.sc);
+  const top5=scored.slice(0,5);
+  const out=products.filter(p=>!p.in_stock);
+
+  // Donut
+  const R=44,C=2*Math.PI*R,dash=(cov/100)*C;
+  const dc=cov>=70?'#22c55e':cov>=40?'#f59e0b':'#ef4444';
+
+  // Missed opp
+  const outNoAlt=out.filter(p=>{return!products.some(x=>x.in_stock&&x.effect===p.effect&&x.id!==p.id);});
+  const opp=outNoAlt[0]||out[0];
+
+  // Actions
+  const acts=[];
+  if(miss>0)acts.push({c:'a',ico:'&#9889;',title:`Generate scripts for ${miss} product${miss!==1?'s':''}`,desc:"Budtenders can't recommend what they can't explain",fn:"autoScripts();switchTab('inv')"});
+  if(out.length>0)acts.push({c:'r',ico:'&#128230;',title:`${out.length} product${out.length!==1?' items are':' is'} out of stock`,desc:'Review reorder priorities',fn:"switchTab('inv')"});
+  const hiMiss=products.filter(p=>p.in_stock&&!p.talking_points?.trim());
+  if(hiMiss.length>0)acts.push({c:'b',ico:'&#128221;',title:`${hiMiss.length} in-stock product${hiMiss.length!==1?'s need':' needs'} a script`,desc:'In-stock products without scripts = missed revenue',fn:"document.getElementById('fxScript').value='miss';document.getElementById('fxStock').value='in';switchTab('inv');renderTable()"});
+  if(!push.length&&t>0)acts.push({c:'g',ico:'&#127919;',title:'Set push products for this week',desc:'Use the push toggle in Inventory to feature specific SKUs',fn:"switchTab('inv')"});
+
+  document.getElementById('anlContent').innerHTML=`
+  <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+    <div><div style="font-size:18px;font-weight:700">Store Analytics</div><div style="font-size:12px;color:var(--txt3);margin-top:2px">Live intelligence from your catalog of ${t} products</div></div>
+  </div>
+
+  <div class="a-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-bottom:16px">
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Readiness Score</div><div class="a-sub">Composite health</div></div></div>
+      <div class="read-wrap">
+        <div class="read-score" style="color:${rc}">${ready}</div>
+        <div class="read-lbl">out of 100</div>
+        <div class="read-bar"><div class="read-fill" style="width:${ready}%;background:${rc}"></div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--txt3);margin-top:10px"><span>Stock: 40%</span><span>Scripts: 60%</span></div>
+    </div>
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Script Coverage</div><div class="a-sub">Products with talking points</div></div><span class="a-badge" style="background:${cov>=70?'var(--green-d)':cov>=40?'var(--amber-d)':'var(--red-d)'};color:${cov>=70?'var(--green)':cov>=40?'var(--amber)':'var(--red)'}">${cov>=70?'Healthy':cov>=40?'Fair':'Low'}</span></div>
+      <div class="donut-wrap">
+        <svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="${R}" fill="none" stroke="var(--surface-el)" stroke-width="12"/><circle cx="50" cy="50" r="${R}" fill="none" stroke="${dc}" stroke-width="12" stroke-dasharray="${dash.toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${(C*.25).toFixed(1)}" stroke-linecap="round"/><text x="50" y="54" text-anchor="middle" fill="var(--txt)" font-size="16" font-weight="700" font-family="-apple-system,sans-serif">${cov}%</text></svg>
+        <div class="donut-leg"><div class="leg-item"><span class="leg-dot" style="background:${dc}"></span><span class="leg-lbl">Scripted</span><span class="leg-val">${scr}</span></div><div class="leg-item"><span class="leg-dot" style="background:var(--surface-el)"></span><span class="leg-lbl">Missing</span><span class="leg-val">${miss}</span></div></div>
+      </div>
+    </div>
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">In-Stock Rate</div><div class="a-sub">Catalog availability</div></div></div>
+      <div class="big-n" style="color:${rate>=70?'var(--green)':rate>=50?'var(--amber)':'var(--red)'}">${rate}<span style="font-size:20px;letter-spacing:0;color:var(--txt3)">%</span></div>
+      <div class="big-meta">${ins} of ${t} products available</div>
+      <div class="seg-bar"><div class="seg" style="flex:${rate};background:var(--green)"></div><div class="seg" style="flex:${100-rate};background:var(--surface-el)"></div></div>
+    </div>
+    <div class="a-card" style="${opp?'border-color:rgba(239,68,68,.15)':''}">
+      ${opp?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px">&#9888; Biggest Gap</div><div style="font-size:15px;font-weight:700;margin-bottom:6px">${xe(opp.name)}</div><div style="font-size:12px;color:var(--txt2);line-height:1.6;margin-bottom:10px">No in-stock alternative for <strong>${opp.effect}</strong> effect.</div><div style="display:flex;gap:6px;flex-wrap:wrap">${opp.category?`<span class="badge cat-${opp.category}">${opp.category}</span>`:''}<span class="badge eff-${opp.effect}">${opp.effect||''}</span><span class="badge br">Out of Stock</span></div>`:`<div class="a-head"><div><div class="a-title">Coverage Gap</div><div class="a-sub">Inventory blind spots</div></div></div><div style="color:var(--green);font-size:13px;margin-top:8px">&#10003; No critical gaps</div><div style="font-size:12px;color:var(--txt3);margin-top:4px">All effects have in-stock coverage.</div>`}
+    </div>
+  </div>
+
+  <div class="a-grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Effect Distribution</div><div class="a-sub">Products by recommended effect</div></div></div>
+      <div class="bar-chart">${effs.map(e=>`<div class="bar-row"><span class="bar-lbl" style="color:${ecol[e]}">${e}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(effCnt[e]/maxE*100)}%;background:${ecol[e]};opacity:.8"></div></div><span class="bar-val">${effCnt[e]}</span></div>`).join('')}</div>
+    </div>
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Recommendation-Ready Products</div><div class="a-sub">In stock + script = push-ready</div></div></div>
+      <div class="rank-list">${top5.map((p,i)=>`<div class="rank-item"><span class="rank-num">${i+1}</span><div class="rank-info"><div class="rank-name">${xe(p.name)}</div><div class="rank-sub">${p.brand||''} &middot; ${p.category||''}</div></div><div style="display:flex;gap:5px;align-items:center">${p.in_stock?'<span class="badge bg" style="font-size:10px">&#10003; Stock</span>':'<span class="badge br" style="font-size:10px">Out</span>'}${p.talking_points?.trim()?'<span class="badge bg" style="font-size:10px">&#10003; Script</span>':'<span class="badge ba" style="font-size:10px">No Script</span>'}</div></div>`).join('')}</div>
+    </div>
+  </div>
+
+  <div class="a-grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Script Coverage by Effect</div><div class="a-sub">Where budtenders are most prepared</div></div></div>
+      <div class="bar-chart">${effs.map(e=>{const p2=effScr[e];if(p2===null)return'';const col=p2>=70?'#22c55e':p2>=40?'#f59e0b':'#ef4444';return`<div class="bar-row"><span class="bar-lbl" style="color:${ecol[e]}">${e}</span><div class="bar-track"><div class="bar-fill" style="width:${p2}%;background:${col}"></div></div><span class="bar-val" style="color:${col}">${p2}%</span></div>`;}).filter(Boolean).join('')||'<div style="color:var(--txt3);font-size:13px">No data yet</div>'}</div>
+    </div>
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Script Coverage by Category</div><div class="a-sub">Training readiness per product type</div></div></div>
+      <div class="cov-grid">${cats.map(c=>{const p2=catScr[c];if(p2===null)return'';const col=p2>=70?'#22c55e':p2>=40?'#f59e0b':'#ef4444';return`<div class="cov-cell"><div class="cov-pct" style="color:${col}">${p2}%</div><div class="cov-lbl">${c}</div></div>`;}).filter(Boolean).join('')||'<div style="grid-column:span 4;color:var(--txt3);font-size:13px;text-align:center;padding:20px">No data yet</div>'}</div>
+    </div>
+  </div>
+
+  <div class="a-grid" style="grid-template-columns:1fr 1fr">
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Manager Action Center</div><div class="a-sub">Highest-priority store improvements</div></div>${acts.length===0?'<span class="a-badge" style="background:var(--green-d);color:var(--green)">All Clear</span>':''}</div>
+      ${acts.length===0?'<div style="text-align:center;padding:20px;color:var(--txt2);font-size:13px">Your store is in great shape.</div>':'<div class="act-list">'+acts.slice(0,4).map(a=>`<div class="act-item" onclick="${a.fn||''}"><div class="act-ico ai-${a.c}">${a.ico}</div><div class="act-text"><div class="act-title">${a.title}</div><div class="act-desc">${a.desc}</div></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>`).join('')+'</div>'}
+    </div>
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Push This Week</div><div class="a-sub">Products prioritized for recommendation</div></div><button class="hbtn" style="font-size:11px;padding:4px 10px" onclick="switchTab('inv')">Manage</button></div>
+      ${push.length===0?`<div style="text-align:center;padding:24px;color:var(--txt3);font-size:13px"><div style="font-size:32px;margin-bottom:8px">&#127919;</div>No push products set.<br><span style="color:var(--txt2)">Use the toggle in Inventory to feature SKUs.</span></div>`:`<div class="push-grid">${push.slice(0,4).map(p=>`<div class="push-card"><div class="push-card-name">${xe(p.name)}</div><div class="push-card-brand">${p.brand||''}</div><div class="push-card-meta">${p.category?`<span class="badge cat-${p.category}" style="font-size:10px">${p.category}</span>`:''}<span class="badge eff-${p.effect}" style="font-size:10px">${p.effect||''}</span></div></div>`).join('')}</div>`}
+    </div>
+  </div>`;
 }
 
-// -- COPY LINK ------------------------------------------------
-function copyLink() {
-    navigator.clipboard.writeText(document.getElementById('shareUrl').textContent)
-        .then(() => showToast('Cheat sheet link copied'))
-        .catch(() => showToast('Could not copy \u2014 copy the URL manually', true));
-}
+// ââ MODALS ââââââââââââââââââââââââââââââââââââââââ
+function openM(id){document.getElementById(id).classList.add('open')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
 
-// -- ANALYTICS ------------------------------------------------
-async function loadAnalytics() {
-    document.getElementById('aTotal').textContent = '\u2026';
-    document.getElementById('aToday').textContent = '\u2026';
-    document.getElementById('aWeek').textContent  = '\u2026';
-    document.getElementById('aTopEff').textContent = '\u2026';
+// ââ SIGN OUT ââââââââââââââââââââââââââââââââââââââ
+async function signOut(){await sb.auth.signOut();window.location.href='cannascope-login.html';}
 
-    // Attempt to load recommendation events (graceful if table doesn't exist yet)
-    const { data: events, error } = await sb.from('recommendation_events')
-        .select('id, effect, product_id, created_at')
-        .eq('organization_id', orgId)
-        .order('created_at', { ascending: false })
-        .limit(500);
-
-    if (error) {
-        renderAnalyticsEmpty('Recommendation tracking begins as soon as budtenders start using the cheat sheet.');
-        return;
-    }
-
-    const evts = events || [];
-
-    // Time buckets
-    const now   = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const weekStart  = todayStart - 6 * 86400000;
-
-    const todayEvts = evts.filter(e => new Date(e.created_at).getTime() >= todayStart);
-    const weekEvts  = evts.filter(e => new Date(e.created_at).getTime() >= weekStart);
-
-    // Effect breakdown
-    const EFFECTS = ['sleep','relax','focus','social','relief','beginner'];
-    const effCounts = {};
-    EFFECTS.forEach(e => effCounts[e] = 0);
-    evts.forEach(e => { if (effCounts[e.effect] !== undefined) effCounts[e.effect]++; });
-    const maxCount = Math.max(...Object.values(effCounts), 1);
-    const topEffect = EFFECTS.reduce((a, b) => effCounts[a] >= effCounts[b] ? a : b);
-
-    // Top products by recommendation count
-    const prodCounts = {};
-    evts.forEach(e => {
-        if (e.product_id) prodCounts[e.product_id] = (prodCounts[e.product_id] || 0) + 1;
-    });
-    const topProductIds = Object.entries(prodCounts)
-        .sort((a,b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([id, cnt]) => ({ id, cnt }));
-
-    // Render top-level stats
-    document.getElementById('aTotal').textContent  = evts.length;
-    document.getElementById('aToday').textContent  = todayEvts.length;
-    document.getElementById('aWeek').textContent   = weekEvts.length;
-    document.getElementById('aTopEff').textContent = evts.length > 0
-        ? topEffect.charAt(0).toUpperCase() + topEffect.slice(1)
-        : '\u2014';
-
-    // Effect chart
-    const chartHtml = EFFECTS.map(eff => {
-        const cnt = effCounts[eff];
-        const pct = Math.round((cnt / maxCount) * 100);
-        return `<div class="eff-row">
-            <span class="eff-row-label">${eff}</span>
-            <div class="eff-row-bar-wrap">
-                <div class="eff-row-bar bar-${eff}" style="width:${cnt > 0 ? Math.max(pct, 3) : 0}%"></div>
-            </div>
-            <span class="eff-row-count">${cnt}</span>
-        </div>`;
-    }).join('');
-    document.getElementById('effectChart').innerHTML = evts.length > 0 ? chartHtml
-        : '<div style="color:var(--text-3);font-size:12px;padding:12px 0">No data yet &mdash; share the budtender URL with your floor staff.</div>';
-
-    // Top products
-    if (topProductIds.length > 0) {
-        const prodMap = {};
-        products.forEach(p => prodMap[p.id] = p);
-        const tpHtml = topProductIds.map((item, i) => {
-            const p     = prodMap[item.id];
-            const name  = p ? xe(p.name)  : 'Unknown Product';
-            const brand = p ? xe(p.brand) : '';
-            const eff   = p ? p.effect    : '';
-            return `<div class="top-row">
-                <span class="top-rank">#${i+1}</span>
-                <div class="top-info">
-                    <div class="top-name">${name}</div>
-                    <div class="top-meta">${brand}${eff ? (brand ? ' &middot; ' : '') + eff : ''}</div>
-                </div>
-                <span class="top-count">${item.cnt}</span>
-            </div>`;
-        }).join('');
-        document.getElementById('topProductsList').innerHTML = tpHtml;
-    } else {
-        document.getElementById('topProductsList').innerHTML = '<div style="color:var(--text-3);font-size:12px;padding:12px 0">No recommendation data yet.</div>';
-    }
-
-    // Recent activity feed
-    if (evts.length > 0) {
-        const prodMap = {};
-        products.forEach(p => prodMap[p.id] = p);
-        const feedHtml = evts.slice(0, 25).map(e => {
-            const p    = e.product_id ? prodMap[e.product_id] : null;
-            const name = p ? xe(p.name) : (e.product_id ? 'Product' : 'Unknown');
-            const eff  = e.effect || 'unknown';
-            const ts   = fmtTime(new Date(e.created_at));
-            return `<div class="feed-row">
-                <div class="feed-time">${ts}</div>
-                <div class="feed-body">
-                    <span class="pill pill-${eff}" style="font-size:10px;margin-right:6px">${eff}</span>
-                    shown \u2014 top pick: <strong>${name}</strong>
-                </div>
-            </div>`;
-        }).join('');
-        document.getElementById('activityFeed').innerHTML = feedHtml;
-    } else {
-        document.getElementById('activityFeed').innerHTML = '<div class="no-data"><div class="no-data-title">No activity yet</div><div class="no-data-sub">When budtenders use the cheat sheet, each customer interaction appears here. Share the Budtender URL from the banner above to get started.</div></div>';
-    }
-}
-
-function renderAnalyticsEmpty(msg) {
-    ['aTotal','aToday','aWeek'].forEach(id => document.getElementById(id).textContent = '0');
-    document.getElementById('aTopEff').textContent = '\u2014';
-    const noDataHtml = `<div class="no-data"><div class="no-data-title">Analytics Coming Soon</div><div class="no-data-sub">${msg}</div></div>`;
-    document.getElementById('effectChart').innerHTML = noDataHtml;
-    document.getElementById('topProductsList').innerHTML = '';
-    document.getElementById('activityFeed').innerHTML = noDataHtml;
-}
-
-function fmtTime(d) {
-    const now   = new Date();
-    const diff  = Math.floor((now - d) / 1000);
-    if (diff < 60)   return 'Just now';
-    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-    return d.toLocaleDateString(undefined, { month:'short', day:'numeric' });
-}
-
-// -- UTILITIES ------------------------------------------------
-function showToast(msg, isErr) {
-    const el = document.getElementById('toast');
-    document.getElementById('toastMsg').textContent = msg;
-    el.className = 'toast' + (isErr ? ' err' : '');
-    el.classList.add('show');
-    clearTimeout(el._t);
-    el._t = setTimeout(() => el.classList.remove('show'), 2800);
-}
-
-function xe(s) {
-    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// -- SCRIPT BUILDER -------------------------------------------
-// Generates a genuine 2-sentence budtender script using product attributes.
-// Called for auto-generate and the Generate Script button.
-function buildScript(name, cat, eff, thc, cbd, price) {
-    const n   = (name || 'This product').trim();
-    const t   = parseFloat(thc)   || 0;
-    const d   = parseFloat(cbd)   || 0;
-    const p   = parseFloat(price) || 0;
-    const fmt = (cat || 'flower').toLowerCase();
-
-    // Sentence 1: effect-specific opener with product name
-    const openers = {
-        sleep:    n + ' is our best option for sleep and recovery.',
-        relax:    n + ' is ideal for unwinding and relieving tension.',
-        focus:    n + ' is excellent for focus, productivity, and daytime clarity.',
-        social:   n + ' is a top pick for social situations and mood elevation.',
-        relief:   n + ' is specifically selected for pain relief and anti-inflammatory support.',
-        beginner: n + ' is one of our most approachable options for first-time customers.'
-    };
-
-    // Sentence 2: cannabinoid/format context
-    let detail = '';
-    if (d >= 8) {
-        detail = 'The high CBD content (' + d + '%) provides strong relief with minimal psychoactive effect.';
-    } else if (d >= 3) {
-        detail = 'The balanced ' + t + '% THC and ' + d + '% CBD profile keeps the experience smooth and manageable.';
-    } else if (t >= 25) {
-        detail = 'At ' + t + '% THC it\'s potent \u2014 best for experienced customers who want strong results.';
-    } else if (t >= 20) {
-        detail = 'The ' + t + '% THC delivers reliable, consistent effects without going overboard.';
-    } else if (t >= 14) {
-        detail = 'At ' + t + '% THC, it\'s approachable and consistent \u2014 works well for most people.';
-    } else if (t > 0) {
-        detail = 'The lower ' + t + '% THC makes it a gentle, controlled experience.';
-    } else {
-        detail = 'A solid, well-rounded option at a great price point.';
-    }
-
-    // Sentence 3: format context
-    const fmtNotes = {
-        edible:      'Edible format means slower onset (60\u201390 min) but longer-lasting effects through the night.',
-        tincture:    'Tincture format allows precise dosing and takes effect in 20\u201340 minutes.',
-        topical:     'Topical application targets specific areas directly with no psychoactive effects.',
-        vape:        'Vape format provides near-instant onset, great for fast-acting relief.',
-        concentrate: 'Concentrate format is high-potency \u2014 a little goes a long way.',
-        preroll:     'Ready to go right out of the pack \u2014 nothing easier for a night out.',
-        flower:      p > 0 ? 'At $' + p.toFixed(0) + ', it\'s one of our best-value options in this category.' : ''
-    };
-    const fmtNote = fmtNotes[fmt] || '';
-
-    return [openers[eff] || openers.beginner, detail, fmtNote].filter(Boolean).join(' ');
-}
-
-// ==============================================================
-// CANNASCOPE SCORING ENGINE v2
-// Compound-aware: terpene profiles x cannabinoid intelligence
-// x entourage synergy bonuses x delivery format context.
-// (c) Cannascope
-// ==============================================================
-
-const TERPENE_EFFECTS = {
-    myrcene:       { sleep:0.32, relax:0.20, focus:-0.15, social:-0.08, relief:0.25, beginner:0.06 },
-    limonene:      { sleep:-0.12, relax:0.14, focus:0.28, social:0.26, relief:0.08, beginner:0.10 },
-    caryophyllene: { sleep:0.08, relax:0.18, focus:0.04, social:0.04, relief:0.32, beginner:0.16 },
-    linalool:      { sleep:0.34, relax:0.16, focus:-0.10, social:-0.06, relief:0.20, beginner:0.08 },
-    pinene:        { sleep:-0.10, relax:0.06, focus:0.26, social:0.10, relief:0.12, beginner:0.14 },
-    terpinolene:   { sleep:0.04, relax:0.10, focus:0.12, social:0.24, relief:0.04, beginner:0.18 },
-    humulene:      { sleep:0.12, relax:0.12, focus:-0.02, social:0.02, relief:0.16, beginner:0.14 },
-    ocimene:       { sleep:-0.08, relax:0.06, focus:0.16, social:0.20, relief:0.02, beginner:0.08 },
-    bisabolol:     { sleep:0.24, relax:0.14, focus:-0.06, social:-0.04, relief:0.18, beginner:0.12 },
-    nerolidol:     { sleep:0.30, relax:0.12, focus:-0.12, social:-0.08, relief:0.14, beginner:0.06 },
-    terpineol:     { sleep:0.28, relax:0.14, focus:-0.10, social:-0.06, relief:0.12, beginner:0.08 },
-    valencene:     { sleep:-0.04, relax:0.08, focus:0.14, social:0.22, relief:0.04, beginner:0.10 },
-    geraniol:      { sleep:0.22, relax:0.10, focus:-0.06, social:-0.02, relief:0.16, beginner:0.10 },
-    camphene:      { sleep:0.06, relax:0.06, focus:0.06, social:0.04, relief:0.20, beginner:0.10 },
-    guaiol:        { sleep:0.10, relax:0.08, focus:0.04, social:0.02, relief:0.22, beginner:0.12 },
-    fenchol:       { sleep:0.08, relax:0.06, focus:0.08, social:0.04, relief:0.14, beginner:0.12 },
-    borneol:       { sleep:0.20, relax:0.10, focus:0.02, social:0.02, relief:0.18, beginner:0.08 }
-};
-
-const TERPENE_FLOOR = 0.08;
-
-const SYNERGIES = [
-    { pair:['myrcene','linalool'],       effect:'sleep',   bonus:0.14 },
-    { pair:['myrcene','nerolidol'],       effect:'sleep',   bonus:0.10 },
-    { pair:['linalool','bisabolol'],      effect:'sleep',   bonus:0.12 },
-    { pair:['myrcene','caryophyllene'],   effect:'relief',  bonus:0.12 },
-    { pair:['caryophyllene','linalool'],  effect:'relief',  bonus:0.14 },
-    { pair:['myrcene','caryophyllene'],   effect:'relax',   bonus:0.10 },
-    { pair:['limonene','pinene'],         effect:'focus',   bonus:0.14 },
-    { pair:['limonene','ocimene'],        effect:'social',  bonus:0.10 },
-    { pair:['limonene','terpinolene'],    effect:'social',  bonus:0.12 },
-    { pair:['pinene','terpinolene'],      effect:'focus',   bonus:0.08 },
-    { pair:['limonene','caryophyllene'],  effect:'relax',   bonus:0.08 },
-    { pair:['bisabolol','caryophyllene'], effect:'relief',  bonus:0.10 }
-];
-
-const STRAIN_DB = {
-    'granddaddy purple':  { myrcene:0.56, linalool:0.22, caryophyllene:0.14, limonene:0.05, pinene:0.02, bisabolol:0.04, nerolidol:0.03 },
-    'northern lights':    { myrcene:0.52, linalool:0.24, caryophyllene:0.13, limonene:0.05, pinene:0.03, terpinolene:0.02 },
-    'purple punch':       { myrcene:0.46, linalool:0.28, caryophyllene:0.12, limonene:0.08, pinene:0.02, bisabolol:0.04 },
-    'bubba kush':         { myrcene:0.42, caryophyllene:0.28, linalool:0.16, limonene:0.05, pinene:0.04, humulene:0.05 },
-    'og kush':            { myrcene:0.36, caryophyllene:0.28, limonene:0.20, linalool:0.08, pinene:0.04, humulene:0.04 },
-    'blue dream':         { myrcene:0.42, pinene:0.20, caryophyllene:0.14, limonene:0.14, terpinolene:0.05, ocimene:0.05 },
-    'wedding cake':       { caryophyllene:0.32, limonene:0.24, linalool:0.18, myrcene:0.14, humulene:0.06, bisabolol:0.06 },
-    'gelato':             { caryophyllene:0.26, limonene:0.24, linalool:0.20, myrcene:0.18, humulene:0.06, geraniol:0.04 },
-    'sour diesel':        { limonene:0.46, caryophyllene:0.20, myrcene:0.14, pinene:0.10, terpinolene:0.06, ocimene:0.04 },
-    'jack herer':         { terpinolene:0.36, pinene:0.24, myrcene:0.18, limonene:0.14, ocimene:0.04, caryophyllene:0.04 },
-    'green crack':        { myrcene:0.36, limonene:0.24, caryophyllene:0.18, pinene:0.10, terpinolene:0.06, ocimene:0.06 },
-    'pineapple express':  { limonene:0.36, terpinolene:0.24, caryophyllene:0.14, myrcene:0.14, ocimene:0.06, valencene:0.06 },
-    'tangie':             { limonene:0.52, myrcene:0.14, caryophyllene:0.13, terpinolene:0.10, valencene:0.06, ocimene:0.05 },
-    'acdc':               { myrcene:0.34, pinene:0.26, caryophyllene:0.20, limonene:0.10, linalool:0.06, humulene:0.04 },
-    'harlequin':          { myrcene:0.36, pinene:0.24, caryophyllene:0.20, limonene:0.10, linalool:0.06, bisabolol:0.04 },
-    'white widow':        { myrcene:0.30, caryophyllene:0.26, limonene:0.20, pinene:0.14, terpinolene:0.06, humulene:0.04 },
-    'girl scout cookies': { caryophyllene:0.30, limonene:0.20, linalool:0.16, myrcene:0.24, bisabolol:0.06, humulene:0.04 },
-    'cannatonic':         { myrcene:0.30, caryophyllene:0.26, pinene:0.20, limonene:0.10, linalool:0.10, guaiol:0.04 },
-    'durban poison':      { terpinolene:0.42, myrcene:0.20, limonene:0.18, pinene:0.10, ocimene:0.06, caryophyllene:0.04 },
-    'zkittlez':           { limonene:0.32, caryophyllene:0.24, linalool:0.20, myrcene:0.14, geraniol:0.06, bisabolol:0.04 },
-    'runtz':              { limonene:0.30, caryophyllene:0.24, linalool:0.20, myrcene:0.18, geraniol:0.04, bisabolol:0.04 },
-    'gorilla glue':       { caryophyllene:0.32, myrcene:0.28, limonene:0.18, pinene:0.10, humulene:0.08, linalool:0.04 },
-    'do-si-dos':          { linalool:0.32, limonene:0.22, caryophyllene:0.20, myrcene:0.14, bisabolol:0.06, geraniol:0.06 },
-    'mac':                { limonene:0.30, caryophyllene:0.26, myrcene:0.20, linalool:0.14, bisabolol:0.06, geraniol:0.04 },
-    'skywalker og':       { myrcene:0.46, caryophyllene:0.24, linalool:0.14, limonene:0.10, nerolidol:0.04, bisabolol:0.02 },
-    'purple haze':        { myrcene:0.36, terpinolene:0.22, limonene:0.20, ocimene:0.10, caryophyllene:0.08, pinene:0.04 },
-    'chemdawg':           { caryophyllene:0.36, limonene:0.24, myrcene:0.18, humulene:0.10, pinene:0.08, geraniol:0.04 },
-    'trainwreck':         { terpinolene:0.30, pinene:0.24, myrcene:0.20, limonene:0.14, ocimene:0.08, caryophyllene:0.04 },
-    'banana kush':        { myrcene:0.48, limonene:0.20, caryophyllene:0.16, linalool:0.10, bisabolol:0.04, geraniol:0.02 },
-    'super lemon haze':   { terpinolene:0.34, limonene:0.28, myrcene:0.16, caryophyllene:0.12, ocimene:0.06, pinene:0.04 },
-    'cherry pie':         { myrcene:0.40, caryophyllene:0.28, linalool:0.14, limonene:0.10, bisabolol:0.06, geraniol:0.02 },
-    'amnesia haze':       { terpinolene:0.36, limonene:0.26, myrcene:0.18, caryophyllene:0.10, ocimene:0.06, pinene:0.04 },
-    'bruce banner':       { limonene:0.28, caryophyllene:0.26, myrcene:0.22, linalool:0.12, terpinolene:0.08, humulene:0.04 },
-    'mimosa':             { limonene:0.44, myrcene:0.20, caryophyllene:0.14, terpinolene:0.12, valencene:0.06, pinene:0.04 }
-};
-
-const FORMAT_CONTEXT = {
-    sleep:    { edible:0.10, tincture:0.09, topical:0.04, flower:0.00, preroll:-0.02, vape:-0.10, concentrate:-0.08 },
-    relax:    { edible:0.07, tincture:0.06, flower:0.03, preroll:0.02, vape:-0.04, concentrate:-0.02, topical:0.02 },
-    focus:    { vape:0.09, flower:0.04, preroll:0.03, concentrate:0.05, edible:-0.08, tincture:-0.05, topical:-0.04 },
-    social:   { vape:0.10, flower:0.04, preroll:0.04, concentrate:0.03, edible:-0.05, tincture:-0.06, topical:-0.04 },
-    relief:   { topical:0.18, tincture:0.12, edible:0.10, flower:0.02, preroll:0.01, vape:-0.04, concentrate:-0.02 },
-    beginner: { flower:0.03, tincture:0.03, edible:0.03, preroll:0.02, vape:-0.01, concentrate:-0.01, topical:0.01 }
-};
-
-function cannabinoidScore(thc, cbd, effect) {
-    let s = 0;
-    const ratio = thc > 0 ? cbd / thc : (cbd > 0 ? 99 : 0);
-    if (effect === 'sleep') {
-        if (thc >= 22) s += 0.06; else if (thc >= 16) s += 0.03;
-        if (cbd >= 4) s += 0.05; else if (cbd >= 2) s += 0.02;
-        if (ratio >= 0.2 && ratio <= 1.0) s += 0.04;
-    } else if (effect === 'relief') {
-        if (cbd >= 8) s += 0.10; else if (cbd >= 4) s += 0.06; else if (cbd >= 2) s += 0.03;
-        if (ratio >= 0.5) s += 0.06;
-        if (thc >= 20) s += 0.03;
-    } else if (effect === 'relax') {
-        if (thc >= 16 && thc <= 24) s += 0.04;
-        if (cbd >= 2) s += 0.03;
-        if (ratio >= 0.1 && ratio <= 0.5) s += 0.03;
-    } else if (effect === 'focus') {
-        if (thc >= 10 && thc <= 19) s += 0.05;
-        else if (thc >= 20) s -= 0.04;
-        if (cbd >= 2 && cbd <= 6) s += 0.03;
-    } else if (effect === 'social') {
-        if (thc >= 14 && thc <= 22) s += 0.05;
-        else if (thc >= 23) s -= 0.03;
-        if (cbd >= 2) s += 0.02;
-    } else if (effect === 'beginner') {
-        if (thc >= 10 && thc <= 20) s += 0.05;
-        if (cbd >= 2 && cbd <= 8) s += 0.04;
-        if (ratio >= 0.1 && ratio <= 0.8) s += 0.04;
-    }
-    return s;
-}
-
-function computeScores(product) {
-    const strainKey = (product.name || '').toLowerCase().trim();
-    const dbProfile = STRAIN_DB[strainKey] || null;
-    const terpPct   = {};
-
-    for (const terpene of Object.keys(TERPENE_EFFECTS)) {
-        const key      = 't_' + terpene;
-        const prodVal  = parseFloat(product[key]);
-        if (!isNaN(prodVal) && prodVal > 0) {
-            terpPct[terpene] = prodVal;
-        } else if (dbProfile && dbProfile[terpene]) {
-            terpPct[terpene] = dbProfile[terpene];
-        } else {
-            terpPct[terpene] = 0;
-        }
-    }
-
-    const thc    = parseFloat(product.thc) || 0;
-    const cbd    = parseFloat(product.cbd) || 0;
-    const cat    = (product.category || '').toLowerCase();
-    const scores = {};
-    const EFFECTS = ['sleep','relax','focus','social','relief','beginner'];
-
-    for (const effect of EFFECTS) {
-        let s = 0;
-        for (const [terpene, weights] of Object.entries(TERPENE_EFFUCTS)) {
-            const pct = terpPct[terpene];
-            if (pct < TERPENE_FLOOR) continue;
-            const scaled = Math.sqrt(pct / 0.5);
-            s += scaled * (weights[effect] || 0);
-        }
-        for (const syn of SYNERGIES) {
-            if (syn.effect !== effect) continue;
-            const [t1, t2] = syn.pair;
-            if (terpPct[t1] >= TERPENE_FLOOR && terpPct[t2] >= TERPENE_FLOOR) {
-                const strength = Math.min(Math.sqrt(terpPct[t1] / 0.5), Math.sqrt(terpPct[t2] / 0.5));
-                s += syn.bonus * Math.min(strength, 1.2);
-            }
-        }
-        s += cannabinoidScore(thc, cbd, effect);
-        s += (FORMAT_CONTEXT[effect]?.[cat] || 0);
-        scores['score_' + effect] = Math.max(0, Math.min(1, s));
-    }
-    return scores;
-}
+// ââ UTILS âââââââââââââââââââââââââââââââââââââââââ
+function xe(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 
 init();
+</script>
 </body>
-            </html>
+</html>
