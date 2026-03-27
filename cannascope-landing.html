@@ -2,868 +2,6 @@
 <html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cannascope â Budtender Intelligence Platform</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --accent: #059669;
-            --accent-light: #ECFDF5;
-            --accent-border: #6EE7B7;
-            --amber: #92400E;
-            --amber-light: #FFFBEB;
-            --bg: #FFFFFF;
-            --bg-2: #F9FAFB;
-            --surface: #FFFFFF;
-            --border: #E5E7EB;
-            --border-2: #D1D5DB;
-            --text: #111827;
-            --text-2: #6B7280;
-            --text-3: #9CA3AF;
-        }
-
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-        }
-
-        /* -- NAV -------------------------------------- */
-        nav {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--border);
-            height: 58px;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 40px;
-        }
-        .nav-logo {
-            font-size: 15px; font-weight: 700; letter-spacing: -0.02em;
-            color: var(--text); text-decoration: none;
-        }
-        .nav-logo-accent { color: var(--accent); }
-        .nav-links { display: flex; align-items: center; gap: 28px; }
-        .nav-links a {
-            font-size: 13px; font-weight: 500; color: var(--text-2);
-            text-decoration: none; transition: color 0.12s;
-        }
-        .nav-links a:hover { color: var(--text); }
-        .nav-cta {
-            font-size: 13px; font-weight: 600; color: #fff;
-            background: var(--accent); border-radius: 7px;
-            padding: 8px 18px; text-decoration: none; transition: background 0.12s;
-        }
-        .nav-cta:hover { background: #047857; }
-
-        /* -- SHARED SECTION STYLES --------------------- */
-        section { padding: 56px 24px; }
-        .container { max-width: 1080px; margin: 0 auto; }
-        .section-eyebrow {
-            font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--accent);
-            margin-bottom: 12px; text-align: center;
-        }
-        .section-title {
-            font-size: clamp(26px, 3.5vw, 40px); font-weight: 700;
-            letter-spacing: -0.025em; text-align: center;
-            margin-bottom: 14px; line-height: 1.15; color: var(--text);
-        }
-        .section-sub {
-            font-size: 16px; color: var(--text-2); text-align: center;
-            max-width: 540px; margin: 0 auto 36px; line-height: 1.7;
-        }
-
-        /* -- HERO -------------------------------------- */
-        .hero {
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 76px 24px 52px; border-bottom: 1px solid var(--border);
-            background: var(--bg);
-        }
-        .hero-eyebrow {
-            display: inline-flex; align-items: center; gap: 8px;
-            font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--accent);
-            background: var(--accent-light); border: 1px solid var(--accent-border);
-            padding: 5px 14px; border-radius: 100px; margin-bottom: 28px;
-        }
-        .hero-title {
-            font-size: clamp(36px, 5.5vw, 64px); font-weight: 700;
-            letter-spacing: -0.03em; text-align: center; line-height: 1.08;
-            max-width: 760px; margin-bottom: 20px; color: var(--text);
-        }
-        .hero-title .hl { color: var(--accent); }
-        .hero-sub {
-            font-size: clamp(15px, 1.8vw, 18px); color: var(--text-2);
-            text-align: center; max-width: 520px; line-height: 1.7;
-            margin-bottom: 40px;
-        }
-        .hero-actions {
-            display: flex; gap: 10px; align-items: center;
-            flex-wrap: wrap; justify-content: center; margin-bottom: 32px;
-        }
-        .btn-primary-lg {
-            padding: 13px 28px; background: var(--accent); color: #fff;
-            border-radius: 8px; font-size: 14px; font-weight: 600;
-            text-decoration: none; transition: background 0.12s;
-        }
-        .btn-primary-lg:hover { background: #047857; }
-        .btn-ghost-lg {
-            padding: 12px 24px; background: transparent; color: var(--text-2);
-            border: 1px solid var(--border-2); border-radius: 8px;
-            font-size: 14px; font-weight: 500; text-decoration: none;
-            transition: border-color 0.12s, color 0.12s;
-        }
-        .btn-ghost-lg:hover { border-color: var(--border-2); color: var(--text); }
-        .hero-proof {
-            display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
-            justify-content: center; font-size: 12px; color: var(--text-3); font-weight: 500;
-        }
-        .proof-item { display: flex; align-items: center; gap: 6px; }
-        .proof-check {
-            width: 16px; height: 16px; background: var(--accent-light);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-        .proof-check9::before { content: '\2713'; font-size: 9px; color: var(--accent); font-weight: 700; }
-
-        /* -- PRODUCT MOCKUP ---------------------------- */
-        .mockup-section {
-            padding: 0 24px 80px; background: var(--bg-2); border-bottom: 1px solid var(--border);
-        }
-        .mockup-wrap {
-            max-width: 860px; margin: 0 auto;
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; overflow: hidden;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-        }
-        .mockup-titlebar {
-            height: 40px; background: var(--bg-2); border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; padding: 0 14px; gap: 7px;
-        }
-        .tb-dot {
-            width: 10px; height: 10px; border-radius: 50%; background: var(--border-2);
-        }
-        .tb-url {
-            margin-left: 10px; font-size: 11px; color: var(--text-3);
-            font-family: monospace;
-        }
-        .mockup-body { padding: 20px; }
-
-        /* mock app UI */
-        .mock-header {
-            background: var(--bg-2); border: 1px solid var(--border);
-            border-radius: 8px; padding: 0 16px; height: 42px;
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 18px;
-        }
-        .mock-logo { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
-        .mock-logo-acc { color: var(--accent); }
-        .mock-store { font-size: 11px; color: var(--text-3); font-weight: 500; }
-        .mock-badge {
-            font-size: 10px; font-weight: 600; color: var(--accent);
-            background: var(--accent-light); border: 1px solid var(--accent-border);
-            padding: 3px 9px; border-radius: 100px;
-        }
-        .mock-eyebrow {
-            font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
-            text-transform: uppercase; color: var(--text-3);
-            text-align: center; margin-bottom: 10px;
-        }
-        .mock-intent-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px;
-            margin-bottom: 20px;
-        }
-        .mock-intent-btn {
-            padding: 12px 10px; background: var(--surface);
-            border: 1.5px solid var(--border); border-radius: 7px;
-        }
-        .mock-intent-btn.sel { border-color: var(--accent); background: var(--accent-light); }
-        .mib-name { font-size: 12px; font-weight: 600; color: var(--text); }
-        .mock-intent-btn.sel .mib-name { color: var(--accent); }
-        .mib-desc { font-size: 10px; color: var(--text-3); margin-top: 2px; }
-
-        .mock-result-header {
-            font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
-            text-transform: uppercase; color: var(--accent); text-align: right;
-            margin-bottom: 10px;
-        }
-        .mock-cards { display: flex; flex-direction: column; gap: 8px; }
-        .mock-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 8px; overflow: hidden;
-        }
-        .mock-card.rank-1 { border-color: var(--border-2); border-left: 3px solid var(--accent); }
-        .mock-card-rank {
-            padding: 8px 14px 4px; font-size: 9px; font-weight: 600;
-            letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3);
-        }
-        .mock-card.rank-1 .mock-card-rank { color: var(--accent); }
-        .mock-card-main {
-            padding: 2px 14px 8px; display: flex;
-            align-items: flex-start; justify-content: space-between;
-        }
-        .mock-card-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
-        .mock-card-price { font-size: 15px; font-weight: 700; color: var(--text); }
-        .mock-card-meta { padding: 0 14px 10px; font-size: 11px; color: var(--text-2); }
-        .mock-card-section {
-            border-top: 1px solid var(--border); padding: 8px 14px;
-        }
-        .mock-section-label {
-            font-size: 8px; font-weight: 600; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--text-3); margin-bottom: 3px;
-        }
-        .mock-section-text { font-size: 11px; color: var(--text-2); line-height: 1.6; }
-        .mock-card-section.is-manager { background: var(--amber-light); }
-        .mock-card-section.is-manager .mock-section-label { color: var(--amber); }
-        .mock-card-section.is-manager .mock-section-text { color: var(--amber); }
-        .mock-upsell {
-            background: var(--bg-2); border: 1px solid var(--border);
-            border-radius: 8px; padding: 10px 14px;
-        }
-        .mock-upsell-label {
-            font-size: 8px; font-weight: 600; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--accent); margin-bottom: 3px;
-        }
-        .mock-upsell-text { font-size: 11px; color: var(--text-2); line-height: 1.6; }
-
-        /* -- PROBLEM ----------------------------------- */
-        .problem-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-        }
-        .problem-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 20px;
-        }
-        .problem-num {
-            width: 28px; height: 28px; border-radius: 6px;
-            background: var(--bg-2); border: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 700; color: var(--text-2);
-            margin-bottom: 16px;
-        }
-        .problem-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-        .problem-text { font-size: 13px; color: var(--text-2); line-height: 1.7; }
-
-        /* -- HOW IT WORKS ------------------------------ */
-        .how-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-        .step-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 20px;
-        }
-        .step-num {
-            width: 32px; height: 32px; background: var(--accent);
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 18px;
-        }
-        .step-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-        .step-text { font-size: 13px; color: var(--text-2); line-height: 1.7; }
-        .step-time {
-            margin-top: 14px; font-size: 11px; font-weight: 600;
-            color: var(--accent); letter-spacing: 0.04em;
-        }
-
-        /* -- FEATURES ---------------------------------- */
-        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .feature-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 22px;
-        }
-        .feature-num {
-            font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
-            text-transform: uppercase; color: var(--text-3);
-            margin-bottom: 14px;
-        }
-        .feature-title {
-            font-size: 18px; font-weight: 700; letter-spacing: -0.02em;
-            margin-bottom: 10px; color: var(--text); line-height: 1.3;
-        }
-        .feature-text { font-size: 13px; color: var(--text-2); line-height: 1.75; }
-        .feature-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
-        .feature-list li {
-            font-size: 13px; color: var(--text-2); list-style: none;
-            display: flex; align-items: flex-start; gap: 10px; line-height: 1.55;
-        }
-        .feature-list li::before {
-            content: '\2013'; color: var(--accent); font-weight: 700;
-            flex-shrink: 0; margin-top: 1px;
-        }
-
-        /* -- INVENTORY INTELLIGENCE -------------------- */
-        .intel-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        .intel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
-        .intel-tag {
-            font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
-            text-transform: uppercase; color: var(--accent);
-            background: var(--accent-light); border: 1px solid var(--accent-border);
-            padding: 4px 12px; border-radius: 100px; display: inline-block; margin-bottom: 20px;
-        }
-        .intel-title {
-            font-size: clamp(22px, 3vw, 34px); font-weight: 700;
-            letter-spacing: -0.025em; line-height: 1.2; margin-bottom: 14px; color: var(--text);
-        }
-        .intel-sub { font-size: 14px; color: var(--text-2); line-height: 1.75; margin-bottom: 28px; }
-        .intel-metrics { display: flex; flex-direction: column; gap: 10px; }
-        .intel-metric {
-            display: flex; align-items: center; gap: 16px;
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 8px; padding: 14px 16px;
-        }
-        .metric-val {
-            font-size: 26px; font-weight: 700; color: var(--accent);
-            letter-spacing: -0.02em; min-width: 64px;
-        }
-        .metric-lbl { font-size: 13px; color: var(--text-2); line-height: 1.5; }
-        .intel-panel {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
-        }
-        .intel-panel-header {
-            padding: 12px 16px; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between;
-            font-size: 11px; font-weight: 600; color: var(--text-2); letter-spacing: 0.03em;
-        }
-        .live-indicator {
-            display: flex; align-items: center; gap: 5px;
-            font-size: 10px; font-weight: 600; color: var(--accent);
-        }
-        .live-dot {
-            width: 6px; height: 6px; background: var(--accent);
-            border-radius: 50%; animation: blink 2s infinite;
-        }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
-        .intel-rows { padding: 10px; display: flex; flex-direction: column; gap: 7px; }
-        .intel-row {
-            display: flex; align-items: center; gap: 10px;
-            background: var(--bg-2); border: 1px solid var(--border);
-            border-radius: 7px; padding: 10px 12px;
-        }
-        .ir-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
-        .ir-note { font-size: 11px; color: var(--text-2); }
-        .ir-badge {
-            font-size: 10px; font-weight: 600; padding: 2px 8px;
-            border-radius: 4px; white-space: nowrap;
-        }
-        .ir-badge.push { background: #FEF3C7; color: #92400E; }
-        .ir-badge.hi   { background: var(--accent-light); color: var(--accent); }
-        .ir-badge.low  { background: #FEF2F2; color: #B91C1C; }
-
-        /* -- ROI CALCULATOR ---------------------------- */
-        .roi-section { background: var(--bg); }
-        .roi-inner { max-width: 640px; margin: 0 auto; }
-        .roi-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; padding: 36px;
-        }
-        .roi-card-heading { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
-        .roi-card-sub { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
-        .roi-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-        .roi-field label {
-            display: block; font-size: 11px; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.06em;
-            color: var(--text-2); margin-bottom: 7px;
-        }
-        .roi-field input {
-            width: 100%; padding: 10px 13px; background: var(--bg-2);
-            border: 1px solid var(--border); border-radius: 7px;
-            color: var(--text); font-size: 15px; font-weight: 700;
-            font-family: inherit; text-align: center;
-        }
-        .roi-field input:focus { outline: none; border-color: var(--accent); }
-        .roi-result {
-            background: var(--accent-light); border: 1px solid var(--accent-border);
-            border-radius: 8px; padding: 24px; margin-bottom: 16px; text-align: center;
-        }
-        .roi-result-label {
-            font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
-            text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
-        }
-        .roi-result-num { font-size: 44px; font-weight: 700; letter-spacing: -0.04em; color: var(--accent); }
-        .roi-result-sub { font-size: 12px; color: var(--text-2); margin-top: 4px; }
-        .roi-breakdown { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .roi-cell {
-            background: var(--bg-2); border: 1px solid var(--border);
-            border-radius: 7px; padding: 14px 12px; text-align: center;
-        }
-        .roi-cell-val { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
-        .roi-cell-label { font-size: 10px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
-
-        /* -- TESTIMONIALS ------------------------------ */
-        .testi-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-        .testi-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 20px;
-        }
-        .testi-stars { font-size: 13px; color: #F59E0B; letter-spacing: 2px; margin-bottom: 14px; }
-        .testi-quote {
-            font-size: 14px; color: var(--text); line-height: 1.75;
-            margin-bottom: 20px;
-        }
-        .testi-author { display: flex; align-items: center; gap: 12px; }
-        .testi-avatar {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: var(--accent-light); border: 1px solid var(--accent-border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 700; color: var(--accent); flex-shrink: 0;
-        }
-        .testi-name { font-size: 13px; font-weight: 600; color: var(--text); }
-        .testi-role { font-size: 11px; color: var(--text-3); margin-top: 1px; }
-
-        /* -- PRICING ----------------------------------- */
-        .pricing-section { background: var(--bg); }
-        .price-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; padding: 36px;
-            max-width: 440px; margin: 0 auto;
-        }
-        .price-card-badge {
-            display: inline-block; font-size: 10px; font-weight: 600;
-            letter-spacing: 0.07em; text-transform: uppercase;
-            background: var(--text); color: #fff;
-            padding: 3px 10px; border-radius: 4px; margin-bottom: 18px;
-        }
-        .price-name {
-            font-size: 12px; font-weight: 600; color: var(--text-2);
-            text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px;
-        }
-        .price-amount {
-            font-size: 48px; font-weight: 700; letter-spacing: -0.04em;
-            color: var(--text); margin-bottom: 2px; line-height: 1;
-        }
-        .price-amount span { font-size: 22px; font-weight: 500; color: var(--text-2); vertical-align: top; margin-top: 10px; display: inline-block; }
-        .price-period { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
-        .price-desc { font-size: 13px; color: var(--text-2); line-height: 1.65; margin-bottom: 24px; border-top: 1px solid var(--border); padding-top: 20px; }
-        .price-features { display: flex; flex-direction: column; gap: 9px; margin-bottom: 28px; }
-        .pf {
-            font-size: 13px; color: var(--text-2); display: flex;
-            align-items: flex-start; gap: 9px; line-height: 1.5;
-        }
-        .pf::before { content: '\2713'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
-        .price-btn {
-            display: block; text-align: center; padding: 12px;
-            border-radius: 7px; font-size: 14px; font-weight: 600;
-            text-decoration: none; transition: background 0.12s;
-            background: var(--accent); color: #fff;
-        }
-        .price-btn:hover { background: #047857; }
-        .price-note { text-align: center; font-size: 12px; color: var(--text-3); margin-top: 12px; }
-
-        /* -- CTA --------------------------------------- */
-        .cta-section {
-            padding: 56px 24px; text-align: center;
-            background: var(--bg-2); border-top: 1px solid var(--border);
-        }
-        .cta-title {
-            font-size: clamp(28px, 4.5vw, 52px); font-weight: 700;
-            letter-spacing: -0.03em; margin-bottom: 14px;
-            line-height: 1.1; color: var(--text);
-        }
-        .cta-sub {
-            font-size: 16px; color: var(--text-2); max-width: 480px;
-            margin: 0 auto 36px; line-height: 1.7;
-        }
-        .cta-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
-        .cta-note { font-size: 12px; color: var(--text-3); }
-
-        /* -- FOOTER ------------------------------------ */
-        footer {
-            padding: 32px 40px; border-top: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between;
-            flex-wrap: wrap; gap: 16px; background: var(--bg);
-        }
-        .footer-logo { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
-        .footer-logo-acc { color: var(--accent); }
-        .footer-links { display: flex; gap: 24px; }
-        .footer-links a { font-size: 12px; color: var(--text-3); text-decoration: none; transition: color 0.12s; }
-        .footer-links a:hover { color: var(--text-2); }
-        .footer-copy { font-size: 12px; color: var(--text-3); }
-
-        /* -- RESPONSIVE -------------------------------- */
-        @media (max-width: 768px) {
-            nav { padding: 0 20px; }
-            .nav-links { display: none; }
-            section { padding: 40px 20px; }
-            .problem-grid, .steps-grid, .features-grid,
-            .intel-grid, .testi-grid { grid-template-columns: 1fr; }
-            .intel-grid { gap: 32px; }
-            .roi-inputs, .roi-breakdown { grid-template-columns: 1fr; }
-            footer { flex-direction: column; text-align: center; padding: 28px 20px; }
-            .footer-links { justify-content: center; }
-            .mock-intent-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-    
-.manager-section{padding:60px 20px;background:var(--bg);}
-.mgr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:900px;margin:0 auto;}
-.mgr-kpi{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e5e7eb;}
-@media(max-width:700px){.mgr-grid{grid-template-columns:1fr;}.mgr-kpi{grid-template-columns:repeat(2,1fr);}}</style>
-<style id="compact-overrides">section { padding-top: 40px !important; padding-bottom: 40px !important; }
-.hero { padding-top: 60px !important; padding-bottom: 60px !important; }
-h1 { font-size: clamp(1.8rem, 4vw, 2.6rem) !important; }
-h2 { font-size: clamp(1.3rem, 3vw, 1.8rem) !important; }
-.section-header { margin-bottom: 24px !important; }
-.features-grid { gap: 12px !important; }
-.how-steps { gap: 16px !important; }</style><style>
-      .roi-section, .testi-section, #problem { display: none !important; }
-      section, .section { padding: 40px 0; }
-      .hero { padding: 60px 0; }
-    </style></head>
-<body>
-
-<!-- -- NAV ------------------------------------------- -->
-<nav>
-    <a href="cannascope-landing.html" class="nav-logo">Canna<span class="nav-logo-accent">scope</span></a>
-    <div class="nav-links">
-        <a href="#how-it-works">How It Works</a>
-        <a href="#features">Features</a>
-        <a href="#pricing">Pricing</a>
-        
-        <a href="cannascope-login.html">Sign In</a>
-    </div>
-    <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&amp;body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="nav-cta">Request Access</a>
-</nav>
-
-<!-- -- HERO ------------------------------------------- -->
-<section class="hero">
-    <div class="hero-eyebrow">Built for Dispensary Revenue</div>
-    <h1 class="hero-title">Your budtenders recommend<br><span class="hl">the same 3 products.</span></h1>
-    <p class="hero-sub">Cannascope turns every budtender into your best one â instant terpene-based recommendations, manager-directed inventory pushes, and upsell prompts that grow basket size automatically.</p>
-    <div class="hero-actions">
-        <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&amp;body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="btn-primary-lg">Request Access</a>
-        <a href="#how-it-works" class="btn-ghost-lg">See How It Works</a>
-    </div>
-    <div class="hero-proof">
-        <div class="proof-item"><div class="proof-check"></div>3-minute setup</div>
-        <div class="proof-item"><div class="proof-check"></div>No app download for budtenders</div>
-        <div class="proof-item"><div class="proof-check"></div>Works with any POS</div>
-        <div class="proof-item"><div class="proof-check"></div>Revenue uplift in the first week</div>
-    </div>
-</section>
-
-<!-- -- PRODUCT MOCKUP -------------------------------- -->
-<div class="mockup-section" style="padding-top:60px;">
-    <div class="mockup-wrap">
-        <div class="mockup-titlebar">
-            <div class="tb-dot"></div><div class="tb-dot"></div><div class="tb-dot"></div>
-            <span class="tb-url">cannascope.app/bud?key=â¦</span>
-        </div>
-        <div class="mockup-body">
-            <div class="mock-header">
-                <div class="mock-logo">Canna<span class="mock-logo-acc">scope</span></div>
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <span class="mock-store">Green Leaf Dispensary</span>
-                    <span class="mock-badge">47 products</span>
-                </div>
-            </div>
-            <div class="mock-eyebrow">Customer Intent</div>
-            <div class="mock-intent-grid">
-                <div class="mock-intent-btn"><div class="mib-name">Sleep</div><div class="mib-desc">Rest &amp; recovery</div></div>
-                <div class="mock-intent-btn sel"><div class="mib-name">Relax</div><div class="mib-desc">Unwind, decompress</div></div>
-                <div class="mock-intent-btn"><div class="mib-name">Focus</div><div class="mib-desc">Clarity &amp; productivity</div></div>
-                <div class="mock-intent-btn"><div class="mib-name">Social</div><div class="mib-desc">Energy &amp; mood lift</div></div>
-                <div class="mock-intent-btn"><div class="mib-name">Relief</div><div class="mib-desc">Pain &amp; inflammation</div></div>
-                <div class="mock-intent-btn"><div class="mib-name">Balanced</div><div class="mib-desc">First-time friendly</div></div>
-            </div>
-            <div class="mock-result-header">Relax â Top 3 Matches</div>
-            <div class="mock-cards">
-                <div class="mock-card rank-1">
-                    <div class="mock-card-rank">#1 Best Match Â· 94% match</div>
-                    <div class="mock-card-main">
-                        <div class="mock-card-name">Blue Dream</div>
-                        <div class="mock-card-price">$42</div>
-                    </div>
-                    <div class="mock-card-meta">Canopy Co Â· Flower Â· THC 22% Â· Shelf A4</div>
-                    <div class="mock-card-section">
-                        <div class="mock-section-label">Talking Point</div>
-                        <div class="mock-section-text">The go-to after-work strain. Relaxes the body without sedation â you can still function normally. Very smooth and consistent.</div>
-                    </div>
-                    <div class="mock-card-section is-manager">
-                        <div class="mock-section-label">Manager Note</div>
-                        <div class="mock-section-text">Overstock â push first.</div>
-                    </div>
-                </div>
-                <div class="mock-card">
-                    <div class="mock-card-rank">#2 Pick Â· 81% match</div>
-                    <div class="mock-card-main">
-                        <div class="mock-card-name">OG Kush</div>
-                        <div class="mock-card-price">$48</div>
-                    </div>
-                    <div class="mock-card-meta">Canopy Co Â· Flower Â· THC 21% Â· Shelf A2</div>
-                    <div class="mock-card-section">
-                        <div class="mock-section-label">Talking Point</div>
-                        <div class="mock-section-text">A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties â particularly good for customers carrying physical tension.</div>
-                    </div>
-                    <div class="mock-card-section is-manager">
-                        <div class="mock-section-label">Manager Note</div>
-                        <div class="mock-section-text">High margin product.</div>
-                    </div>
-                </div>
-                <div class="mock-upsell">
-                    <div class="mock-upsell-label">Upsell Opportunity</div>
-                    <div class="mock-upsell-text">Customers who buy relax flower often add low-dose gummies for a longer, more sustained effect throughout the evening.</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- -- PROBLEM ----------------------------------------- -->
-
-
-<!-- -- HOW IT WORKS ------------------------------------ -->
-<section id="how-it-works" class="how-section">
-    <div class="container">
-        <div class="section-eyebrow">How It Works</div>
-        <h2 class="section-title">Up and running in 3 minutes</h2>
-        <p class="section-sub">No integrations, no IT team, no onboarding calls. Upload your CSV and you're live.</p>
-        <div class="steps-grid">
-            <div class="step-card">
-                <div class="step-num">1</div>
-                <div class="step-title">Export your inventory CSV</div>
-                <div class="step-text">Download your product list from Dutchie, Flowhub, Treez, or any POS. It takes about 30 seconds.</div>
-                <div class="step-time">~30 seconds</div>
-            </div>
-            <div class="step-card">
-                <div class="step-num">2</div>
-                <div class="step-title">Upload and auto-tag products</div>
-                <div class="step-text">Cannascope reads your inventory, maps each product to effect profiles, and writes talking points â automatically.</div>
-                <div class="step-time">~2 minutes</div>
-            </div>
-            <div class="step-card">
-                <div class="step-num">3</div>
-                <div class="step-title">Send the link to your budtenders</div>
-                <div class="step-text">Your team opens the Cannascope link on any phone or tablet. No login, no app, no training required.</div>
-                <div class="step-time">~30 seconds</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- -- FEATURES ---------------------------------------- -->
-<section id="features">
-    <div class="container">
-        <div class="section-eyebrow">Features</div>
-        <h2 class="section-title">Built for how dispensaries actually operate</h2>
-        <p class="section-sub">Not a chatbot. Not a quiz. A real tool your team will actually use during a transaction.</p>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-num">01 â Recommendation Engine</div>
-                <div class="feature-title">Tap an effect. Get three products.</div>
-                <div class="feature-text">Customer says they want to relax. Budtender taps Relax. Cannascope shows the top 3 products from your live inventory â scored by terpene profile and effect match.</div>
-                <ul class="feature-list">
-                    <li>Six effect categories: Sleep, Relax, Focus, Social, Relief, Balanced</li>
-                    <li>Results scored using real terpene data â not just indica/sativa</li>
-                    <li>Always pulls from your live, in-stock inventory</li>
-                </ul>
-            </div>
-            <div class="feature-card">
-                <div class="feature-num">02 â Manager Notes</div>
-                <div class="feature-title">Tell your team what to push â without saying a word.</div>
-                <div class="feature-text">Managers attach notes directly to products: "Overstock â push first," "High margin," "Brand promo this week." Those notes appear on the recommendation card, right below the talking point.</div>
-                <ul class="feature-list">
-                    <li>Notes surface automatically during recommendations</li>
-                    <li>Directs budtender attention without a daily briefing</li>
-                    <li>Updated in real time from the Admin panel</li>
-                </ul>
-            </div>
-            <div class="feature-card">
-                <div class="feature-num">03 â Talking Points</div>
-                <div class="feature-title">Every product has a script. Nobody has to wing it.</div>
-                <div class="feature-text">Cannascope generates a natural-language talking point for every product â grounded in terpenes, potency, and format. New budtenders sound experienced from Day 1.</div>
-                <ul class="feature-list">
-                    <li>Auto-generated from product data on import</li>
-                    <li>Editable in the Admin panel</li>
-                    <li>Consistent across the whole floor â no conflicting recommendations</li>
-                </ul>
-            </div>
-            <div class="feature-card">
-                <div class="feature-num">04 â Upsell Prompts</div>
-                <div class="feature-title">Basket size grows automatically.</div>
-                <div class="feature-text">After showing the main recommendations, Cannascope surfaces a contextual upsell suggestion â tied to the effect category. No extra training. No pressure. Just a prompt.</div>
-                <ul class="feature-list">
-                    <li>Effect-specific upsell logic (relax flower â gummies for longer effect)</li>
-                    <li>Shown at the bottom of every recommendation screen</li>
-                    <li>Designed to feel like helpful advice, not a hard sell</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- -- INVENTORY INTELLIGENCE --------------------------- -->
-<section class="intel-section">
-    <div class="container">
-        <div class="intel-grid">
-            <div>
-                <div class="intel-tag">Inventory Intelligence</div>
-                <h2 class="intel-title">Recommendations that serve your store, not just the customer.</h2>
-                <p class="intel-sub">Most dispensary software is customer-facing. Cannascope is also <em>manager-facing</em> â it lets you systematically influence what gets sold, without micromanaging your floor.</p>
-                <div class="intel-metrics">
-                    <div class="intel-metric">
-                        <div class="metric-val">23%</div>
-                        <div class="metric-lbl">Average increase in overstock movement when manager notes are active</div>
-                    </div>
-                    <div class="intel-metric">
-                        <div class="metric-val">$12</div>
-                        <div class="metric-lbl">Estimated average basket size increase from upsell prompts per transaction</div>
-                    </div>
-                    <div class="intel-metric">
-                        <div class="metric-val">Day 1</div>
-                        <div class="metric-lbl">New budtenders are productive â no more 90-day learning curve</div>
-                    </div>
-                </div>
-            </div>
-            <div class="intel-panel">
-                <div class="intel-panel-header">
-                    <span>Manager Dashboard â Live Inventory</span>
-                    <div class="live-indicator"><div class="live-dot"></div>Live</div>
-                </div>
-                <div class="intel-rows">
-                    <div class="intel-row">
-                        <div class="ir-name">Blue Dream</div>
-                        <div class="ir-note">Push first</div>
-                        <div class="ir-badge push">Overstock</div>
-                    </div>
-                    <div class="intel-row">
-                        <div class="ir-name">OG Kush</div>
-                        <div class="ir-note">High margin</div>
-                        <div class="ir-badge hi">In Stock</div>
-                    </div>
-                    <div class="intel-row">
-                        <div class="ir-name">Granddaddy Purple</div>
-                        <div class="ir-note">End of batch</div>
-                        <div class="ir-badge low">Low Stock</div>
-                    </div>
-                    <div class="intel-row">
-                        <div class="ir-name">Sour Diesel</div>
-                        <div class="ir-note">Brand promo this week</div>
-                        <div class="ir-badge hi">In Stock</div>
-                    </div>
-                    <div class="intel-row">
-                        <div class="ir-name">ACDC</div>
-                        <div class="ir-note">Pair with flower purchase</div>
-                        <div class="ir-badge hi">In Stock</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- -- ROI CALCULATOR ---------------------------------- -->
-
-
-<!-- -- TESTIMONIALS ------------------------------------ -->
-
-
-<!-- -- PRICING ----------------------------------------- -->
-<section class="manager-section" id="store-intelligence"><div class="container">
-<div style="text-align:center;margin-bottom:40px;">
-  <div style="font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;">For Owners &amp; Managers</div>
-  <h2 style="font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;letter-spacing:-.03em;color:var(--text);margin-bottom:12px;">Your store's intelligence,<br>finally in one place.</h2>
-  <p style="font-size:1rem;color:var(--text-2);max-width:520px;margin:0 auto;line-height:1.6;">While budtenders guide customers on the floor, you get a live view of what's moving, what needs a push, and how every recommendation serves your margins.</p>
-</div>
-<div style="background:#fff;border-radius:14px;border:1px solid var(--border);box-shadow:0 4px 32px rgba(0,0,0,.08);overflow:hidden;max-width:900px;margin:0 auto 40px;">
-  <div style="background:#f3f4f6;border-bottom:1px solid #e5e7eb;padding:10px 16px;display:flex;align-items:center;gap:8px;">
-    <div style="display:flex;gap:5px;"><div style="width:11px;height:11px;border-radius:50%;background:#fc625d"></div><div style="width:11px;height:11px;border-radius:50%;background:#fdbc40"></div><div style="width:11px;height:11px;border-radius:50%;background:#35cd4b"></div></div>
-    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:3px 12px;font-size:11px;color:#6b7280;max-width:220px;">cannascope.app/admin</div>
-    <div style="margin-left:auto;font-size:11px;font-weight:600;color:#059669;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:20px;padding:2px 10px;">â Live</div>
-  </div>
-  <div style="background:#111827;padding:10px 18px;display:flex;align-items:center;gap:10px;">
-    <span style="font-size:14px;font-weight:700;color:#fff;">Canna<span style="color:#34d399">scope</span></span>
-    <span style="font-size:11px;color:#9ca3af;">â Store Intelligence</span>
-    <div style="margin-left:auto;display:flex;gap:6px;">
-      <span style="font-size:11px;background:#1f2937;color:#9ca3af;padding:3px 10px;border-radius:4px;">Inventory</span>
-      <span style="font-size:11px;background:#059669;color:#fff;padding:3px 10px;border-radius:4px;font-weight:600;">Analytics</span>
-      <span style="font-size:11px;background:#1f2937;color:#9ca3af;padding:3px 10px;border-radius:4px;">Actions</span>
-    </div>
-  </div>
-  <div class="mgr-kpi">
-    <div style="padding:14px 16px;border-right:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:4px;">Sessions Today</div><div style="font-size:20px;font-weight:800;color:#111827;">47</div><div style="font-size:11px;color:#059669;margin-top:2px;">â 12 vs yesterday</div></div>
-    <div style="padding:14px 16px;border-right:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:4px;">Top Intent</div><div style="font-size:20px;font-weight:800;color:#111827;">Relax</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">19 of 47 sessions</div></div>
-    <div style="padding:14px 16px;border-right:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:4px;">#1 Product</div><div style="font-size:18px;font-weight:800;color:#111827;">Blue Dream</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">11 recommendations</div></div>
-    <div style="padding:14px 16px;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:4px;">Manager Flags</div><div style="font-size:20px;font-weight:800;color:#111827;">3</div><div style="font-size:11px;color:#92400e;margin-top:2px;">items flagged to push</div></div>
-  </div>
-  <div style="padding:14px 18px;">
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin-bottom:8px;">Top Recommended Products â This Week</div>
-    <div style="font-size:12px;">
-      <div style="display:grid;grid-template-columns:1fr 50px 60px 180px;gap:0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;padding:4px 0;border-bottom:1px solid #f3f4f6;"><span>Product</span><span style="text-align:right">Recs</span><span style="text-align:right">Margin</span><span style="text-align:right">Manager Note</span></div>
-      <div style="display:grid;grid-template-columns:1fr 50px 60px 180px;gap:0;padding:7px 0;border-bottom:1px solid #f9fafb;"><span style="font-weight:600;color:#111827;">Blue Dream Â· Flower Â· 22%</span><span style="text-align:right;font-weight:700;color:#059669;">11</span><span style="text-align:right;color:#374151;">High</span><span style="text-align:right;font-size:11px;color:#92400e;">ð¡ Overstock â push first</span></div>
-      <div style="display:grid;grid-template-columns:1fr 50px 60px 180px;gap:0;padding:7px 0;border-bottom:1px solid #f9fafb;"><span style="font-weight:600;color:#111827;">OG Kush Â· Flower Â· 21%</span><span style="text-align:right;font-weight:700;color:#059669;">9</span><span style="text-align:right;color:#374151;">High</span><span style="text-align:right;font-size:11px;color:#059669;">â High margin</span></div>
-      <div style="display:grid;grid-template-columns:1fr 50px 60px 180px;gap:0;padding:7px 0;border-bottom:1px solid #f9fafb;"><span style="font-weight:600;color:#111827;">Calm Gummies 25mg</span><span style="text-align:right;font-weight:700;color:#059669;">7</span><span style="text-align:right;color:#374151;">Med</span><span style="text-align:right;font-size:11px;color:#6b7280;">â</span></div>
-      <div style="display:grid;grid-template-columns:1fr 50px 60px 180px;gap:0;padding:7px 0;"><span style="font-weight:600;color:#111827;">GSC Pre-roll</span><span style="text-align:right;font-weight:700;color:#059669;">5</span><span style="text-align:right;color:#374151;">High</span><span style="text-align:right;font-size:11px;color:#1d4ed8;">ðµ New arrival</span></div>
-    </div>
-  </div>
-</div>
-<div class="mgr-grid">
-  <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:20px;">
-    <div style="font-size:22px;margin-bottom:10px;">ð</div>
-    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">See what's actually selling</div>
-    <p style="font-size:13px;color:var(--text-2);margin:0;line-height:1.6;">Know exactly which products budtenders recommend most â and whether those match your highest-margin items.</p>
-  </div>
-  <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:20px;">
-    <div style="font-size:22px;margin-bottom:10px;">ð©</div>
-    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Push the right products</div>
-    <p style="font-size:13px;color:var(--text-2);margin:0;line-height:1.6;">Flag overstock or high-margin items from your dashboard. Budtenders see your note instantly during every session.</p>
-  </div>
-  <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:20px;">
-    <div style="font-size:22px;margin-bottom:10px;">ð§&nbsp;</div>
-    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Know your customers</div>
-    <p style="font-size:13px;color:var(--text-2);margin:0;line-height:1.6;">See the most common customer intents across all floor sessions â without surveys, apps, or asking anyone to do extra work.</p>
-  </div>
-</div>
-</div></section><section id="pricing" class="pricing-section">
-    <div class="container">
-        <div class="section-eyebrow">Pricing</div>
-        <h2 class="section-title">Simple, flat pricing per location</h2>
-        <p class="section-sub">No per-seat fees. No usage limits. One price covers your whole team.</p>
-        <div class="price-card">
-            <div class="price-card-badge">Invite Only</div>
-            <div class="price-name">Per Location</div>
-            <div class="price-amount"><span>$</span>199</div>
-            <div class="price-period">per location / month</div>
-            <div class="price-desc">The full Cannascope experience â inventory intelligence, manager notes, and upsell prompts included.</div>
-            <div class="price-features">
-                <div class="pf">Terpene-based recommendation engine</div>
-                <div class="pf">Unlimited budtender access â no per-seat fees</div>
-                <div class="pf">AI talking points generated per product</div>
-                <div class="pf">Upsell prompts at point of recommendation</div>
-                <div class="pf">Full admin dashboard and CSV import</div>
-                <div class="pf">Personally onboarded by the Cannascope team</div>
-            </div>
-            <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&amp;body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="price-btn">Request Access</a>
-            <div class="price-note">We'll reach out and onboard you personally</div>
-        </div>
-    </div>
-</section>
-
-<!-- -- CTA --------------------------------------------- -->
-<section class="cta-section">
-    <div class="cta-inner">
-        <h2 class="cta-title">Your best budtender<br>can't work every shift.</h2>
-        <p class="cta-sub">Dispensaries that prioritize revenue use Cannascope to make every shift count. We onboard you personally.</p>
-        <div class="cta-actions">
-            <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&amp;body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="btn-primary-lg">Request Access</a>
-            <a href="cannascope-cheatsheet-v2.html" class="btn-ghost-lg">Try the Demo</a>
-        </div>
-        <div class="cta-note">Interested? Email us and we'll onboard you personally.</div>
-    </div>
-</section>
-
-<!-- -- FOOTER ------------------------------------------ -->
-<footer>
-    <div class="footer-logo">Canna<span class="footer-logo-acc">scope</span></div>
-    <div class="footer-links">
-        <a href="#how-it-works">How It Works</a>
-<html lang="en"><head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cannascope — Budtender Intelligence Platform</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -1723,6 +861,868 @@ h2 { font-size: clamp(1.3rem, 3vw, 1.8rem) !important; }
     <div class="footer-logo">Canna<span class="footer-logo-acc">scope</span></div>
     <div class="footer-links">
         <a href="#how-it-works">How It Works</a>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cannascope — Budtender Intelligence Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --accent: #059669;
+            --accent-light: #ECFDF5;
+            --accent-border: #6EE7B7;
+            --amber: #92400E;
+            --amber-light: #FFFBEB;
+            --bg: #FFFFFF;
+            --bg-2: #F9FAFB;
+            --surface: #FFFFFF;
+            --border: #E5E7EB;
+            --border-2: #D1D5DB;
+            --text: #111827;
+            --text-2: #6B7280;
+            --text-3: #9CA3AF;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* -- NAV -------------------------------------- */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            height: 58px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
+        }
+        .nav-logo {
+            font-size: 15px; font-weight: 700; letter-spacing: -0.02em;
+            color: var(--text); text-decoration: none;
+        }
+        .nav-logo-accent { color: var(--accent); }
+        .nav-links { display: flex; align-items: center; gap: 28px; }
+        .nav-links a {
+            font-size: 13px; font-weight: 500; color: var(--text-2);
+            text-decoration: none; transition: color 0.12s;
+        }
+        .nav-links a:hover { color: var(--text); }
+        .nav-cta {
+            font-size: 13px; font-weight: 600; color: #fff;
+            background: var(--accent); border-radius: 7px;
+            padding: 8px 18px; text-decoration: none; transition: background 0.12s;
+        }
+        .nav-cta:hover { background: #047857; }
+
+        /* -- SHARED SECTION STYLES --------------------- */
+        section { padding: 56px 24px; }
+        .container { max-width: 1080px; margin: 0 auto; }
+        .section-eyebrow {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--accent);
+            margin-bottom: 12px; text-align: center;
+        }
+        .section-title {
+            font-size: clamp(26px, 3.5vw, 40px); font-weight: 700;
+            letter-spacing: -0.025em; text-align: center;
+            margin-bottom: 14px; line-height: 1.15; color: var(--text);
+        }
+        .section-sub {
+            font-size: 16px; color: var(--text-2); text-align: center;
+            max-width: 540px; margin: 0 auto 36px; line-height: 1.7;
+        }
+
+        /* -- HERO -------------------------------------- */
+        .hero {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 76px 24px 52px; border-bottom: 1px solid var(--border);
+            background: var(--bg);
+        }
+        .hero-eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--accent);
+            background: var(--accent-light); border: 1px solid var(--accent-border);
+            padding: 5px 14px; border-radius: 100px; margin-bottom: 28px;
+        }
+        .hero-title {
+            font-size: clamp(36px, 5.5vw, 64px); font-weight: 700;
+            letter-spacing: -0.03em; text-align: center; line-height: 1.08;
+            max-width: 760px; margin-bottom: 20px; color: var(--text);
+        }
+        .hero-title .hl { color: var(--accent); }
+        .hero-sub {
+            font-size: clamp(15px, 1.8vw, 18px); color: var(--text-2);
+            text-align: center; max-width: 520px; line-height: 1.7;
+            margin-bottom: 40px;
+        }
+        .hero-actions {
+            display: flex; gap: 10px; align-items: center;
+            flex-wrap: wrap; justify-content: center; margin-bottom: 32px;
+        }
+        .btn-primary-lg {
+            padding: 13px 28px; background: var(--accent); color: #fff;
+            border-radius: 8px; font-size: 14px; font-weight: 600;
+            text-decoration: none; transition: background 0.12s;
+        }
+        .btn-primary-lg:hover { background: #047857; }
+        .btn-ghost-lg {
+            padding: 12px 24px; background: transparent; color: var(--text-2);
+            border: 1px solid var(--border-2); border-radius: 8px;
+            font-size: 14px; font-weight: 500; text-decoration: none;
+            transition: border-color 0.12s, color 0.12s;
+        }
+        .btn-ghost-lg:hover { border-color: var(--border-2); color: var(--text); }
+        .hero-proof {
+            display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+            justify-content: center; font-size: 12px; color: var(--text-3); font-weight: 500;
+        }
+        .proof-item { display: flex; align-items: center; gap: 6px; }
+        .proof-check {
+            width: 16px; height: 16px; background: var(--accent-light);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .proof-check9::before { content: '\2713'; font-size: 9px; color: var(--accent); font-weight: 700; }
+
+        /* -- PRODUCT MOCKUP ---------------------------- */
+        .mockup-section {
+            padding: 0 24px 80px; background: var(--bg-2); border-bottom: 1px solid var(--border);
+        }
+        .mockup-wrap {
+            max-width: 860px; margin: 0 auto;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .mockup-titlebar {
+            height: 40px; background: var(--bg-2); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 14px; gap: 7px;
+        }
+        .tb-dot {
+            width: 10px; height: 10px; border-radius: 50%; background: var(--border-2);
+        }
+        .tb-url {
+            margin-left: 10px; font-size: 11px; color: var(--text-3);
+            font-family: monospace;
+        }
+        .mockup-body { padding: 20px; }
+
+        /* mock app UI */
+        .mock-header {
+            background: var(--bg-2); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0 16px; height: 42px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .mock-logo { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+        .mock-logo-acc { color: var(--accent); }
+        .mock-store { font-size: 11px; color: var(--text-3); font-weight: 500; }
+        .mock-badge {
+            font-size: 10px; font-weight: 600; color: var(--accent);
+            background: var(--accent-light); border: 1px solid var(--accent-border);
+            padding: 3px 9px; border-radius: 100px;
+        }
+        .mock-eyebrow {
+            font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
+            text-transform: uppercase; color: var(--text-3);
+            text-align: center; margin-bottom: 10px;
+        }
+        .mock-intent-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px;
+            margin-bottom: 20px;
+        }
+        .mock-intent-btn {
+            padding: 12px 10px; background: var(--surface);
+            border: 1.5px solid var(--border); border-radius: 7px;
+        }
+        .mock-intent-btn.sel { border-color: var(--accent); background: var(--accent-light); }
+        .mib-name { font-size: 12px; font-weight: 600; color: var(--text); }
+        .mock-intent-btn.sel .mib-name { color: var(--accent); }
+        .mib-desc { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+
+        .mock-result-header {
+            font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+            text-transform: uppercase; color: var(--accent); text-align: right;
+            margin-bottom: 10px;
+        }
+        .mock-cards { display: flex; flex-direction: column; gap: 8px; }
+        .mock-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden;
+        }
+        .mock-card.rank-1 { border-color: var(--border-2); border-left: 3px solid var(--accent); }
+        .mock-card-rank {
+            padding: 8px 14px 4px; font-size: 9px; font-weight: 600;
+            letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3);
+        }
+        .mock-card.rank-1 .mock-card-rank { color: var(--accent); }
+        .mock-card-main {
+            padding: 2px 14px 8px; display: flex;
+            align-items: flex-start; justify-content: space-between;
+        }
+        .mock-card-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+        .mock-card-price { font-size: 15px; font-weight: 700; color: var(--text); }
+        .mock-card-meta { padding: 0 14px 10px; font-size: 11px; color: var(--text-2); }
+        .mock-card-section {
+            border-top: 1px solid var(--border); padding: 8px 14px;
+        }
+        .mock-section-label {
+            font-size: 8px; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--text-3); margin-bottom: 3px;
+        }
+        .mock-section-text { font-size: 11px; color: var(--text-2); line-height: 1.6; }
+        .mock-card-section.is-manager { background: var(--amber-light); }
+        .mock-card-section.is-manager .mock-section-label { color: var(--amber); }
+        .mock-card-section.is-manager .mock-section-text { color: var(--amber); }
+        .mock-upsell {
+            background: var(--bg-2); border: 1px solid var(--border);
+            border-radius: 8px; padding: 10px 14px;
+        }
+        .mock-upsell-label {
+            font-size: 8px; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--accent); margin-bottom: 3px;
+        }
+        .mock-upsell-text { font-size: 11px; color: var(--text-2); line-height: 1.6; }
+
+        /* -- PROBLEM ----------------------------------- */
+        .problem-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+        }
+        .problem-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 20px;
+        }
+        .problem-num {
+            width: 28px; height: 28px; border-radius: 6px;
+            background: var(--bg-2); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; color: var(--text-2);
+            margin-bottom: 16px;
+        }
+        .problem-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+        .problem-text { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+
+        /* -- HOW IT WORKS ------------------------------ */
+        .how-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .step-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 20px;
+        }
+        .step-num {
+            width: 32px; height: 32px; background: var(--accent);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 18px;
+        }
+        .step-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+        .step-text { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+        .step-time {
+            margin-top: 14px; font-size: 11px; font-weight: 600;
+            color: var(--accent); letter-spacing: 0.04em;
+        }
+
+        /* -- FEATURES ---------------------------------- */
+        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .feature-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 22px;
+        }
+        .feature-num {
+            font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
+            text-transform: uppercase; color: var(--text-3);
+            margin-bottom: 14px;
+        }
+        .feature-title {
+            font-size: 18px; font-weight: 700; letter-spacing: -0.02em;
+            margin-bottom: 10px; color: var(--text); line-height: 1.3;
+        }
+        .feature-text { font-size: 13px; color: var(--text-2); line-height: 1.75; }
+        .feature-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .feature-list li {
+            font-size: 13px; color: var(--text-2); list-style: none;
+            display: flex; align-items: flex-start; gap: 10px; line-height: 1.55;
+        }
+        .feature-list li::before {
+            content: '\2013'; color: var(--accent); font-weight: 700;
+            flex-shrink: 0; margin-top: 1px;
+        }
+
+        /* -- INVENTORY INTELLIGENCE -------------------- */
+        .intel-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .intel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+        .intel-tag {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+            text-transform: uppercase; color: var(--accent);
+            background: var(--accent-light); border: 1px solid var(--accent-border);
+            padding: 4px 12px; border-radius: 100px; display: inline-block; margin-bottom: 20px;
+        }
+        .intel-title {
+            font-size: clamp(22px, 3vw, 34px); font-weight: 700;
+            letter-spacing: -0.025em; line-height: 1.2; margin-bottom: 14px; color: var(--text);
+        }
+        .intel-sub { font-size: 14px; color: var(--text-2); line-height: 1.75; margin-bottom: 28px; }
+        .intel-metrics { display: flex; flex-direction: column; gap: 10px; }
+        .intel-metric {
+            display: flex; align-items: center; gap: 16px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 14px 16px;
+        }
+        .metric-val {
+            font-size: 26px; font-weight: 700; color: var(--accent);
+            letter-spacing: -0.02em; min-width: 64px;
+        }
+        .metric-lbl { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+        .intel-panel {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+        }
+        .intel-panel-header {
+            padding: 12px 16px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 11px; font-weight: 600; color: var(--text-2); letter-spacing: 0.03em;
+        }
+        .live-indicator {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 10px; font-weight: 600; color: var(--accent);
+        }
+        .live-dot {
+            width: 6px; height: 6px; background: var(--accent);
+            border-radius: 50%; animation: blink 2s infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+        .intel-rows { padding: 10px; display: flex; flex-direction: column; gap: 7px; }
+        .intel-row {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--bg-2); border: 1px solid var(--border);
+            border-radius: 7px; padding: 10px 12px;
+        }
+        .ir-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+        .ir-note { font-size: 11px; color: var(--text-2); }
+        .ir-badge {
+            font-size: 10px; font-weight: 600; padding: 2px 8px;
+            border-radius: 4px; white-space: nowrap;
+        }
+        .ir-badge.push { background: #FEF3C7; color: #92400E; }
+        .ir-badge.hi   { background: var(--accent-light); color: var(--accent); }
+        .ir-badge.low  { background: #FEF2F2; color: #B91C1C; }
+
+        /* -- ROI CALCULATOR ---------------------------- */
+        .roi-section { background: var(--bg); }
+        .roi-inner { max-width: 640px; margin: 0 auto; }
+        .roi-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 36px;
+        }
+        .roi-card-heading { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+        .roi-card-sub { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
+        .roi-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .roi-field label {
+            display: block; font-size: 11px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-2); margin-bottom: 7px;
+        }
+        .roi-field input {
+            width: 100%; padding: 10px 13px; background: var(--bg-2);
+            border: 1px solid var(--border); border-radius: 7px;
+            color: var(--text); font-size: 15px; font-weight: 700;
+            font-family: inherit; text-align: center;
+        }
+        .roi-field input:focus { outline: none; border-color: var(--accent); }
+        .roi-result {
+            background: var(--accent-light); border: 1px solid var(--accent-border);
+            border-radius: 8px; padding: 24px; margin-bottom: 16px; text-align: center;
+        }
+        .roi-result-label {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+            text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
+        }
+        .roi-result-num { font-size: 44px; font-weight: 700; letter-spacing: -0.04em; color: var(--accent); }
+        .roi-result-sub { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+        .roi-breakdown { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .roi-cell {
+            background: var(--bg-2); border: 1px solid var(--border);
+            border-radius: 7px; padding: 14px 12px; text-align: center;
+        }
+        .roi-cell-val { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+        .roi-cell-label { font-size: 10px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+
+        /* -- TESTIMONIALS ------------------------------ */
+        .testi-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .testi-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 20px;
+        }
+        .testi-stars { font-size: 13px; color: #F59E0B; letter-spacing: 2px; margin-bottom: 14px; }
+        .testi-quote {
+            font-size: 14px; color: var(--text); line-height: 1.75;
+            margin-bottom: 20px;
+        }
+        .testi-author { display: flex; align-items: center; gap: 12px; }
+        .testi-avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--accent-light); border: 1px solid var(--accent-border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; color: var(--accent); flex-shrink: 0;
+        }
+        .testi-name { font-size: 13px; font-weight: 600; color: var(--text); }
+        .testi-role { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+        /* -- PRICING ----------------------------------- */
+        .pricing-section { background: var(--bg); }
+        .price-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 36px;
+            max-width: 440px; margin: 0 auto;
+        }
+        .price-card-badge {
+            display: inline-block; font-size: 10px; font-weight: 600;
+            letter-spacing: 0.07em; text-transform: uppercase;
+            background: var(--text); color: #fff;
+            padding: 3px 10px; border-radius: 4px; margin-bottom: 18px;
+        }
+        .price-name {
+            font-size: 12px; font-weight: 600; color: var(--text-2);
+            text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px;
+        }
+        .price-amount {
+            font-size: 48px; font-weight: 700; letter-spacing: -0.04em;
+            color: var(--text); margin-bottom: 2px; line-height: 1;
+        }
+        .price-amount span { font-size: 22px; font-weight: 500; color: var(--text-2); vertical-align: top; margin-top: 10px; display: inline-block; }
+        .price-period { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
+        .price-desc { font-size: 13px; color: var(--text-2); line-height: 1.65; margin-bottom: 24px; border-top: 1px solid var(--border); padding-top: 20px; }
+        .price-features { display: flex; flex-direction: column; gap: 9px; margin-bottom: 28px; }
+        .pf {
+            font-size: 13px; color: var(--text-2); display: flex;
+            align-items: flex-start; gap: 9px; line-height: 1.5;
+        }
+        .pf::before { content: '\2713'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+        .price-btn {
+            display: block; text-align: center; padding: 12px;
+            border-radius: 7px; font-size: 14px; font-weight: 600;
+            text-decoration: none; transition: background 0.12s;
+            background: var(--accent); color: #fff;
+        }
+        .price-btn:hover { background: #047857; }
+        .price-note { text-align: center; font-size: 12px; color: var(--text-3); margin-top: 12px; }
+
+        /* -- CTA --------------------------------------- */
+        .cta-section {
+            padding: 56px 24px; text-align: center;
+            background: var(--bg-2); border-top: 1px solid var(--border);
+        }
+        .cta-title {
+            font-size: clamp(28px, 4.5vw, 52px); font-weight: 700;
+            letter-spacing: -0.03em; margin-bottom: 14px;
+            line-height: 1.1; color: var(--text);
+        }
+        .cta-sub {
+            font-size: 16px; color: var(--text-2); max-width: 480px;
+            margin: 0 auto 36px; line-height: 1.7;
+        }
+        .cta-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .cta-note { font-size: 12px; color: var(--text-3); }
+
+        /* -- FOOTER ------------------------------------ */
+        footer {
+            padding: 32px 40px; border-top: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 16px; background: var(--bg);
+        }
+        .footer-logo { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+        .footer-logo-acc { color: var(--accent); }
+        .footer-links { display: flex; gap: 24px; }
+        .footer-links a { font-size: 12px; color: var(--text-3); text-decoration: none; transition: color 0.12s; }
+        .footer-links a:hover { color: var(--text-2); }
+        .footer-copy { font-size: 12px; color: var(--text-3); }
+
+        /* -- RESPONSIVE -------------------------------- */
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+            .nav-links { display: none; }
+            section { padding: 40px 20px; }
+            .problem-grid, .steps-grid, .features-grid,
+            .intel-grid, .testi-grid { grid-template-columns: 1fr; }
+            .intel-grid { gap: 32px; }
+            .roi-inputs, .roi-breakdown { grid-template-columns: 1fr; }
+            footer { flex-direction: column; text-align: center; padding: 28px 20px; }
+            .footer-links { justify-content: center; }
+            .mock-intent-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    
+.manager-section{padding:60px 20px;background:var(--bg);}
+.mgr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:900px;margin:0 auto;}
+.mgr-kpi{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e5e7eb;}
+@media(max-width:700px){.mgr-grid{grid-template-columns:1fr;}.mgr-kpi{grid-template-columns:repeat(2,1fr);}}</style>
+<style id="compact-overrides">section { padding-top: 40px !important; padding-bottom: 40px !important; }
+.hero { padding-top: 60px !important; padding-bottom: 60px !important; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.6rem) !important; }
+h2 { font-size: clamp(1.3rem, 3vw, 1.8rem) !important; }
+.section-header { margin-bottom: 24px !important; }
+.features-grid { gap: 12px !important; }
+.how-steps { gap: 16px !important; }</style><style>
+      .roi-section, .testi-section, #problem { display: none !important; }
+      section, .section { padding: 40px 0; }
+      .hero { padding: 60px 0; }
+    </style>
+
+
+<!-- -- NAV ------------------------------------------- -->
+<nav>
+    <a href="cannascope-landing.html" class="nav-logo">Canna<span class="nav-logo-accent">scope</span></a>
+    <div class="nav-links">
+        <a href="#how-it-works">How It Works</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        
+        <a href="cannascope-login.html">Sign In</a>
+    </div>
+    <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&amp;body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="nav-cta">Request Access</a>
+</nav>
+
+<!-- -- HERO ------------------------------------------- -->
+<section class="hero">
+    <div class="hero-eyebrow">Built for Dispensary Revenue</div>
+    <h1 class="hero-title">Your budtenders recommend<br><span class="hl">the same 3 products.</span></h1>
+    <p class="hero-sub">Cannascope turns every budtender into your best one — instant terpene-based recommendations, manager-directed inventory pushes, and upsell prompts that grow basket size automatically.</p>
+    <div class="hero-actions">
+        <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&amp;body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="btn-primary-lg">Request Access</a>
+        <a href="#how-it-works" class="btn-ghost-lg">See How It Works</a>
+    </div>
+    <div class="hero-proof">
+        <div class="proof-item"><div class="proof-check"></div>3-minute setup</div>
+        <div class="proof-item"><div class="proof-check"></div>No app download for budtenders</div>
+        <div class="proof-item"><div class="proof-check"></div>Works with any POS</div>
+        <div class="proof-item"><div class="proof-check"></div>Revenue uplift in the first week</div>
+    </div>
+</section>
+
+<!-- -- PRODUCT MOCKUP -------------------------------- -->
+<div class="mockup-section" style="padding-top:60px;">
+    <div class="mockup-wrap">
+        <div class="mockup-titlebar">
+            <div class="tb-dot"></div><div class="tb-dot"></div><div class="tb-dot"></div>
+            <span class="tb-url">cannascope.app/bud?key=…</span>
+        </div>
+        <div class="mockup-body">
+            <div class="mock-header">
+                <div class="mock-logo">Canna<span class="mock-logo-acc">scope</span></div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="mock-store">Green Leaf Dispensary</span>
+                    <span class="mock-badge">47 products</span>
+                </div>
+            </div>
+            <div class="mock-eyebrow">Customer Intent</div>
+            <div class="mock-intent-grid">
+                <div class="mock-intent-btn"><div class="mib-name">Sleep</div><div class="mib-desc">Rest &amp; recovery</div></div>
+                <div class="mock-intent-btn sel"><div class="mib-name">Relax</div><div class="mib-desc">Unwind, decompress</div></div>
+                <div class="mock-intent-btn"><div class="mib-name">Focus</div><div class="mib-desc">Clarity &amp; productivity</div></div>
+                <div class="mock-intent-btn"><div class="mib-name">Social</div><div class="mib-desc">Energy &amp; mood lift</div></div>
+                <div class="mock-intent-btn"><div class="mib-name">Relief</div><div class="mib-desc">Pain &amp; inflammation</div></div>
+                <div class="mock-intent-btn"><div class="mib-name">Balanced</div><div class="mib-desc">First-time friendly</div></div>
+            </div>
+            <div class="mock-result-header">Relax — Top 3 Matches</div>
+            <div class="mock-cards">
+                <div class="mock-card rank-1">
+                    <div class="mock-card-rank">#1 Best Match · 94% match</div>
+                    <div class="mock-card-main">
+                        <div class="mock-card-name">Blue Dream</div>
+                        <div class="mock-card-price">$42</div>
+                    </div>
+                    <div class="mock-card-meta">Canopy Co · Flower · THC 22% · Shelf A4</div>
+                    <div class="mock-card-section">
+                        <div class="mock-section-label">Talking Point</div>
+                        <div class="mock-section-text">The go-to after-work strain. Relaxes the body without sedation — you can still function normally. Very smooth and consistent.</div>
+                    </div>
+                    <div class="mock-card-section is-manager">
+                        <div class="mock-section-label">Manager Note</div>
+                        <div class="mock-section-text">Overstock — push first.</div>
+                    </div>
+                </div>
+                <div class="mock-card">
+                    <div class="mock-card-rank">#2 Pick · 81% match</div>
+                    <div class="mock-card-main">
+                        <div class="mock-card-name">OG Kush</div>
+                        <div class="mock-card-price">$48</div>
+                    </div>
+                    <div class="mock-card-meta">Canopy Co · Flower · THC 21% · Shelf A2</div>
+                    <div class="mock-card-section">
+                        <div class="mock-section-label">Talking Point</div>
+                        <div class="mock-section-text">A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties — particularly good for customers carrying physical tension.</div>
+                    </div>
+                    <div class="mock-card-section is-manager">
+                        <div class="mock-section-label">Manager Note</div>
+                        <div class="mock-section-text">High margin product.</div>
+                    </div>
+                </div>
+                <div class="mock-upsell">
+                    <div class="mock-upsell-label">Upsell Opportunity</div>
+                    <div class="mock-upsell-text">Customers who buy relax flower often add low-dose gummies for a longer, more sustained effect throughout the evening.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- -- PROBLEM ----------------------------------------- -->
+
+
+<!-- -- HOW IT WORKS ------------------------------------ -->
+<section id="how-it-works" class="how-section">
+    <div class="container">
+        <div class="section-eyebrow">How It Works</div>
+        <h2 class="section-title">Up and running in 3 minutes</h2>
+        <p class="section-sub">No integrations, no IT team, no onboarding calls. Upload your CSV and you're live.</p>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-num">1</div>
+                <div class="step-title">Export your inventory CSV</div>
+                <div class="step-text">Download your product list from Dutchie, Flowhub, Treez, or any POS. It takes about 30 seconds.</div>
+                <div class="step-time">~30 seconds</div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">2</div>
+                <div class="step-title">Upload and auto-tag products</div>
+                <div class="step-text">Cannascope reads your inventory, maps each product to effect profiles, and writes talking points — automatically.</div>
+                <div class="step-time">~2 minutes</div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">3</div>
+                <div class="step-title">Send the link to your budtenders</div>
+                <div class="step-text">Your team opens the Cannascope link on any phone or tablet. No login, no app, no training required.</div>
+                <div class="step-time">~30 seconds</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- -- FEATURES ---------------------------------------- -->
+<section id="features">
+    <div class="container">
+        <div class="section-eyebrow">Features</div>
+        <h2 class="section-title">Built for how dispensaries actually operate</h2>
+        <p class="section-sub">Not a chatbot. Not a quiz. A real tool your team will actually use during a transaction.</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-num">01 — Recommendation Engine</div>
+                <div class="feature-title">Tap an effect. Get three products.</div>
+                <div class="feature-text">Customer says they want to relax. Budtender taps Relax. Cannascope shows the top 3 products from your live inventory — scored by terpene profile and effect match.</div>
+                <ul class="feature-list">
+                    <li>Six effect categories: Sleep, Relax, Focus, Social, Relief, Balanced</li>
+                    <li>Results scored using real terpene data — not just indica/sativa</li>
+                    <li>Always pulls from your live, in-stock inventory</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-num">02 — Manager Notes</div>
+                <div class="feature-title">Tell your team what to push — without saying a word.</div>
+                <div class="feature-text">Managers attach notes directly to products: "Overstock — push first," "High margin," "Brand promo this week." Those notes appear on the recommendation card, right below the talking point.</div>
+                <ul class="feature-list">
+                    <li>Notes surface automatically during recommendations</li>
+                    <li>Directs budtender attention without a daily briefing</li>
+                    <li>Updated in real time from the Admin panel</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-num">03 — Talking Points</div>
+                <div class="feature-title">Every product has a script. Nobody has to wing it.</div>
+                <div class="feature-text">Cannascope generates a natural-language talking point for every product — grounded in terpenes, potency, and format. New budtenders sound experienced from Day 1.</div>
+                <ul class="feature-list">
+                    <li>Auto-generated from product data on import</li>
+                    <li>Editable in the Admin panel</li>
+                    <li>Consistent across the whole floor — no conflicting recommendations</li>
+                </ul>
+            </div>
+            <div class="feature-card">
+                <div class="feature-num">04 — Upsell Prompts</div>
+                <div class="feature-title">Basket size grows automatically.</div>
+                <div class="feature-text">After showing the main recommendations, Cannascope surfaces a contextual upsell suggestion — tied to the effect category. No extra training. No pressure. Just a prompt.</div>
+                <ul class="feature-list">
+                    <li>Effect-specific upsell logic (relax flower â gummies for longer effect)</li>
+                    <li>Shown at the bottom of every recommendation screen</li>
+                    <li>Designed to feel like helpful advice, not a hard sell</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- -- INVENTORY INTELLIGENCE --------------------------- -->
+<section class="intel-section">
+    <div class="container">
+        <div class="intel-grid">
+            <div>
+                <div class="intel-tag">Inventory Intelligence</div>
+                <h2 class="intel-title">Recommendations that serve your store, not just the customer.</h2>
+                <p class="intel-sub">Most dispensary software is customer-facing. Cannascope is also <em>manager-facing</em> — it lets you systematically influence what gets sold, without micromanaging your floor.</p>
+                <div class="intel-metrics">
+                    <div class="intel-metric">
+                        <div class="metric-val">23%</div>
+                        <div class="metric-lbl">Average increase in overstock movement when manager notes are active</div>
+                    </div>
+                    <div class="intel-metric">
+                        <div class="metric-val">$12</div>
+                        <div class="metric-lbl">Estimated average basket size increase from upsell prompts per transaction</div>
+                    </div>
+                    <div class="intel-metric">
+                        <div class="metric-val">Day 1</div>
+                        <div class="metric-lbl">New budtenders are productive — no more 90-day learning curve</div>
+                    </div>
+                </div>
+            </div>
+            <div class="intel-panel">
+                <div class="intel-panel-header">
+                    <span>Manager Dashboard — Live Inventory</span>
+                    <div class="live-indicator"><div class="live-dot"></div>Live</div>
+                </div>
+                <div class="intel-rows">
+                    <div class="intel-row">
+                        <div class="ir-name">Blue Dream</div>
+                        <div class="ir-note">Push first</div>
+                        <div class="ir-badge push">Overstock</div>
+                    </div>
+                    <div class="intel-row">
+                        <div class="ir-name">OG Kush</div>
+                        <div class="ir-note">High margin</div>
+                        <div class="ir-badge hi">In Stock</div>
+                    </div>
+                    <div class="intel-row">
+                        <div class="ir-name">Granddaddy Purple</div>
+                        <div class="ir-note">End of batch</div>
+                        <div class="ir-badge low">Low Stock</div>
+                    </div>
+                    <div class="intel-row">
+                        <div class="ir-name">Sour Diesel</div>
+                        <div class="ir-note">Brand promo this week</div>
+                        <div class="ir-badge hi">In Stock</div>
+                    </div>
+                    <div class="intel-row">
+                        <div class="ir-name">ACDC</div>
+                        <div class="ir-note">Pair with flower purchase</div>
+                        <div class="ir-badge hi">In Stock</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- -- ROI CALCULATOR ---------------------------------- -->
+
+
+<!-- -- TESTIMONIALS ------------------------------------ -->
+
+
+<!-- -- PRICING ----------------------------------------- -->
+<section class="manager-section" id="store-intelligence"><div class="container">
+<div style="text-align:center;margin-bottom:40px;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;">For Owners &amp; Managers</div>
+  <h2 style="font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;letter-spacing:-.03em;color:var(--text);margin-bottom:12px;">Your store's intelligence,<br>finally in one place.</h2>
+  <p style="font-size:1rem;color:var(--text-2);max-width:520px;margin:0 auto;line-height:1.6;">While budtenders guide customers on the floor, you get a live view of what's moving, what needs a push, and how every recommendation serves your margins.</p>
+</div>
+<div style="background:#fff;border-radius:14px;border:1px solid var(--border);box-shadow:0 4px 32px rgba(0,0,0,.08);overflow:hidden;max-width:900px;margin:0 auto 40px;">
+  <div style="background:#f3f4f6;border-bottom:1px solid #e5e7eb;padding:10px 16px;display:flex;align-items:center;gap:8px;">
+    <div style="display:flex;gap:5px;"><div style="width:11px;height:11px;border-radius:50%;background:#fc625d"></div><div style="width:11px;height:11px;border-radius:50%;background:#fdbc40"></div><div style="width:11px;height:11px;border-radius:50%;background:#35cd4b"></div></div>
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:3px 12px;font-size:11px;color:#6b7280;max-width:220px;">cannascope.app/admin</div>
+    <div style="margin-left:auto;font-size:11px;font-weight:600;color:#059669;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:20px;padding:2px 10px;">â Live</div>
+  </div>
+  <div style="background:#111827;padding:10px 18px;display:flex;align-items:center;gap:10px;">
+    <span style="font-size:14px;font-weight:700;color:#fff;">Canna<span style="color:#34d399">scope</span></span>
+    <span style="font-size:11px;color:#9ca3af;">— Store Intelligence</span>
+    <div style="margin-left:auto;display:flex;gap:6px;">
+      <span style="font-size:11px;background:#1f2937;color:#9ca3af;padding:3px 10px;border-radius:4px;">Inventory</span>
+      <span style="font-size:11px;background:#059669;color:#fff;padding:3px 10px;border-radius:4px;font-weight:600;">Analytics</span>
+      <span style="font-size:11px;background:#1f2937;color:#9ca3af;padding:3px 10px;border-radius:4px;">Actions</span>
+    </div>
+  </div>
+  <div class="mgr-kpi">
+    <div style="padding:14px 16px;border-right:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:4px;">Sessions Today</div><div style="font-size:20px;font-weight:800;color:#111827;">47</div><div style="font-size:11px;color:#059669;margin-top:2px;">â 12 vs yesterday</div></div>
+    <div style="padding:14px 16px;border-right:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:4px;">Top Intent</div><div style="font-size:20px;font-weight:800;color:#111827;">Relax</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">19 of 47 sessions</div></div>
+    <div style="padding:14px 16px;border-right:1px solid #e5e7eb;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:4px;">#1 Product</div><div style="font-size:18px;font-weight:800;color:#111827;">Blue Dream</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">11 recommendations</div></div>
+    <div style="padding:14px 16px;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:4px;">Manager Flags</div><div style="font-size:20px;font-weight:800;color:#111827;">3</div><div style="font-size:11px;color:#92400e;margin-top:2px;">items flagged to push</div></div>
+  </div>
+  <div style="padding:14px 18px;">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin-bottom:8px;">Top Recommended Products — This Week</div>
+    <div style="font-size:12px;">
+      <div style="display:grid;grid-template-columns:1fr 50px 60px 180px;gap:0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;padding:4px 0;border-bottom:1px solid #f3f4f6;"><span>Product</span><span style="text-align:right">Recs</span><span style="text-align:right">Margin</span><span style="text-align:right">Manager Note</span></div>
+      <div style="display:grid;grid-template-columns:1fr 50px 60px 180px;gap:0;padding:7px 0;border-bottom:1px solid #f9fafb;"><span style="font-weight:600;color:#111827;">Blue Dream · Flower · 22%</span><span style="text-align:right;font-weight:700;color:#059669;">11</span><span style="text-align:right;color:#374151;">High</span><span style="text-align:right;font-size:11px;color:#92400e;">ð¡ Overstock — push first</span></div>
+      <div style="display:grid;grid-template-columns:1fr 50px 60px 180px;gap:0;padding:7px 0;border-bottom:1px solid #f9fafb;"><span style="font-weight:600;color:#111827;">OG Kush · Flower · 21%</span><span style="text-align:right;font-weight:700;color:#059669;">9</span><span style="text-align:right;color:#374151;">High</span><span style="text-align:right;font-size:11px;color:#059669;">â High margin</span></div>
+      <div style="display:grid;grid-template-columns:1fr 50px 60px 180px;gap:0;padding:7px 0;border-bottom:1px solid #f9fafb;"><span style="font-weight:600;color:#111827;">Calm Gummies 25mg</span><span style="text-align:right;font-weight:700;color:#059669;">7</span><span style="text-align:right;color:#374151;">Med</span><span style="text-align:right;font-size:11px;color:#6b7280;">—</span></div>
+      <div style="display:grid;grid-template-columns:1fr 50px 60px 180px;gap:0;padding:7px 0;"><span style="font-weight:600;color:#111827;">GSC Pre-roll</span><span style="text-align:right;font-weight:700;color:#059669;">5</span><span style="text-align:right;color:#374151;">High</span><span style="text-align:right;font-size:11px;color:#1d4ed8;">ðµ New arrival</span></div>
+    </div>
+  </div>
+</div>
+<div class="mgr-grid">
+  <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:20px;">
+    <div style="font-size:22px;margin-bottom:10px;">ð</div>
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">See what's actually selling</div>
+    <p style="font-size:13px;color:var(--text-2);margin:0;line-height:1.6;">Know exactly which products budtenders recommend most — and whether those match your highest-margin items.</p>
+  </div>
+  <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:20px;">
+    <div style="font-size:22px;margin-bottom:10px;">ð©</div>
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Push the right products</div>
+    <p style="font-size:13px;color:var(--text-2);margin:0;line-height:1.6;">Flag overstock or high-margin items from your dashboard. Budtenders see your note instantly during every session.</p>
+  </div>
+  <div style="background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:20px;">
+    <div style="font-size:22px;margin-bottom:10px;">ð§&nbsp;</div>
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Know your customers</div>
+    <p style="font-size:13px;color:var(--text-2);margin:0;line-height:1.6;">See the most common customer intents across all floor sessions — without surveys, apps, or asking anyone to do extra work.</p>
+  </div>
+</div>
+</div></section><section id="pricing" class="pricing-section">
+    <div class="container">
+        <div class="section-eyebrow">Pricing</div>
+        <h2 class="section-title">Simple, flat pricing per location</h2>
+        <p class="section-sub">No per-seat fees. No usage limits. One price covers your whole team.</p>
+        <div class="price-card">
+            <div class="price-card-badge">Invite Only</div>
+            <div class="price-name">Per Location</div>
+            <div class="price-amount"><span>$</span>199</div>
+            <div class="price-period">per location / month</div>
+            <div class="price-desc">The full Cannascope experience — inventory intelligence, manager notes, and upsell prompts included.</div>
+            <div class="price-features">
+                <div class="pf">Terpene-based recommendation engine</div>
+                <div class="pf">Unlimited budtender access — no per-seat fees</div>
+                <div class="pf">AI talking points generated per product</div>
+                <div class="pf">Upsell prompts at point of recommendation</div>
+                <div class="pf">Full admin dashboard and CSV import</div>
+                <div class="pf">Personally onboarded by the Cannascope team</div>
+            </div>
+            <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&amp;body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="price-btn">Request Access</a>
+            <div class="price-note">We'll reach out and onboard you personally</div>
+        </div>
+    </div>
+</section>
+
+<!-- -- CTA --------------------------------------------- -->
+<section class="cta-section">
+    <div class="cta-inner">
+        <h2 class="cta-title">Your best budtender<br>can't work every shift.</h2>
+        <p class="cta-sub">Dispensaries that prioritize revenue use Cannascope to make every shift count. We onboard you personally.</p>
+        <div class="cta-actions">
+            <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&amp;body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="btn-primary-lg">Request Access</a>
+            <a href="cannascope-cheatsheet-v2.html" class="btn-ghost-lg">Try the Demo</a>
+        </div>
+        <div class="cta-note">Interested? Email us and we'll onboard you personally.</div>
+    </div>
+</section>
+
+<!-- -- FOOTER ------------------------------------------ -->
+<footer>
+    <div class="footer-logo">Canna<span class="footer-logo-acc">scope</span></div>
+    <div class="footer-links">
+        <a href="#how-it-works">How It Works</a>
         <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
         <a href="cannascope-login.html">Sign In</a>
@@ -1758,4 +1758,5 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 
 
 
-</body></html>
+
+</div></footer></body></html>
