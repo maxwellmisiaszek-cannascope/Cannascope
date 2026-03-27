@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cannascope â Budtender Intelligence Platform</title>
+    <title>Cannascope &mdash; Budtender Intelligence Platform</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -34,7 +34,7 @@
             overflow-x: hidden;
         }
 
-        /* ââ NAV âââââââââââââââââââââââââââââââââââââââ */
+        /* -- NAV -------------------------------------- */
         nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             background: rgba(255,255,255,0.95);
@@ -62,8 +62,8 @@
         }
         .nav-cta:hover { background: #047857; }
 
-        /* ââ SHARED SECTION STYLES âââââââââââââââââââââ */
-        section { padding: 96px 24px; }
+        /* -- SHARED SECTION STYLES --------------------- */
+        section { padding: 56px 24px; }
         .container { max-width: 1080px; margin: 0 auto; }
         .section-eyebrow {
             font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
@@ -77,14 +77,14 @@
         }
         .section-sub {
             font-size: 16px; color: var(--text-2); text-align: center;
-            max-width: 540px; margin: 0 auto 56px; line-height: 1.7;
+            max-width: 540px; margin: 0 auto 36px; line-height: 1.7;
         }
 
-        /* ââ HERO ââââââââââââââââââââââââââââââââââââââ */
+        /* -- HERO -------------------------------------- */
         .hero {
-            min-height: 100vh; display: flex; flex-direction: column;
+            display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            padding: 100px 24px 80px; border-bottom: 1px solid var(--border);
+            padding: 76px 24px 52px; border-bottom: 1px solid var(--border);
             background: var(--bg);
         }
         .hero-eyebrow {
@@ -107,7 +107,7 @@
         }
         .hero-actions {
             display: flex; gap: 10px; align-items: center;
-            flex-wrap: wrap; justify-content: center; margin-bottom: 52px;
+            flex-wrap: wrap; justify-content: center; margin-bottom: 32px;
         }
         .btn-primary-lg {
             padding: 13px 28px; background: var(--accent); color: #fff;
@@ -132,9 +132,9 @@
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
-        .proof-check::before { content: 'â'; font-size: 9px; color: var(--accent); font-weight: 700; }
+        .proof-check9::before { content: '\2713'; font-size: 9px; color: var(--accent); font-weight: 700; }
 
-        /* ââ PRODUCT MOCKUP ââââââââââââââââââââââââââââ */
+        /* -- PRODUCT MOCKUP ---------------------------- */
         .mockup-section {
             padding: 0 24px 80px; background: var(--bg-2); border-bottom: 1px solid var(--border);
         }
@@ -234,13 +234,13 @@
         }
         .mock-upsell-text { font-size: 11px; color: var(--text-2); line-height: 1.6; }
 
-        /* ââ PROBLEM âââââââââââââââââââââââââââââââââââ */
+        /* -- PROBLEM ----------------------------------- */
         .problem-grid {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
         }
         .problem-card {
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 28px;
+            border-radius: 10px; padding: 20px;
         }
         .problem-num {
             width: 28px; height: 28px; border-radius: 6px;
@@ -252,12 +252,12 @@
         .problem-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
         .problem-text { font-size: 13px; color: var(--text-2); line-height: 1.7; }
 
-        /* ââ HOW IT WORKS ââââââââââââââââââââââââââââââ */
+        /* -- HOW IT WORKS ------------------------------ */
         .how-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
         .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         .step-card {
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 28px;
+            border-radius: 10px; padding: 20px;
         }
         .step-num {
             width: 32px; height: 32px; background: var(--accent);
@@ -271,11 +271,11 @@
             color: var(--accent); letter-spacing: 0.04em;
         }
 
-        /* ââ FEATURES ââââââââââââââââââââââââââââââââââ */
+        /* -- FEATURES ---------------------------------- */
         .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .feature-card {
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 32px;
+            border-radius: 10px; padding: 22px;
         }
         .feature-num {
             font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
@@ -293,11 +293,11 @@
             display: flex; align-items: flex-start; gap: 10px; line-height: 1.55;
         }
         .feature-list li::before {
-            content: 'â'; color: var(--accent); font-weight: 700;
+            content: '\2013'; color: var(--accent); font-weight: 700;
             flex-shrink: 0; margin-top: 1px;
         }
 
-        /* ââ INVENTORY INTELLIGENCE ââââââââââââââââââââ */
+        /* -- INVENTORY INTELLIGENCE -------------------- */
         .intel-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
         .intel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
         .intel-tag {
@@ -355,7 +355,7 @@
         .ir-badge.hi   { background: var(--accent-light); color: var(--accent); }
         .ir-badge.low  { background: #FEF2F2; color: #B91C1C; }
 
-        /* ââ ROI CALCULATOR ââââââââââââââââââââââââââââ */
+        /* -- ROI CALCULATOR ---------------------------- */
         .roi-section { background: var(--bg); }
         .roi-inner { max-width: 640px; margin: 0 auto; }
         .roi-card {
@@ -395,12 +395,12 @@
         .roi-cell-val { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
         .roi-cell-label { font-size: 10px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
 
-        /* ââ TESTIMONIALS ââââââââââââââââââââââââââââââ */
+        /* -- TESTIMONIALS ------------------------------ */
         .testi-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
         .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
         .testi-card {
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 28px;
+            border-radius: 10px; padding: 20px;
         }
         .testi-stars { font-size: 13px; color: #F59E0B; letter-spacing: 2px; margin-bottom: 14px; }
         .testi-quote {
@@ -417,7 +417,7 @@
         .testi-name { font-size: 13px; font-weight: 600; color: var(--text); }
         .testi-role { font-size: 11px; color: var(--text-3); margin-top: 1px; }
 
-        /* ââ PRICING âââââââââââââââââââââââââââââââââââ */
+        /* -- PRICING ----------------------------------- */
         .pricing-section { background: var(--bg); }
         .price-card {
             background: var(--surface); border: 1px solid var(--border);
@@ -446,7 +446,7 @@
             font-size: 13px; color: var(--text-2); display: flex;
             align-items: flex-start; gap: 9px; line-height: 1.5;
         }
-        .pf::before { content: 'â'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+        .pf::before { content: '\2713'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
         .price-btn {
             display: block; text-align: center; padding: 12px;
             border-radius: 7px; font-size: 14px; font-weight: 600;
@@ -456,9 +456,9 @@
         .price-btn:hover { background: #047857; }
         .price-note { text-align: center; font-size: 12px; color: var(--text-3); margin-top: 12px; }
 
-        /* ââ CTA âââââââââââââââââââââââââââââââââââââââ */
+        /* -- CTA --------------------------------------- */
         .cta-section {
-            padding: 96px 24px; text-align: center;
+            padding: 56px 24px; text-align: center;
             background: var(--bg-2); border-top: 1px solid var(--border);
         }
         .cta-title {
@@ -473,7 +473,7 @@
         .cta-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
         .cta-note { font-size: 12px; color: var(--text-3); }
 
-        /* ââ FOOTER ââââââââââââââââââââââââââââââââââââ */
+        /* -- FOOTER ------------------------------------ */
         footer {
             padding: 32px 40px; border-top: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between;
@@ -486,11 +486,11 @@
         .footer-links a:hover { color: var(--text-2); }
         .footer-copy { font-size: 12px; color: var(--text-3); }
 
-        /* ââ RESPONSIVE ââââââââââââââââââââââââââââââââ */
+        /* -- RESPONSIVE -------------------------------- */
         @media (max-width: 768px) {
             nav { padding: 0 20px; }
             .nav-links { display: none; }
-            section { padding: 64px 20px; }
+            section { padding: 40px 20px; }
             .problem-grid, .steps-grid, .features-grid,
             .intel-grid, .testi-grid { grid-template-columns: 1fr; }
             .intel-grid { gap: 32px; }
@@ -503,7 +503,7 @@
 </head>
 <body>
 
-<!-- ââ NAV âââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- -- NAV ------------------------------------------- -->
 <nav>
     <a href="cannascope-landing.html" class="nav-logo">Canna<span class="nav-logo-accent">scope</span></a>
     <div class="nav-links">
@@ -516,11 +516,11 @@
     <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="nav-cta">Request Access</a>
 </nav>
 
-<!-- ââ HERO âââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- -- HERO ------------------------------------------- -->
 <section class="hero">
     <div class="hero-eyebrow">Built for Dispensary Revenue</div>
     <h1 class="hero-title">Your budtenders recommend<br><span class="hl">the same 3 products.</span></h1>
-    <p class="hero-sub">Cannascope turns every budtender into your best one â instant terpene-based recommendations, manager-directed inventory pushes, and upsell prompts that grow basket size automatically.</p>
+    <p class="hero-sub">Cannascope turns every budtender into your best one &mdash; instant terpene-based recommendations, manager-directed inventory pushes, and upsell prompts that grow basket size automatically.</p>
     <div class="hero-actions">
         <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="btn-primary-lg">Request Access</a>
         <a href="#how-it-works" class="btn-ghost-lg">See How It Works</a>
@@ -533,12 +533,12 @@
     </div>
 </section>
 
-<!-- ââ PRODUCT MOCKUP ââââââââââââââââââââââââââââââââ -->
+<!-- -- PRODUCT MOCKUP -------------------------------- -->
 <div class="mockup-section" style="padding-top:60px;">
     <div class="mockup-wrap">
         <div class="mockup-titlebar">
             <div class="tb-dot"></div><div class="tb-dot"></div><div class="tb-dot"></div>
-            <span class="tb-url">cannascope.app/bud?key=â¦</span>
+            <span class="tb-url">cannascope.app/bud?key=&hellip;</span>
         </div>
         <div class="mockup-body">
             <div class="mock-header">
@@ -557,34 +557,34 @@
                 <div class="mock-intent-btn"><div class="mib-name">Relief</div><div class="mib-desc">Pain &amp; inflammation</div></div>
                 <div class="mock-intent-btn"><div class="mib-name">Balanced</div><div class="mib-desc">First-time friendly</div></div>
             </div>
-            <div class="mock-result-header">Relax â Top 3 Matches</div>
+            <div class="mock-result-header">Relax &mdash; Top 3 Matches</div>
             <div class="mock-cards">
                 <div class="mock-card rank-1">
-                    <div class="mock-card-rank">#1 Best Match Â· 94% match</div>
+                    <div class="mock-card-rank">#1 Best Match &middot; 94% match</div>
                     <div class="mock-card-main">
                         <div class="mock-card-name">Blue Dream</div>
                         <div class="mock-card-price">$42</div>
                     </div>
-                    <div class="mock-card-meta">Canopy Co Â· Flower Â· THC 22% Â· Shelf A4</div>
+                    <div class="mock-card-meta">Canopy Co &middot; Flower &middot; THC 22% &middot; Shelf A4</div>
                     <div class="mock-card-section">
                         <div class="mock-section-label">Talking Point</div>
-                        <div class="mock-section-text">The go-to after-work strain. Relaxes the body without sedation â you can still function normally. Very smooth and consistent.</div>
+                        <div class="mock-section-text">The go-to after-work strain. Relaxes the body without sedation &mdash; you can still function normally. Very smooth and consistent.</div>
                     </div>
                     <div class="mock-card-section is-manager">
                         <div class="mock-section-label">Manager Note</div>
-                        <div class="mock-section-text">Overstock â push first.</div>
+                        <div class="mock-section-text">Overstock &mdash; push first.</div>
                     </div>
                 </div>
                 <div class="mock-card">
-                    <div class="mock-card-rank">#2 Pick Â· 81% match</div>
+                    <div class="mock-card-rank">#2 Pick &middot; 81% match</div>
                     <div class="mock-card-main">
                         <div class="mock-card-name">OG Kush</div>
                         <div class="mock-card-price">$48</div>
                     </div>
-                    <div class="mock-card-meta">Canopy Co Â· Flower Â· THC 21% Â· Shelf A2</div>
+                    <div class="mock-card-meta">Canopy Co &middot; Flower &middot; THC 21% &middot; Shelf A2</div>
                     <div class="mock-card-section">
                         <div class="mock-section-label">Talking Point</div>
-                        <div class="mock-section-text">A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties â particularly good for customers carrying physical tension.</div>
+                        <div class="mock-section-text">A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties &mdash; particularly good for customers carrying physical tension.</div>
                     </div>
                     <div class="mock-card-section is-manager">
                         <div class="mock-section-label">Manager Note</div>
@@ -600,7 +600,7 @@
     </div>
 </div>
 
-<!-- ââ PROBLEM âââââââââââââââââââââââââââââââââââââââââ -->
+<!-- -- PROBLEM ----------------------------------------- -->
 <section id="problem">
     <div class="container">
         <div class="section-eyebrow">The Problem</div>
@@ -610,7 +610,7 @@
             <div class="problem-card">
                 <div class="problem-num">1</div>
                 <div class="problem-title">New budtenders struggle for months</div>
-                <div class="problem-text">It takes 60â90 days for a new hire to know the menu well enough to recommend confidently. Until then, they under-sell and over-apologize.</div>
+                <div class="problem-text">It takes 60&ndash;90 days for a new hire to know the menu well enough to recommend confidently. Until then, they under-sell and over-apologize.</div>
             </div>
             <div class="problem-card">
                 <div class="problem-num">2</div>
@@ -626,7 +626,7 @@
     </div>
 </section>
 
-<!-- ââ HOW IT WORKS ââââââââââââââââââââââââââââââââââââ -->
+<!-- -- HOW IT WORKS ------------------------------------ -->
 <section id="how-it-works" class="how-section">
     <div class="container">
         <div class="section-eyebrow">How It Works</div>
@@ -642,7 +642,7 @@
             <div class="step-card">
                 <div class="step-num">2</div>
                 <div class="step-title">Upload and auto-tag products</div>
-                <div class="step-text">Cannascope reads your inventory, maps each product to effect profiles, and writes talking points â automatically.</div>
+                <div class="step-text">Cannascope reads your inventory, maps each product to effect profiles, and writes talking points &mdash; automatically.</div>
                 <div class="step-time">~2 minutes</div>
             </div>
             <div class="step-card">
@@ -655,7 +655,7 @@
     </div>
 </section>
 
-<!-- ââ FEATURES ââââââââââââââââââââââââââââââââââââââââ -->
+<!-- -- FEATURES ---------------------------------------- -->
 <section id="features">
     <div class="container">
         <div class="section-eyebrow">Features</div>
@@ -663,19 +663,19 @@
         <p class="section-sub">Not a chatbot. Not a quiz. A real tool your team will actually use during a transaction.</p>
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-num">01 â Recommendation Engine</div>
+                <div class="feature-num">01 &mdash; Recommendation Engine</div>
                 <div class="feature-title">Tap an effect. Get three products.</div>
-                <div class="feature-text">Customer says they want to relax. Budtender taps Relax. Cannascope shows the top 3 products from your live inventory â scored by terpene profile and effect match.</div>
+                <div class="feature-text">Customer says they want to relax. Budtender taps Relax. Cannascope shows the top 3 products from your live inventory &mdash; scored by terpene profile and effect match.</div>
                 <ul class="feature-list">
                     <li>Six effect categories: Sleep, Relax, Focus, Social, Relief, Balanced</li>
-                    <li>Results scored using real terpene data â not just indica/sativa</li>
+                    <li>Results scored using real terpene data &mdash; not just indica/sativa</li>
                     <li>Always pulls from your live, in-stock inventory</li>
                 </ul>
             </div>
             <div class="feature-card">
-                <div class="feature-num">02 â Manager Notes</div>
-                <div class="feature-title">Tell your team what to push â without saying a word.</div>
-                <div class="feature-text">Managers attach notes directly to products: "Overstock â push first," "High margin," "Brand promo this week." Those notes appear on the recommendation card, right below the talking point.</div>
+                <div class="feature-num">02 &mdash; Manager Notes</div>
+                <div class="feature-title">Tell your team what to push &mdash; without saying a word.</div>
+                <div class="feature-text">Managers attach notes directly to products: "Overstock &mdash; push first," "High margin," "Brand promo this week." Those notes appear on the recommendation card, right below the talking point.</div>
                 <ul class="feature-list">
                     <li>Notes surface automatically during recommendations</li>
                     <li>Directs budtender attention without a daily briefing</li>
@@ -683,21 +683,21 @@
                 </ul>
             </div>
             <div class="feature-card">
-                <div class="feature-num">03 â Talking Points</div>
+                <div class="feature-num">03 &mdash; Talking Points</div>
                 <div class="feature-title">Every product has a script. Nobody has to wing it.</div>
-                <div class="feature-text">Cannascope generates a natural-language talking point for every product â grounded in terpenes, potency, and format. New budtenders sound experienced from Day 1.</div>
+                <div class="feature-text">Cannascope generates a natural-language talking point for every product &mdash; grounded in terpenes, potency, and format. New budtenders sound experienced from Day 1.</div>
                 <ul class="feature-list">
                     <li>Auto-generated from product data on import</li>
                     <li>Editable in the Admin panel</li>
-                    <li>Consistent across the whole floor â no conflicting recommendations</li>
+                    <li>Consistent across the whole floor &mdash; no conflicting recommendations</li>
                 </ul>
             </div>
             <div class="feature-card">
-                <div class="feature-num">04 â Upsell Prompts</div>
+                <div class="feature-num">04 &mdash; Upsell Prompts</div>
                 <div class="feature-title">Basket size grows automatically.</div>
-                <div class="feature-text">After showing the main recommendations, Cannascope surfaces a contextual upsell suggestion â tied to the effect category. No extra training. No pressure. Just a prompt.</div>
+                <div class="feature-text">After showing the main recommendations, Cannascope surfaces a contextual upsell suggestion &mdash; tied to the effect category. No extra training. No pressure. Just a prompt.</div>
                 <ul class="feature-list">
-                    <li>Effect-specific upsell logic (relax flower â gummies for longer effect)</li>
+                    <li>Effect-specific upsell logic (relax flower &rarr; gummies for longer effect)</li>
                     <li>Shown at the bottom of every recommendation screen</li>
                     <li>Designed to feel like helpful advice, not a hard sell</li>
                 </ul>
@@ -706,14 +706,14 @@
     </div>
 </section>
 
-<!-- ââ INVENTORY INTELLIGENCE âââââââââââââââââââââââââââ -->
+<!-- -- INVENTORY INTELLIGENCE --------------------------- -->
 <section class="intel-section">
     <div class="container">
         <div class="intel-grid">
             <div>
                 <div class="intel-tag">Inventory Intelligence</div>
                 <h2 class="intel-title">Recommendations that serve your store, not just the customer.</h2>
-                <p class="intel-sub">Most dispensary software is customer-facing. Cannascope is also <em>manager-facing</em> â it lets you systematically influence what gets sold, without micromanaging your floor.</p>
+                <p class="intel-sub">Most dispensary software is customer-facing. Cannascope is also <em>manager-facing</em> &mdash; it lets you systematically influence what gets sold, without micromanaging your floor.</p>
                 <div class="intel-metrics">
                     <div class="intel-metric">
                         <div class="metric-val">23%</div>
@@ -725,13 +725,13 @@
                     </div>
                     <div class="intel-metric">
                         <div class="metric-val">Day 1</div>
-                        <div class="metric-lbl">New budtenders are productive â no more 90-day learning curve</div>
+                        <div class="metric-lbl">New budtenders are productive &mdash; no more 90-day learning curve</div>
                     </div>
                 </div>
             </div>
             <div class="intel-panel">
                 <div class="intel-panel-header">
-                    <span>Manager Dashboard â Live Inventory</span>
+                    <span>Manager Dashboard &mdash; Live Inventory</span>
                     <div class="live-indicator"><div class="live-dot"></div>Live</div>
                 </div>
                 <div class="intel-rows">
@@ -766,7 +766,7 @@
     </div>
 </section>
 
-<!-- ââ ROI CALCULATOR ââââââââââââââââââââââââââââââââââ -->
+<!-- -- ROI CALCULATOR ---------------------------------- -->
 <section id="roi" class="roi-section">
     <div class="container">
         <div class="section-eyebrow">ROI Calculator</div>
@@ -810,7 +810,7 @@
     </div>
 </section>
 
-<!-- ââ TESTIMONIALS ââââââââââââââââââââââââââââââââââââ -->
+<!-- -- TESTIMONIALS ------------------------------------ -->
 <section class="testi-section">
     <div class="container">
         <div class="section-eyebrow">Early Users</div>
@@ -818,35 +818,35 @@
         <p class="section-sub">Feedback from beta locations during our initial rollout.</p>
         <div class="testi-grid">
             <div class="testi-card">
-                <div class="testi-stars">âââââ</div>
-                <div class="testi-quote">"New hires are useful from day one now. Before Cannascope, it took 6â8 weeks before they could handle a customer without checking with a senior budtender."</div>
+                <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <div class="testi-quote">"New hires are useful from day one now. Before Cannascope, it took 6&ndash;8 weeks before they could handle a customer without checking with a senior budtender."</div>
                 <div class="testi-author">
                     <div class="testi-avatar">JR</div>
                     <div>
                         <div class="testi-name">Jordan R.</div>
-                        <div class="testi-role">GM, Green Leaf Dispensary â Portland, OR</div>
+                        <div class="testi-role">GM, Green Leaf Dispensary &mdash; Portland, OR</div>
                     </div>
                 </div>
             </div>
             <div class="testi-card">
-                <div class="testi-stars">âââââ</div>
+                <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                 <div class="testi-quote">"I put a manager note on our overstock batch Friday morning. By end of day Saturday it was gone. That's never happened that fast with just a pre-shift briefing."</div>
                 <div class="testi-author">
                     <div class="testi-avatar">MS</div>
                     <div>
                         <div class="testi-name">Maria S.</div>
-                        <div class="testi-role">Owner, Elevate Cannabis Co. â Denver, CO</div>
+                        <div class="testi-role">Owner, Elevate Cannabis Co. &mdash; Denver, CO</div>
                     </div>
                 </div>
             </div>
             <div class="testi-card">
-                <div class="testi-stars">âââââ</div>
+                <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
                 <div class="testi-quote">"Our average ticket is up about $11 since we started using the upsell prompts. That's real money when you're doing 150 transactions a day."</div>
                 <div class="testi-author">
                     <div class="testi-avatar">TC</div>
                     <div>
                         <div class="testi-name">Tyler C.</div>
-                        <div class="testi-role">Operations Director, Peak State â Las Vegas, NV</div>
+                        <div class="testi-role">Operations Director, Peak State &mdash; Las Vegas, NV</div>
                     </div>
                 </div>
             </div>
@@ -854,7 +854,7 @@
     </div>
 </section>
 
-<!-- ââ PRICING âââââââââââââââââââââââââââââââââââââââââ -->
+<!-- -- PRICING ----------------------------------------- -->
 <section id="pricing" class="pricing-section">
     <div class="container">
         <div class="section-eyebrow">Pricing</div>
@@ -865,10 +865,10 @@
             <div class="price-name">Per Location</div>
             <div class="price-amount"><span>$</span>199</div>
             <div class="price-period">per location / month</div>
-            <div class="price-desc">The full Cannascope experience â inventory intelligence, manager notes, and upsell prompts included.</div>
+            <div class="price-desc">The full Cannascope experience &mdash; inventory intelligence, manager notes, and upsell prompts included.</div>
             <div class="price-features">
                 <div class="pf">Terpene-based recommendation engine</div>
-                <div class="pf">Unlimited budtender access â no per-seat fees</div>
+                <div class="pf">Unlimited budtender access &mdash; no per-seat fees</div>
                 <div class="pf">AI talking points generated per product</div>
                 <div class="pf">Upsell prompts at point of recommendation</div>
                 <div class="pf">Full admin dashboard and CSV import</div>
@@ -880,7 +880,7 @@
     </div>
 </section>
 
-<!-- ââ CTA âââââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- -- CTA --------------------------------------------- -->
 <section class="cta-section">
     <div class="cta-inner">
         <h2 class="cta-title">Your best budtender<br>can't work every shift.</h2>
@@ -893,7 +893,7 @@
     </div>
 </section>
 
-<!-- ââ FOOTER ââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- -- FOOTER ------------------------------------------ -->
 <footer>
     <div class="footer-logo">Canna<span class="footer-logo-acc">scope</span></div>
     <div class="footer-links">
@@ -902,7 +902,7 @@
         <a href="#pricing">Pricing</a>
         <a href="cannascope-login.html">Sign In</a>
     </div>
-    <div class="footer-copy">Â© 2026 Cannascope. All rights reserved.</div>
+    <div class="footer-copy">&copy; 2026 Cannascope. All rights reserved.</div>
 </footer>
 
 <script>
