@@ -439,7 +439,7 @@ function renderTable(){
     const cbd=p.cbd?' / '+p.cbd+'%':'';
     const pr=p.price?'$'+Number(p.price).toFixed(2):'&#8212;';
     const mn=p.manager_note||'';
-    return `<tr>
+    return `<tr data-id="${p.id}" class="${[p.push?'row-push':'',...(!p.in_stock?['row-oos']:[]),...(!(p.talking_points&&p.talking_points.trim())?['row-missing']:[])].filter(Boolean).join(' ')}">
       <td><div class="p-name">${xe(p.name||'')}</div><div class="p-brand">${xe(p.brand||'')}</div></td>
       <td><span class="badge cat-${p.category||'flower'}">${p.category||''}</span></td>
       <td><span class="mono">${thc}${cbd}</span></td>
@@ -477,7 +477,7 @@ function renderTable(){
     const cbd=p.cbd?' / '+p.cbd+'%':'';
     const pr=p.price?'$'+Number(p.price).toFixed(2):'&#8212;';
     const mn=p.manager_note||'';
-    return `<tr>
+    return `<tr data-id="${p.id}" class="${[p.push?'row-push':'',...(!p.in_stock?['row-oos']:[]),...(!(p.talking_points&&p.talking_points.trim())?['row-missing']:[])].filter(Boolean).join(' ')}">
       <td><div class="p-name">${xe(p.name||'')}</div><div class="p-brand">${xe(p.brand||'')}</div></td>
       <td><span class="badge cat-${p.category||'flower'}">${p.category||''}</span></td>
       <td><span class="mono">${thc}${cbd}</span></td>
