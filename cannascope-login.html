@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cannascope â Sign In</title>
+    <title>Cannascope Ã¢ÂÂ Sign In</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -161,7 +161,7 @@
 </head>
 <body>
 <div class="page">
-    <a href="cannascope-landing.html" class="back-link">â Back to home</a>
+    <a href="cannascope-landing.html" class="back-link">Ã¢ÂÂ Back to home</a>
     <a href="cannascope-landing.html" class="wordmark">Canna<span class="wordmark-accent">scope</span></a>
 
     <div class="card">
@@ -180,7 +180,7 @@
             <div class="form-group">
                 <label class="form-label" for="siPass">Password</label>
                 <input class="form-input" id="siPass" type="password"
-                       placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" autocomplete="current-password">
+                       placeholder="Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢" autocomplete="current-password">
             </div>
             <button class="btn-submit" id="btnSignin" onclick="signIn()">Sign In</button>
         </div>
@@ -196,26 +196,6 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// If already logged in, go straight to admin
-(async () => {
-    let { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-        try {
-            const raw = localStorage.getItem('sb-nrcvpwyvxmplwvjrdoua-auth-token');
-            if (raw) {
-                const stored = JSON.parse(raw);
-                if (stored?.access_token && stored?.refresh_token) {
-                    const { data: refreshed } = await sb.auth.setSession({
-                        access_token: stored.access_token,
-                        refresh_token: stored.refresh_token
-                    });
-                    session = refreshed?.session;
-                }
-            }
-        } catch(e) {}
-    }
-    if (session) window.location.href = 'cannascope-admin.html';
-})();
 
 function showErr(msg) {
     const el = document.getElementById('msgErr');
@@ -236,7 +216,7 @@ async function signIn() {
     if (!email || !pass) { showErr('Please enter your email and password.'); return; }
     const btn = document.getElementById('btnSignin');
     btn.disabled = true;
-    btn.textContent = 'Signing inâ¦';
+    btn.textContent = 'Signing inÃ¢ÂÂ¦';
     const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) {
         showErr(error.message);
