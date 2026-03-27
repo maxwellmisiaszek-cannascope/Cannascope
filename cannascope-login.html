@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cannascope Ã¢ÂÂ Sign In</title>
+    <title>Cannascope &mdash; Sign In</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -161,7 +161,7 @@
 </head>
 <body>
 <div class="page">
-    <a href="cannascope-landing.html" class="back-link">Ã¢ÂÂ Back to home</a>
+    <a href="cannascope-landing.html" class="back-link">&larr; Back to home</a>
     <a href="cannascope-landing.html" class="wordmark">Canna<span class="wordmark-accent">scope</span></a>
 
     <div class="card">
@@ -180,7 +180,7 @@
             <div class="form-group">
                 <label class="form-label" for="siPass">Password</label>
                 <input class="form-input" id="siPass" type="password"
-                       placeholder="Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢Ã¢ÂÂ¢" autocomplete="current-password">
+                       placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password">
             </div>
             <button class="btn-submit" id="btnSignin" onclick="signIn()">Sign In</button>
         </div>
@@ -216,7 +216,7 @@ async function signIn() {
     if (!email || !pass) { showErr('Please enter your email and password.'); return; }
     const btn = document.getElementById('btnSignin');
     btn.disabled = true;
-    btn.textContent = 'Signing inÃ¢ÂÂ¦';
+    btn.textContent = 'Signing in…';
     const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) {
         showErr(error.message);
