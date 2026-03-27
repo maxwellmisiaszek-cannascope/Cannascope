@@ -216,7 +216,7 @@ async function signIn() {
     if (!email || !pass) { showErr('Please enter your email and password.'); return; }
     const btn = document.getElementById('btnSignin');
     btn.disabled = true;
-    btn.textContent = 'Signing in…';
+    btn.textContent = 'Signing inâ¦';
     const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) {
         showErr(error.message);
@@ -224,7 +224,10 @@ async function signIn() {
         btn.textContent = 'Sign In';
         return;
     }
-    window.location.href = 'cannascope-admin.html';
+    const adminEmail = 'maxwellmisiaszek@gmail.com';
+            window.location.href = user.email === adminEmail
+              ? 'cannascope-admin.html'
+              : 'cannascope-cheatsheet-v2.html';
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Enter') signIn(); });
