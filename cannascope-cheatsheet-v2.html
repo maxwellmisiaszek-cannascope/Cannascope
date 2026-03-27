@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cannascope &mdash; Product Finder</title>
+    <title>Cannascope — Product Finder</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -104,7 +103,7 @@
             margin-bottom: 10px;
         }
         .screen-heading {
-            font-size: 20px;
+            font-size: 28px;
             font-weight: 700;
             letter-spacing: -0.02em;
             color: var(--text);
@@ -112,10 +111,10 @@
             margin-bottom: 6px;
         }
         .screen-sub {
-            font-size: 13px;
+            font-size: 15px;
             color: var(--text-2);
             text-align: center;
-            margin-bottom: 18px;
+            margin-bottom: 24px;
         }
 
         .intent-grid {
@@ -123,10 +122,10 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             width: 100%;
-            max-width: 480px;
+            max-width: 900px;
         }
         .intent-btn {
-            padding: 16px 14px;
+            padding: 22px 18px;
             background: var(--surface);
             border: 1.5px solid var(--border);
             border-radius: 8px;
@@ -214,7 +213,7 @@
         #screenFilters { overflow: hidden; }
         .filter-body {
             padding: 14px 20px 20px;
-            max-width: 560px;
+            max-width: 860px;
             margin: 0 auto;
             flex: 1;
             overflow-y: auto;
@@ -317,7 +316,7 @@
 
         .results-list {
             padding: 12px 14px 16px;
-            max-width: 600px;
+            max-width: 900px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -474,15 +473,23 @@
             .btn-primary { font-size: 12px; padding: 7px 13px; }
         }
     </style>
-</head>
+<style>@media (min-width: 800px) {
+  .intent-grid { gap: 12px !important; }
+  .intent-btn-icon { font-size: 28px !important; }
+  .intent-btn-label { font-size: 15px !important; font-weight: 700 !important; }
+  .intent-btn-desc { font-size: 12px !important; }
+  #screenEffect { padding: 40px 60px !important; }
+  .product-card { padding: 14px 18px !important; }
+  .screen-heading { margin-bottom: 10px !important; }
+}</style></head>
 <body>
 
 <!-- -- HEADER --------------------------------------- -->
 <div class="header">
     <div class="wordmark">Canna<span class="wordmark-accent">scope</span></div>
     <div class="header-right">
-        <span class="org-label" id="orgLabel">Loading&hellip;</span>
-        <span class="inventory-badge" id="productCount">&mdash;</span>
+        <span class="org-label" id="orgLabel">Loading…</span>
+        <span class="inventory-badge" id="productCount">—</span>
     </div>
 </div>
 
@@ -490,7 +497,7 @@
 <div id="screenEffect" class="screen active">
     <div class="screen-eyebrow">Customer Intent</div>
     <div class="screen-heading">What is the customer looking for?</div>
-    <div class="screen-sub">Select the primary goal &mdash; refine by format and preference next</div>
+    <div class="screen-sub">Select the primary goal — refine by format and preference next</div>
     <div class="intent-grid">
         <button class="intent-btn" onclick="selectEffect('sleep')">
             <span class="intent-name">Sleep</span>
@@ -522,60 +529,60 @@
 <!-- == SCREEN 2: OPTIONAL FILTERS ==================== -->
 <div id="screenFilters" class="screen">
     <div class="sub-header">
-        <button class="btn-back" onclick="goToEffect()">&larr; Back</button>
+        <button class="btn-back" onclick="goToEffect()">← Back</button>
         <span class="intent-tag" id="selectedEffectBadge">Sleep</span>
         <div class="sub-header-spacer"></div>
         <button class="btn-primary" onclick="findProducts()">Show Matches</button>
     </div>
     <div class="filter-body">
-        <p class="filter-intro">All filters are optional &mdash; skip any that weren't mentioned by the customer</p>
+        <p class="filter-intro">All filters are optional — skip any that weren't mentioned by the customer</p>
 
         <div class="filter-group">
             <div class="filter-group-label">Format</div>
             <div class="chip-row" id="pillsFormat">
-                <button class="chip" data-group="format" data-val="flower"      onclick="togglePill(this)">Flower</button>
-                <button class="chip" data-group="format" data-val="vape"        onclick="togglePill(this)">Vape</button>
-                <button class="chip" data-group="format" data-val="edible"      onclick="togglePill(this)">Edible</button>
+                <button class="chip" data-group="format" data-val="flower" onclick="togglePill(this)">Flower</button>
+                <button class="chip" data-group="format" data-val="vape" onclick="togglePill(this)">Vape</button>
+                <button class="chip" data-group="format" data-val="edible" onclick="togglePill(this)">Edible</button>
                 <button class="chip" data-group="format" data-val="concentrate" onclick="togglePill(this)">Concentrate</button>
-                <button class="chip" data-group="format" data-val="preroll"     onclick="togglePill(this)">Pre-roll</button>
-                <button class="chip" data-group="format" data-val="tincture"    onclick="togglePill(this)">Tincture</button>
+                <button class="chip" data-group="format" data-val="preroll" onclick="togglePill(this)">Pre-roll</button>
+                <button class="chip" data-group="format" data-val="tincture" onclick="togglePill(this)">Tincture</button>
             </div>
         </div>
 
         <div class="filter-group">
             <div class="filter-group-label">Experience Level</div>
             <div class="chip-row" id="pillsIntensity">
-                <button class="chip" data-group="intensity" data-val="mild"     onclick="togglePill(this)">Mild &lt;15% THC</button>
-                <button class="chip" data-group="intensity" data-val="moderate" onclick="togglePill(this)">Moderate 15&ndash;22%</button>
-                <button class="chip" data-group="intensity" data-val="strong"   onclick="togglePill(this)">Strong 22%+</button>
+                <button class="chip" data-group="intensity" data-val="mild" onclick="togglePill(this)">Mild &lt;15% THC</button>
+                <button class="chip" data-group="intensity" data-val="moderate" onclick="togglePill(this)">Moderate 15–22%</button>
+                <button class="chip" data-group="intensity" data-val="strong" onclick="togglePill(this)">Strong 22%+</button>
             </div>
         </div>
 
         <div class="filter-group">
             <div class="filter-group-label">Price Range</div>
             <div class="chip-row" id="pillsPrice">
-                <button class="chip" data-group="price" data-val="20-30" onclick="togglePill(this)">$20&ndash;30</button>
-                <button class="chip" data-group="price" data-val="30-45" onclick="togglePill(this)">$30&ndash;45</button>
-                <button class="chip" data-group="price" data-val="45-60" onclick="togglePill(this)">$45&ndash;60</button>
-                <button class="chip" data-group="price" data-val="60+"   onclick="togglePill(this)">$60+</button>
+                <button class="chip" data-group="price" data-val="20-30" onclick="togglePill(this)">$20–30</button>
+                <button class="chip" data-group="price" data-val="30-45" onclick="togglePill(this)">$30–45</button>
+                <button class="chip" data-group="price" data-val="45-60" onclick="togglePill(this)">$45–60</button>
+                <button class="chip" data-group="price" data-val="60+" onclick="togglePill(this)">$60+</button>
             </div>
         </div>
 
         <div class="filter-group">
             <div class="filter-group-label">Onset Speed</div>
             <div class="chip-row" id="pillsOnset">
-                <button class="chip" data-group="onset" data-val="quick"    onclick="togglePill(this)">Quick (5&ndash;15 min)</button>
-                <button class="chip" data-group="onset" data-val="moderate" onclick="togglePill(this)">Standard (20&ndash;45 min)</button>
-                <button class="chip" data-group="onset" data-val="slow"     onclick="togglePill(this)">Long-lasting (4&ndash;8 hr)</button>
+                <button class="chip" data-group="onset" data-val="quick" onclick="togglePill(this)">Quick (5–15 min)</button>
+                <button class="chip" data-group="onset" data-val="moderate" onclick="togglePill(this)">Standard (20–45 min)</button>
+                <button class="chip" data-group="onset" data-val="slow" onclick="togglePill(this)">Long-lasting (4–8 hr)</button>
             </div>
         </div>
 
         <div class="filter-group">
             <div class="filter-group-label">THC Level</div>
             <div class="chip-row" id="pillsThc">
-                <button class="chip" data-group="thc" data-val="low"   onclick="togglePill(this)">Low &lt;15%</button>
-                <button class="chip" data-group="thc" data-val="med"   onclick="togglePill(this)">Medium 15&ndash;20%</button>
-                <button class="chip" data-group="thc" data-val="high"  onclick="togglePill(this)">High 20&ndash;25%</button>
+                <button class="chip" data-group="thc" data-val="low" onclick="togglePill(this)">Low &lt;15%</button>
+                <button class="chip" data-group="thc" data-val="med" onclick="togglePill(this)">Medium 15–20%</button>
+                <button class="chip" data-group="thc" data-val="high" onclick="togglePill(this)">High 20–25%</button>
                 <button class="chip" data-group="thc" data-val="vhigh" onclick="togglePill(this)">Very High 25%+</button>
             </div>
         </div>
@@ -587,7 +594,7 @@
 <!-- == SCREEN 3: RESULTS ============================== -->
 <div id="screenResults" class="screen">
     <div class="sub-header">
-        <button class="btn-back" onclick="goToFilters()">&larr; Filters</button>
+        <button class="btn-back" onclick="goToFilters()">← Filters</button>
         <div class="results-header-info">
             <div class="results-title" id="resultsTitle">Sleep</div>
             <div class="results-subtitle" id="filterSummary"></div>
@@ -596,7 +603,7 @@
         <button class="btn-ghost" onclick="goToEffect()">New Search</button>
     </div>
     <div class="results-list" id="productCards">
-        <div class="loading-state">Finding best matches&hellip;</div>
+        <div class="loading-state">Finding best matches…</div>
     </div>
 </div>
 
@@ -963,5 +970,6 @@ const DEMO_PRODUCTS = [
       talking_points:'Low THC, pre-measured dose \u2014 perfect for someone trying flower for the first time. Take one or two puffs and wait 10 minutes before deciding if they want more.' }
 ];
 </script>
-</body>
-</html>
+
+
+</body></html>
