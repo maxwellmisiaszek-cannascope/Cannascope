@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cannascope â Product Finder</title>
+    <title>Cannascope &mdash; Product Finder</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -39,7 +39,7 @@
             overflow-x: hidden;
         }
 
-        /* ââ HEADER ââââââââââââââââââââââââââââââââââ */
+        /* -- HEADER ---------------------------------- */
         .header {
             background: var(--surface);
             border-bottom: 1px solid var(--border);
@@ -84,18 +84,16 @@
             border-color: var(--accent-border);
         }
 
-        /* ââ SCREENS âââââââââââââââââââââââââââââââââ */
+        /* -- SCREENS --------------------------------- */
         .screen { display: none; }
-        .screen.active { display: block; }
+        .screen.active { display: flex; flex-direction: column; height: calc(100vh - 52px); }
 
-        /* ââ SCREEN 1: INTENT ââââââââââââââââââââââââ */
+        /* -- SCREEN 1: INTENT ------------------------ */
         #screenEffect {
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 48px 20px 64px;
-            min-height: calc(100vh - 52px);
+            padding: 28px 20px 28px;
+            overflow-y: auto;
         }
         .screen-eyebrow {
             font-size: 11px;
@@ -117,7 +115,7 @@
             font-size: 13px;
             color: var(--text-2);
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 18px;
         }
 
         .intent-grid {
@@ -157,7 +155,7 @@
             line-height: 1.4;
         }
 
-        /* ââ SUB-HEADER (shared) âââââââââââââââââââââ */
+        /* -- SUB-HEADER (shared) --------------------- */
         .sub-header {
             background: var(--surface);
             border-bottom: 1px solid var(--border);
@@ -212,22 +210,26 @@
         .btn-primary:hover { background: #047857; }
         .btn-primary:active { transform: scale(0.97); }
 
-        /* ââ SCREEN 2: FILTERS âââââââââââââââââââââââ */
-        #screenFilters { min-height: calc(100vh - 52px); }
+        /* -- SCREEN 2: FILTERS ----------------------- */
+        #screenFilters { overflow: hidden; }
         .filter-body {
-            padding: 20px 20px 48px;
+            padding: 14px 20px 20px;
             max-width: 560px;
             margin: 0 auto;
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
+            box-sizing: border-box;
         }
         .filter-intro {
             font-size: 12px;
             color: var(--text-3);
             text-align: center;
-            padding-bottom: 20px;
+            padding-bottom: 10px;
             border-bottom: 1px solid var(--border);
-            margin-bottom: 24px;
+            margin-bottom: 12px;
         }
-        .filter-group { margin-bottom: 22px; }
+        .filter-group { margin-bottom: 12px; }
         .filter-group-label {
             font-size: 11px;
             font-weight: 600;
@@ -281,8 +283,8 @@
         }
         .btn-find-bottom:hover { background: #047857; }
 
-        /* ââ SCREEN 3: RESULTS âââââââââââââââââââââââ */
-        #screenResults { min-height: calc(100vh - 52px); }
+        /* -- SCREEN 3: RESULTS ----------------------- */
+        #screenResults { overflow: hidden; }
         .results-header-info {
             display: flex;
             flex-direction: column;
@@ -314,15 +316,18 @@
         .btn-ghost:hover { border-color: var(--border-2); color: var(--text); }
 
         .results-list {
-            padding: 14px 14px 48px;
+            padding: 12px 14px 16px;
             max-width: 600px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
         }
 
-        /* ââ PRODUCT CARD ââââââââââââââââââââââââââââ */
+        /* -- PRODUCT CARD ---------------------------- */
         .prod-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -434,7 +439,7 @@
         .card-section.is-manager .card-section-label { color: var(--amber); }
         .card-section.is-manager .card-section-text  { color: var(--amber); }
 
-        /* ââ UPSELL BLOCK ââââââââââââââââââââââââââââ */
+        /* -- UPSELL BLOCK ---------------------------- */
         .upsell-block {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -455,7 +460,7 @@
             line-height: 1.65;
         }
 
-        /* ââ STATES ââââââââââââââââââââââââââââââââââ */
+        /* -- STATES ---------------------------------- */
         .empty-state, .loading-state {
             text-align: center;
             padding: 60px 20px;
@@ -472,20 +477,20 @@
 </head>
 <body>
 
-<!-- ââ HEADER âââââââââââââââââââââââââââââââââââââââ -->
+<!-- -- HEADER --------------------------------------- -->
 <div class="header">
     <div class="wordmark">Canna<span class="wordmark-accent">scope</span></div>
     <div class="header-right">
-        <span class="org-label" id="orgLabel">Loadingâ¦</span>
-        <span class="inventory-badge" id="productCount">â</span>
+        <span class="org-label" id="orgLabel">Loading&hellip;</span>
+        <span class="inventory-badge" id="productCount">&mdash;</span>
     </div>
 </div>
 
-<!-- ââ SCREEN 1: CUSTOMER INTENT ââââââââââââââââââââââ -->
+<!-- == SCREEN 1: CUSTOMER INTENT ====================== -->
 <div id="screenEffect" class="screen active">
     <div class="screen-eyebrow">Customer Intent</div>
     <div class="screen-heading">What is the customer looking for?</div>
-    <div class="screen-sub">Select the primary goal â refine by format and preference next</div>
+    <div class="screen-sub">Select the primary goal &mdash; refine by format and preference next</div>
     <div class="intent-grid">
         <button class="intent-btn" onclick="selectEffect('sleep')">
             <span class="intent-name">Sleep</span>
@@ -514,16 +519,16 @@
     </div>
 </div>
 
-<!-- ââ SCREEN 2: OPTIONAL FILTERS ââââââââââââââââââââ -->
+<!-- == SCREEN 2: OPTIONAL FILTERS ==================== -->
 <div id="screenFilters" class="screen">
     <div class="sub-header">
-        <button class="btn-back" onclick="goToEffect()">â Back</button>
+        <button class="btn-back" onclick="goToEffect()">&larr; Back</button>
         <span class="intent-tag" id="selectedEffectBadge">Sleep</span>
         <div class="sub-header-spacer"></div>
         <button class="btn-primary" onclick="findProducts()">Show Matches</button>
     </div>
     <div class="filter-body">
-        <p class="filter-intro">All filters are optional â skip any that weren't mentioned by the customer</p>
+        <p class="filter-intro">All filters are optional &mdash; skip any that weren't mentioned by the customer</p>
 
         <div class="filter-group">
             <div class="filter-group-label">Format</div>
@@ -541,7 +546,7 @@
             <div class="filter-group-label">Experience Level</div>
             <div class="chip-row" id="pillsIntensity">
                 <button class="chip" data-group="intensity" data-val="mild"     onclick="togglePill(this)">Mild &lt;15% THC</button>
-                <button class="chip" data-group="intensity" data-val="moderate" onclick="togglePill(this)">Moderate 15â22%</button>
+                <button class="chip" data-group="intensity" data-val="moderate" onclick="togglePill(this)">Moderate 15&ndash;22%</button>
                 <button class="chip" data-group="intensity" data-val="strong"   onclick="togglePill(this)">Strong 22%+</button>
             </div>
         </div>
@@ -549,9 +554,9 @@
         <div class="filter-group">
             <div class="filter-group-label">Price Range</div>
             <div class="chip-row" id="pillsPrice">
-                <button class="chip" data-group="price" data-val="20-30" onclick="togglePill(this)">$20â30</button>
-                <button class="chip" data-group="price" data-val="30-45" onclick="togglePill(this)">$30â45</button>
-                <button class="chip" data-group="price" data-val="45-60" onclick="togglePill(this)">$45â60</button>
+                <button class="chip" data-group="price" data-val="20-30" onclick="togglePill(this)">$20&ndash;30</button>
+                <button class="chip" data-group="price" data-val="30-45" onclick="togglePill(this)">$30&ndash;45</button>
+                <button class="chip" data-group="price" data-val="45-60" onclick="togglePill(this)">$45&ndash;60</button>
                 <button class="chip" data-group="price" data-val="60+"   onclick="togglePill(this)">$60+</button>
             </div>
         </div>
@@ -559,9 +564,9 @@
         <div class="filter-group">
             <div class="filter-group-label">Onset Speed</div>
             <div class="chip-row" id="pillsOnset">
-                <button class="chip" data-group="onset" data-val="quick"    onclick="togglePill(this)">Quick (5â15 min)</button>
-                <button class="chip" data-group="onset" data-val="moderate" onclick="togglePill(this)">Standard (20â45 min)</button>
-                <button class="chip" data-group="onset" data-val="slow"     onclick="togglePill(this)">Long-lasting (4â8 hr)</button>
+                <button class="chip" data-group="onset" data-val="quick"    onclick="togglePill(this)">Quick (5&ndash;15 min)</button>
+                <button class="chip" data-group="onset" data-val="moderate" onclick="togglePill(this)">Standard (20&ndash;45 min)</button>
+                <button class="chip" data-group="onset" data-val="slow"     onclick="togglePill(this)">Long-lasting (4&ndash;8 hr)</button>
             </div>
         </div>
 
@@ -569,8 +574,8 @@
             <div class="filter-group-label">THC Level</div>
             <div class="chip-row" id="pillsThc">
                 <button class="chip" data-group="thc" data-val="low"   onclick="togglePill(this)">Low &lt;15%</button>
-                <button class="chip" data-group="thc" data-val="med"   onclick="togglePill(this)">Medium 15â20%</button>
-                <button class="chip" data-group="thc" data-val="high"  onclick="togglePill(this)">High 20â25%</button>
+                <button class="chip" data-group="thc" data-val="med"   onclick="togglePill(this)">Medium 15&ndash;20%</button>
+                <button class="chip" data-group="thc" data-val="high"  onclick="togglePill(this)">High 20&ndash;25%</button>
                 <button class="chip" data-group="thc" data-val="vhigh" onclick="togglePill(this)">Very High 25%+</button>
             </div>
         </div>
@@ -579,10 +584,10 @@
     </div>
 </div>
 
-<!-- ââ SCREEN 3: RESULTS ââââââââââââââââââââââââââââââ -->
+<!-- == SCREEN 3: RESULTS ============================== -->
 <div id="screenResults" class="screen">
     <div class="sub-header">
-        <button class="btn-back" onclick="goToFilters()">â Filters</button>
+        <button class="btn-back" onclick="goToFilters()">&larr; Filters</button>
         <div class="results-header-info">
             <div class="results-title" id="resultsTitle">Sleep</div>
             <div class="results-subtitle" id="filterSummary"></div>
@@ -591,12 +596,12 @@
         <button class="btn-ghost" onclick="goToEffect()">New Search</button>
     </div>
     <div class="results-list" id="productCards">
-        <div class="loading-state">Finding best matchesâ¦</div>
+        <div class="loading-state">Finding best matches&hellip;</div>
     </div>
 </div>
 
 <script>
-// ââ CONFIG ââââââââââââââââââââââââââââââââââââââââââââ
+// \u2500\u2500 CONFIG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
 
@@ -611,7 +616,7 @@ const UPSELL = {
     focus:    'Pair with a microdose option or 1:1 CBD:THC product for sustained clarity without the edge.',
     social:   'Suggest a fast-onset vape alongside flower for easy, controllable top-ups during their event.',
     relief:   'Topicals layered with a systemic product (edible or tincture) provide the best dual-action relief.',
-    beginner: 'A 1:1 CBD:THC ratio product is the ideal first experience â all the comfort, fully approachable.'
+    beginner: 'A 1:1 CBD:THC ratio product is the ideal first experience \u2014 all the comfort, fully approachable.'
 };
 
 const ONSET_MAP = {
@@ -620,7 +625,7 @@ const ONSET_MAP = {
     edible:'slow', capsule:'slow', patch:'slow'
 };
 
-// ââ STATE âââââââââââââââââââââââââââââââââââââââââââââ
+// \u2500\u2500 STATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -628,7 +633,7 @@ let orgId = null, orgName = '', allProducts = [];
 let selectedEffect = null;
 let filters = {};
 
-// ââ INIT ââââââââââââââââââââââââââââââââââââââââââââââ
+// \u2500\u2500 INIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 (async () => {
     const params = new URLSearchParams(location.search);
     const key    = params.get('key');
@@ -660,7 +665,7 @@ function useDemoMode() {
     el.classList.add('loaded');
 }
 
-// ââ NAVIGATION ââââââââââââââââââââââââââââââââââââââââ
+// \u2500\u2500 NAVIGATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -678,7 +683,7 @@ function selectEffect(eff) {
 function goToEffect()   { showScreen('screenEffect'); }
 function goToFilters()  { showScreen('screenFilters'); }
 
-// ââ PILL TOGGLE (single-select per group) âââââââââââââ
+// \u2500\u2500 PILL TOGGLE (single-select per group) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function togglePill(btn) {
     const group     = btn.dataset.group;
     const wasActive = btn.classList.contains('active');
@@ -691,13 +696,13 @@ function togglePill(btn) {
     }
 }
 
-// ââ SCORING ENGINE ââââââââââââââââââââââââââââââââââââ
-// Effect quality (score_X Ã 40)     â 0â40 pts
-// Format match                       â 0â20 pts
-// Experience/Intensity match         â 0â20 pts
-// Price range match                  â 0â10 pts
-// Onset speed match                  â 0â10 pts
-// THC preference match               â 0â10 pts
+// \u2500\u2500 SCORING ENGINE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Effect quality (score_X \u00D7 40)     \u2192 0\u201340 pts
+// Format match                       \u2192 0\u201320 pts
+// Experience/Intensity match         \u2192 0\u201320 pts
+// Price range match                  \u2192 0\u201310 pts
+// Onset speed match                  \u2192 0\u201310 pts
+// THC preference match               \u2192 0\u201310 pts
 // Skipped filters are neutral (no penalty)
 
 function scoreProduct(p, eff) {
@@ -786,23 +791,23 @@ function onsetLabel(v) {
 }
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
-// ââ FIND PRODUCTS âââââââââââââââââââââââââââââââââââââ
+// \u2500\u2500 FIND PRODUCTS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 async function findProducts() {
     if (!selectedEffect) return;
     const eff   = selectedEffect;
     const label = EFFECT_LABELS[eff];
 
     document.getElementById('resultsTitle').textContent = label;
-    document.getElementById('productCards').innerHTML = '<div class="loading-state">Finding best matchesâ¦</div>';
+    document.getElementById('productCards').innerHTML = '<div class="loading-state">Finding best matches\u2026</div>';
 
     const parts = [];
     if (filters.format)    parts.push(formatLabel(filters.format));
     if (filters.intensity) parts.push(cap(filters.intensity));
     if (filters.price)     parts.push('$' + filters.price.replace('+', '& up'));
     if (filters.onset)     parts.push(onsetLabel(filters.onset));
-    if (filters.thc)       parts.push({ low:'<15% THC', med:'15â20% THC', high:'20â25% THC', vhigh:'25%+ THC' }[filters.thc]);
+    if (filters.thc)       parts.push({ low:'<15% THC', med:'15\u201320% THC', high:'20\u201325% THC', vhigh:'25%+ THC' }[filters.thc]);
     document.getElementById('filterSummary').textContent =
-        parts.length ? parts.join(' Â· ') : 'No filters â showing top overall picks';
+        parts.length ? parts.join(' \u00B7 ') : 'No filters \u2014 showing top overall picks';
 
     showScreen('screenResults');
 
@@ -823,9 +828,9 @@ async function findProducts() {
     const html = products.map((p, i) => {
         const score       = p._score;
         const cat         = cap(p.category || 'Flower');
-        const cbdNote     = (p.cbd && p.cbd > 0) ? ` Â· CBD ${p.cbd}%` : '';
+        const cbdNote     = (p.cbd && p.cbd > 0) ? ` \u00B7 CBD ${p.cbd}%` : '';
         const chips       = getMatchChips(p);
-        const matchHTML   = chips.map(c => `<span class="chip-match">${xe(c)} â</span>`).join('');
+        const matchHTML   = chips.map(c => `<span class="chip-match">${xe(c)} \u2713</span>`).join('');
         const shelfHTML   = p.shelf ? `<span class="chip-shelf">Shelf ${xe(p.shelf)}</span>` : '';
         const chipsHTML   = (matchHTML || shelfHTML)
             ? `<div class="card-chips">${matchHTML}${shelfHTML}</div>` : '';
@@ -844,10 +849,10 @@ async function findProducts() {
             </div>
             <div class="card-meta">
                 <span>${xe(p.brand || '')}</span>
-                <span class="meta-sep">Â·</span>
+                <span class="meta-sep">\u00B7</span>
                 <span>${cat}</span>
-                <span class="meta-sep">Â·</span>
-                <span>THC ${p.thc != null ? p.thc + '%' : 'â'}${cbdNote}</span>
+                <span class="meta-sep">\u00B7</span>
+                <span>THC ${p.thc != null ? p.thc + '%' : '\u2014'}${cbdNote}</span>
             </div>
             ${chipsHTML}
             ${p.talking_points ? `
@@ -886,32 +891,32 @@ function xe(s) {
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// ââ DEMO PRODUCTS âââââââââââââââââââââââââââââââââââââ
+// \u2500\u2500 DEMO PRODUCTS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 const DEMO_PRODUCTS = [
     // Sleep
     { id:'d1', name:'Granddaddy Purple', brand:'Royal Gardens', category:'flower', price:45, thc:23, cbd:0, shelf:'B3', in_stock:true,
       score_sleep:0.82, score_relax:0.42, score_focus:0.10, score_social:0.12, score_relief:0.38, score_beginner:0.22,
-      manager_note:'Premium shelf â highest margin in category.',
-      talking_points:'This is our most recommended for sleep. The Myrcene terpene profile produces that heavy, settled feeling most people associate with a full night of rest. Best taken 60â90 minutes before bed.' },
+      manager_note:'Premium shelf \u2014 highest margin in category.',
+      talking_points:'This is our most recommended for sleep. The Myrcene terpene profile produces that heavy, settled feeling most people associate with a full night of rest. Best taken 60\u201390 minutes before bed.' },
     { id:'d2', name:'Northern Lights', brand:'Emerald Fields', category:'flower', price:40, thc:18, cbd:0, shelf:'B1', in_stock:true,
       score_sleep:0.74, score_relax:0.50, score_focus:0.12, score_social:0.14, score_relief:0.32, score_beginner:0.35,
-      talking_points:'Lower potency makes this ideal for THC-sensitive customers or those new to cannabis. Calming without being overwhelming â most people report waking without grogginess.' },
+      talking_points:'Lower potency makes this ideal for THC-sensitive customers or those new to cannabis. Calming without being overwhelming \u2014 most people report waking without grogginess.' },
     { id:'d3', name:'Purple Punch Gummies', brand:'Green Peak', category:'edible', price:25, thc:10, cbd:0, shelf:'E2', in_stock:true,
       score_sleep:0.68, score_relax:0.46, score_focus:0.08, score_social:0.10, score_relief:0.28, score_beginner:0.55,
-      manager_note:'Overstock â push this batch first.',
-      talking_points:'Edible format means effects last 6â8 hours. Take it 90 minutes before bed. Linalool adds a gentle calming quality similar to lavender.' },
+      manager_note:'Overstock \u2014 push this batch first.',
+      talking_points:'Edible format means effects last 6\u20138 hours. Take it 90 minutes before bed. Linalool adds a gentle calming quality similar to lavender.' },
     { id:'d4', name:'Dream Tincture', brand:'Bloom Select', category:'tincture', price:38, thc:5, cbd:10, shelf:'T3', in_stock:true,
       score_sleep:0.71, score_relax:0.55, score_focus:0.10, score_social:0.08, score_relief:0.44, score_beginner:0.62,
-      talking_points:'The high CBD ratio calms the nervous system while the low THC eases the mind. Sublingual onset in 20â30 minutes. Great for customers who prefer not to smoke.' },
+      talking_points:'The high CBD ratio calms the nervous system while the low THC eases the mind. Sublingual onset in 20\u201330 minutes. Great for customers who prefer not to smoke.' },
     // Relax
     { id:'d5', name:'Blue Dream', brand:'Canopy Co', category:'flower', price:42, thc:22, cbd:0, shelf:'A4', in_stock:true,
       score_sleep:0.38, score_relax:0.78, score_focus:0.40, score_social:0.44, score_relief:0.30, score_beginner:0.28,
-      manager_note:'Overstock â push first.',
-      talking_points:'The go-to after-work strain. Relaxes the body without sedation â you can still function normally. Very smooth and consistent.' },
+      manager_note:'Overstock \u2014 push first.',
+      talking_points:'The go-to after-work strain. Relaxes the body without sedation \u2014 you can still function normally. Very smooth and consistent.' },
     { id:'d6', name:'OG Kush', brand:'Canopy Co', category:'flower', price:48, thc:21, cbd:0, shelf:'A2', in_stock:true,
       score_sleep:0.44, score_relax:0.72, score_focus:0.22, score_social:0.28, score_relief:0.38, score_beginner:0.24,
       manager_note:'High margin product.',
-      talking_points:'A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties â particularly good for customers carrying physical tension or stress.' },
+      talking_points:'A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties \u2014 particularly good for customers carrying physical tension or stress.' },
     { id:'d7', name:'Wedding Cake Vape', brand:'Summit Select', category:'vape', price:55, thc:25, cbd:0, shelf:'V1', in_stock:true,
       score_sleep:0.30, score_relax:0.65, score_focus:0.38, score_social:0.50, score_relief:0.22, score_beginner:0.15,
       talking_points:'Vape format means fast onset and easy dose control. One to two pulls, wait five minutes. Limonene adds a slight uplift that prevents sedation.' },
@@ -919,7 +924,7 @@ const DEMO_PRODUCTS = [
     { id:'d8', name:'Sour Diesel', brand:'Green Peak', category:'flower', price:46, thc:24, cbd:0, shelf:'C3', in_stock:true,
       score_sleep:0.10, score_relax:0.38, score_focus:0.80, score_social:0.55, score_relief:0.18, score_beginner:0.20,
       manager_note:'Brand promotion this week.',
-      talking_points:'Most requested for creative focus. Limonene-dominant â that citrus-forward energy sharpens thinking without causing anxiety. Works well for writing, design, or anything requiring mental engagement.' },
+      talking_points:'Most requested for creative focus. Limonene-dominant \u2014 that citrus-forward energy sharpens thinking without causing anxiety. Works well for writing, design, or anything requiring mental engagement.' },
     { id:'d9', name:'Jack Herer', brand:'Harvest Gold', category:'flower', price:44, thc:19, cbd:1, shelf:'C1', in_stock:true,
       score_sleep:0.12, score_relax:0.42, score_focus:0.74, score_social:0.52, score_relief:0.20, score_beginner:0.32,
       talking_points:'Legendary for clear-headed creativity. Terpinolene and pinene create a focused, alert experience without the edge of higher-THC sativas. Excellent for daytime productivity.' },
@@ -932,10 +937,10 @@ const DEMO_PRODUCTS = [
       talking_points:'Classic uplifting strain with a tropical, euphoric lift. Keeps energy levels up and conversation flowing. Very consistent and widely loved.' },
     { id:'d12', name:'Tangie Vape', brand:'Summit Select', category:'vape', price:52, thc:22, cbd:0, shelf:'V3', in_stock:true,
       score_sleep:0.08, score_relax:0.35, score_focus:0.48, score_social:0.75, score_relief:0.14, score_beginner:0.22,
-      talking_points:'High limonene content equals elevated mood and social energy. Vape format is discreet and fast â perfect for events where they need a quick refresh.' },
+      talking_points:'High limonene content equals elevated mood and social energy. Vape format is discreet and fast \u2014 perfect for events where they need a quick refresh.' },
     { id:'d13', name:'Mimosa', brand:'Canopy Co', category:'flower', price:48, thc:22, cbd:0, shelf:'D4', in_stock:true,
       score_sleep:0.10, score_relax:0.42, score_focus:0.50, score_social:0.72, score_relief:0.16, score_beginner:0.28,
-      talking_points:'Great daytime, social-setting strain. The citrus-dominant terpene profile creates a bubbly, uplifted feeling. Popular choice for Weekend activities and gatherings.' },
+      talking_points:'Great daytime, social-setting strain. The citrus-dominant terpene profile creates a bubbly, uplifted feeling. Popular choice for weekend activities and gatherings.' },
     // Relief
     { id:'d14', name:'ACDC', brand:'Remedy Farms', category:'flower', price:50, thc:2, cbd:14, shelf:'R1', in_stock:true,
       score_sleep:0.38, score_relax:0.60, score_focus:0.30, score_social:0.20, score_relief:0.88, score_beginner:0.72,
@@ -945,7 +950,7 @@ const DEMO_PRODUCTS = [
       talking_points:'The 1:2 THC:CBD ratio delivers functional pain relief while still allowing full clarity. Excellent for chronic pain customers who need to stay sharp during the day.' },
     { id:'d16', name:'Relief Topical', brand:'Bloom Select', category:'topical', price:35, thc:0, cbd:500, shelf:'T1', in_stock:true,
       score_sleep:0.10, score_relax:0.30, score_focus:0.10, score_social:0.05, score_relief:0.76, score_beginner:0.80,
-      talking_points:'Targets specific areas directly. No psychoactive effect whatsoever â apply directly to joints, muscles, or areas of tension. Works in 15â20 minutes. Great add-on for any pain customer.' },
+      talking_points:'Targets specific areas directly. No psychoactive effect whatsoever \u2014 apply directly to joints, muscles, or areas of tension. Works in 15\u201320 minutes. Great add-on for any pain customer.' },
     // Beginner / Balanced
     { id:'d17', name:'Harlequin 1:1', brand:'Remedy Farms', category:'tincture', price:40, thc:5, cbd:5, shelf:'T2', in_stock:true,
       score_sleep:0.42, score_relax:0.62, score_focus:0.38, score_social:0.30, score_relief:0.58, score_beginner:0.84,
@@ -955,7 +960,7 @@ const DEMO_PRODUCTS = [
       talking_points:'Low dose, balanced edible for first-timers. Take half a piece, wait 90 minutes before deciding if they want more. The balanced ratio makes overconsumption very unlikely.' },
     { id:'d19', name:'Northern Lights Low-Dose', brand:'Emerald Fields', category:'preroll', price:22, thc:12, cbd:2, shelf:'P1', in_stock:true,
       score_sleep:0.55, score_relax:0.50, score_focus:0.28, score_social:0.32, score_relief:0.35, score_beginner:0.75,
-      talking_points:'Low THC, pre-measured dose â perfect for someone trying flower for the first time. Take one or two puffs and wait 10 minutes before deciding if they want more.' }
+      talking_points:'Low THC, pre-measured dose \u2014 perfect for someone trying flower for the first time. Take one or two puffs and wait 10 minutes before deciding if they want more.' }
 ];
 </script>
 </body>
