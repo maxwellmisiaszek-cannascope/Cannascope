@@ -617,10 +617,16 @@
         .sub-header { background: #FFFFFF !important; }
 
         
-        /* ── SUB-HEADER ALIGNMENT: matches 660px content column ── */
-        .sub-header {
-            padding-left: max(28px, calc(50% - 330px)) !important;
-            padding-right: max(28px, calc(50% - 330px)) !important;
+        /* SUB-HEADER ALIGNMENT: inner wrapper matches 660px content column */
+        .sub-header { padding: 0 !important; }
+        .sub-header-inner {
+            max-width: 660px !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+            padding: 10px 28px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
         }
 
         </style>
@@ -824,10 +830,12 @@
 <!-- == SCREEN 2: OPTIONAL FILTERS ==================== -->
 <div id="screenFilters" class="screen">
     <div class="sub-header">
-        <button class="btn-back" onclick="goToEffect()">← Back</button>
-        <span class="intent-tag" id="selectedEffectBadge">Sleep</span>
-        <div class="sub-header-spacer"></div>
-        <button class="btn-primary" onclick="findProducts()">Show Matches</button>
+        <div class="sub-header-inner">
+          <button class="btn-back" onclick="goToEffect()">← Back</button>
+          <span class="intent-tag" id="selectedEffectBadge">Sleep</span>
+          <div class="sub-header-spacer"></div>
+          <button class="btn-primary" onclick="findProducts()">Show Matches</button>
+        </div>
     </div>
     <div class="filter-body">
         <p class="filter-intro">All filters are optional — skip any that weren't mentioned by the customer</p>
