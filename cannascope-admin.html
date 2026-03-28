@@ -56,7 +56,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);min-height:10
 
 /* TABS */
 .tabs-bar{display:flex;padding:20px 24px 0;border-bottom:1px solid var(--border)}
-.tab-btn{padding:10px 16px;font-size:13px;font-weight:500;color:var(--txt2);background:transparent;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:6px;font-family:var(--font)}
+.tab-btn{font-size:13px;font-weight:500;color:var(--txt2);background:transparent;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:6px;font-family:var(--font);padding:10px 16px}
 .tab-btn:hover{color:var(--txt)}
 .tab-btn.active{color:var(--txt);border-bottom-color:var(--green)}
 .t-badge{background:var(--surface-el);color:var(--txt2);padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600}
@@ -184,7 +184,7 @@ tr:hover .row-acts{opacity:1}
 .rank-item:hover{background:var(--surface-hover)}
 .rank-num{font-size:11px;color:var(--txt3);font-family:var(--mono);width:16px;flex-shrink:0}
 .rank-info{flex:1;min-width:0}
-.rank-name{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-name{font-size:13px;font-weight:500;color:var(--txt);white-space:nowraw;overflow:hidden;text-overflow:ellipsis}
 .rank-sub{font-size:11px;color:var(--txt3)}
 
 /* ACTION CENTER */
@@ -254,7 +254,7 @@ tr:hover .row-acts{opacity:1}
 .demo-banner{background:rgba(59,130,246,.08);border-bottom:1px solid rgba(59,130,246,.15);padding:6px 24px;font-size:12px;color:var(--blue);display:none;align-items:center;gap:8px}
 .demo-banner.visible{display:flex}
 
-@media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1100px){.kpi-stripxgrid-template-columns:repeat(3,1fr)}}
 @media(max-width:768px){.kpi-strip{grid-template-columns:repeat(2,1fr)};.pad{padding:16px};.header{padding:0 16px}}
 </style>
 </head>
@@ -418,40 +418,40 @@ tr:hover .row-acts{opacity:1}
 <div id="toast"></div>
 
 <script>
-// ââ CONFIG ââââââââââââââââââââââââââââââââââââââââ
+// -- CONFIG ----------------------------------------
 const SURL='https://nrcvpwyvxmplwvjrdoua.supabase.co';
 const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
 const sb=supabase.createClient(SURL,SKEY);
 const LS_KEY='cs_inventory_v2';
 const LS_ORG='cs_org_name';
 
-// ââ STATE ââââââââââââââââââââââââââââââââââââââââ
+// -- STATE -----------------------------------------
 let products=[],sortCol='name',sortDir='asc',delTarget=null,anlDone=false,useDB=false;
 
-// ââ SEED DATA âââââââââââââââââââââââââââââââââââââ
+// -- SEED DATA -------------------------------------
 const SEED=[
-  {id:'d1',name:'Blue Dream',brand:'Green Valley Farms',category:'flower',effect:'relax',thc:22,cbd:0.5,price:38,shelf:'Top Shelf',in_stock:true,push:true,talking_points:"A legendary sativa-dominant hybrid delivering balanced full-body relaxation with gentle cerebral lift. Sweet berry aroma with hints of vanilla. Excellent for daytime consumers who want relief without heavy sedation. Recommend for stress, mild pain, and new customers seeking a crowd-pleaser.",manager_note:'Best seller â always keep stocked.'},
+  {id:'d1',name:'Blue Dream',brand:'Green Valley Farms',category:'flower',effect:'relax',thc:22,cbd:0.5,price:38,shelf:'Top Shelf',in_stock:true,push:true,talking_points:"A legendary sativa-dominant hybrid delivering balanced full-body relaxation with gentle cerebral lift. Sweet berry aroma with hints of vanilla. Excellent for daytime consumers who want relief without heavy sedation. Recommend for stress, mild pain, and new customers seeking a crowd-pleaser.",manager_note:'Best seller  -  always keep stocked.'},
   {id:'d2',name:'Granddaddy Purple',brand:'Purple Mountain',category:'flower',effect:'sleep',thc:24,cbd:0,price:42,shelf:'Top Shelf',in_stock:true,push:false,talking_points:"A classic indica combining Big Bud and Purple Urkle. Delivers complex grape and berry flavors with a powerfully relaxing, sedative body effect. Ideal for evening use, chronic pain, and insomnia. One of our most consistent sleep strains.",manager_note:''},
   {id:'d3',name:'Durban Poison',brand:'African Genetics',category:'flower',effect:'focus',thc:20,cbd:0,price:36,shelf:'Mid Shelf',in_stock:true,push:false,talking_points:"Pure sativa from South Africa with an uplifting, energizing effect. Great for staying productive, creative, and alert throughout the day. Earthy-sweet pine aroma. Best for morning sessions and customers who need to stay functional.",manager_note:'Great for creative customers.'},
-  {id:'d4',name:'Wedding Cake',brand:'Cookies',category:'flower',effect:'relax',thc:28,cbd:0,price:52,shelf:'Top Shelf',in_stock:true,push:true,talking_points:"Rich, tangy flavor with earthy pepper undertones. This potent hybrid delivers deep relaxation and euphoria. High THC â recommend for experienced consumers. Perfect for end-of-day unwinding and social settings.",manager_note:'Premium SKU â high margin.'},
-  {id:'d5',name:'Sour Diesel Vape',brand:'PAX Era',category:'vape',e',effect:'social',thc:82,cbd:0,price:58,shelf:'',in_stock:true,push:false,talking_points:"Classic Sour D in a convenient vape format. Delivers fast-acting cerebral energy and mood lift. Perfect for social situations. Discreet, easy to dose, and very consistent. Onset in under 5 minutes.",manager_note:''},
-  {id:'d6',name:'Blueberry Kush Cart',brand:'Jetty',category:'vape',effect:'sleep',thc:88,cbd:0,price:65,shelf:'',in_stock:false,push:false,talking_points:"Rich blueberry flavor with a deeply relaxing body effect. Best used in the evening. Fast onset, long-lasting calm. High potency â advise customers to start with one or two puffs.",manager_note:'Reorder pending â expected next week.'},
-  {id:'d7',name:'Watermelon Gummies 10mg',brand:'Wyld',category:'edible',effect:'relax',thc:10,cbd:0,price:22,shelf:'',in_stock:true,push:false,talking_points:"10mg THC per gummy with a delicious watermelon flavor. Light, consistent, and very beginner-friendly. Onset 45-90 minutes â always remind customers to wait before taking more. 5 gummies per pack, 50mg total.",manager_note:''},
+  {id:'d4',name:'Wedding Cake',brand:'Cookies',category:'flower',effect:'relax',thc:28,cbd:0,price:52,shelf:'Top Shelf',in_stock:true,push:true,talking_points:"Rich, tangy flavor with earthy pepper undertones. This potent hybrid delivers deep relaxation and euphoria. High THC  -  recommend for experienced consumers. Perfect for end-of-day unwinding and social settings.",manager_note:'Premium SKU  -  high margin.'},
+  {id:'d5',name:'Sour Diesel Vape',brand:'PAX Era',category:'vape',effect:'social',thc:82,cbd:0,price:58,shelf:'',in_stock:true,push:false,talking_points:"Classic Sour D in a convenient vape format. Delivers fast-acting cerebral energy and mood lift. Perfect for social situations. Discreet, easy to dose, and very consistent. Onset in under 5 minutes.",manager_note:''},
+  {id:'d6',name:'Blueberry Kush Cart',brand:'Jetty',category:'vape',effect:'sleep',thc:88,cbd:0,price:65,shelf:'',in_stock:false,push:false,talking_points:"Rich blueberry flavor with a deeply relaxing body effect. Best used in the evening. Fast onset, long-lasting calm. High potency  -  advise customers to start with one or two puffs.",manager_note:'Reorder pending  -  expected next week.'},
+  {id:'d7',name:'Watermelon Gummies 10mg',brand:'Wyld',category:'edible',effect:'relax',thc:10,cbd:0,price:22,shelf:'',in_stock:true,push:false,talking_points:"10mg THC per gummy with a delicious watermelon flavor. Light, consistent, and very beginner-friendly. Onset 45-90 minutes  -  always remind customers to wait before taking more. 5 gummies per pack, 50mg total.",manager_note:''},
   {id:'d8',name:'1:1 Sleep Tincture',brand:'Papa & Barkley',category:'tincture',effect:'sleep',thc:15,cbd:15,price:68,shelf:'',in_stock:true,push:true,talking_points:"Balanced 1:1 THC:CBD formula designed for sleep and relaxation without heavy psychoactive effects. Place under tongue for faster absorption. Ideal for customers with anxiety, insomnia, or those new to THC who want CBD to moderate the effect.",manager_note:'Strong performer in evening sales.'},
   {id:'d9',name:'OG Kush Pre-Roll',brand:'Lowell Herb',category:'preroll',effect:'relief',thc:24,cbd:0,price:16,shelf:'',in_stock:true,push:false,talking_points:"Pre-ground OG Kush in a clean, hand-rolled cone. Earthy, woody, pine-forward flavor. Body-heavy effect ideal for pain and tension relief. Great grab-and-go option for customers who know what they want.",manager_note:''},
-  {id:'d10',name:'Gorilla Glue #4',brand:'High Voltage',category:'flower',effect:'relief',thc:29,cbd:0,price:48,shelf:'Top Shelf',in_stock:true,push:false,talking_points:"One of the strongest flower SKUs in the catalog. Heavy-hitting hybrid with pungent chocolate and diesel notes. Full-body sedation â excellent for chronic pain and severe insomnia. Not recommended for beginners or daytime use.",manager_note:''},
+  {id:'d10',name:'Gorilla Glue #4',brand:'High Voltage',category:'flower',effect:'relief',thc:29,cbd:0,price:48,shelf:'Top Shelf',in_stock:true,push:false,talking_points:"One of the strongest flower SKUs in the catalog. Heavy-hitting hybrid with pungent chocolate and diesel notes. Full-body sedation  -  excellent for chronic pain and severe insomnia. Not recommended for beginners or daytime use.",manager_note:''},
   {id:'d11',name:'Pineapple Express',brand:'House Brand',category:'flower',effect:'social',thc:19,cbd:0,price:32,shelf:'Value Shelf',in_stock:true,push:false,talking_points:'',manager_note:''},
-  {id:'d12',name:'Lemon Haze Wax',brand:'710 Labs',category:'concentrate',effect:'focus',thc:72,cbd:0,price:72,shelf:'',in_stock:false,push:false,talking_points:"Premium live resin wax with bright citrus terpenes and a clear-headed energetic effect. For experienced concentrate consumers only. Dab rig or e-nail recommended. Exceptional terpene quality.",manager_note:''},
+  {id:'d12',name:'Lemon Haze Wax',brand:'710 Labs',category:'concentrate',effect:'focus',thc:72,cbd:0,price:72,shelf:'',in_stock:false,push:false,talking_points:"Premium live resin wax with bright citrus terpenes and a clear-headed energetic effect. For experienced concentrate consumers only. Dab rig or enail recommended. Exceptional terpene quality.",manager_note:''},
   {id:'d13',name:'CBD Relief Drops',brand:"Charlotte's Web",category:'tincture',effect:'beginner',thc:0,cbd:30,price:45,shelf:'',in_stock:true,push:true,talking_points:"THC-free, broad-spectrum CBD oil. Perfect for customers seeking wellness benefits without any psychoactive effects. Anti-inflammatory, anxiety-reducing, and non-intoxicating. Excellent first product for CBD-curious customers.",manager_note:'Push to first-time CBD customers.'},
-  {id:'d14',name:'Northern Lights',brand:'Cookies',category:'flower',effect:'sleep',thc:21,cbd:0.5,price:40,shelf:'Mid Shelf',in_stock:true,push:false,talking_points:"A classic pure indica with earthy pine and sweet notes. Delivers a deeply relaxing, sedative body stone. The definitive sleep strain â recommend for insomnia and chronic pain customers. Predictable, reliable, consistent.",manager_note:''},
+  {id:'d14',name:'Northern Lights',brand:'Cookies',category:'flower',effect:'sleep',thc:21,cbd:0.5,price:40,shelf:'Mid Shelf',in_stock:true,push:false,talking_points:"A classic pure indica with earthy pine and sweet notes. Delivers a deeply relaxing, sedative body stone. The definitive sleep strain  -  recommend for insomnia and chronic pain customers. Predictable, reliable, consistent.",manager_note:''},
   {id:'d15',name:'Green Crack',brand:'African Genetics',category:'flower',effect:'focus',thc:18,cbd:0,price:34,shelf:'Value Shelf',in_stock:false,push:false,talking_points:'',manager_note:'Expecting restock next week.'},
 ];
 
-// ââ STORAGE HELPERS âââââââââââââââââââââââââââââââ
+// -- STORAGE HELPERS -------------------------------
 function lsLoad(){try{const s=localStorage.getItem(LS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
 function lsSave(){try{localStorage.setItem(LS_KEY,JSON.stringify(products));}catch(e){}}
 
-// ââ INIT ââââââââââââââââââââââââââââââââââââââââââ
+// -- INIT ------------------------------------------
 async function init(){
   // Try Supabase auth
   try{
@@ -473,7 +473,7 @@ async function init(){
       return;
     }
   }catch(e){}
-  // No session â demo / local mode
+  // No session  -  demo / local mode
   const orgName=localStorage.getItem(LS_ORG)||'Demo Store';
   document.getElementById('orgName').textContent=orgName;
   showDemoBanner();
@@ -518,7 +518,7 @@ function resetDemo(){
   lsSave();renderAll();showToast('Demo data restored');
 }
 
-// ââ KPIs ââââââââââââââââââââââââââââââââââââââââââ
+// -- KPIs ------------------------------------------
 function renderKPIs(){
   const t=products.length;
   if(!t){['kpiTotal','kpiRate','kpiCov','kpiMiss','kpiPush','kpiReady'].forEach(id=>set(id,'0'));set('kpiRateMeta','of catalog available');set('kpiCovMeta','products ready');document.getElementById('anlBadge').textContent='';return;}
@@ -542,7 +542,7 @@ function renderKPIs(){
 function set(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
 function setC(id,v,cls){const el=document.getElementById(id);if(el){el.textContent=v;el.className='kpi-val '+(cls||'');}}
 
-// ââ INSIGHTS ââââââââââââââââââââââââââââââââââââââ
+// -- INSIGHTS --------------------------------------
 function renderInsights(){
   const t=products.length;if(!t){document.getElementById('insBar').style.display='none';return;}
   const ins=products.filter(p=>p.in_stock).length;
@@ -560,7 +560,7 @@ function renderInsights(){
   bar.style.display=chips.length?'flex':'none';
 }
 
-// ââ TABLE âââââââââââââââââââââââââââââââââââââââââ
+// -- TABLE -----------------------------------------
 function renderTable(){
   const q=v('searchQ').toLowerCase(),fe=v('fxEff'),fc=v('fxCat'),fs=v('fxStock'),fsc=v('fxScript');
   let rows=products.filter(p=>{
@@ -613,14 +613,14 @@ function renderTable(){
 }
 function v(id){return document.getElementById(id)?.value||''}
 
-// ââ SORT ââââââââââââââââââââââââââââââââââââââââââ
+// -- SORT ------------------------------------------
 function sortBy(col){
   if(sortCol===col)sortDir=sortDir==='asc'?'desc':'asc';
   else{sortCol=col;sortDir='asc';}
   renderTable();
 }
 
-// ââ STOCK / PUSH ââââââââââââââââââââââââââââââââââ
+// -- STOCK / PUSH ----------------------------------
 async function toggleStock(id){
   const p=products.find(x=>x.id===id);if(!p)return;
   p.in_stock=!p.in_stock;
@@ -644,15 +644,15 @@ function saveNote(id,txt){
   lsSave();
 }
 
-// ââ SCRIPT VIEW âââââââââââââââââââââââââââââââââââ
+// -- SCRIPT VIEW -----------------------------------
 function viewScript(id){
   const p=products.find(x=>x.id===id);if(!p)return;
-  document.getElementById('scriptModalTitle').textContent=p.name+' â Talking Points';
+  document.getElementById('scriptModalTitle').textContent=p.name+'  -  Talking Points';
   document.getElementById('scriptTxt').textContent=p.talking_points||'(No script)';
   openM('scriptModal');
 }
 
-// ââ EDIT ââââââââââââââââââââââââââââââââââââââââââ
+// -- EDIT ------------------------------------------
 function openEdit(id){
   const p=products.find(x=>x.id===id);if(!p)return;
   document.getElementById('eId').value=p.id;
@@ -701,7 +701,7 @@ async function saveEdit(){
   closeM('editModal');renderAll();anlDone=false;showToast('Product updated');
 }
 
-// ââ ADD âââââââââââââââââââââââââââââââââââââââââââ
+// -- ADD -------------------------------------------
 function openAdd(){
   ['aN','aB','aThc','aCbd','aPr','aSh','aTp','aMn'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('aC').value='flower';
@@ -741,7 +741,7 @@ async function saveAdd(){
   closeM('addModal');renderAll();anlDone=false;showToast(xe(prod.name)+' added');
 }
 
-// ââ DELETE ââââââââââââââââââââââââââââââââââââââââ
+// -- DELETE ----------------------------------------
 function openDel(id){
   const p=products.find(x=>x.id===id);if(!p)return;
   delTarget=id;document.getElementById('delName').textContent=p.name;openM('delModal');
@@ -760,7 +760,7 @@ async function confirmDel(){
   closeM('delModal');renderAll();anlDone=false;showToast('Product removed');
 }
 
-// ââ AUTO SCRIPTS ââââââââââââââââââââââââââââââââââ
+// -- AUTO SCRIPTS ----------------------------------
 async function autoScripts(){
   const miss=products.filter(p=>!p.talking_points?.trim());
   if(!miss.length){showToast('All products already have scripts');return;}
@@ -783,7 +783,7 @@ function buildScript(p){
   return `${cl} from ${p.brand||'the brand'} is ${el}.${tn} delivers a consistent experience for most consumers${sn}${p.manager_note?'\n\nManager note: '+p.manager_note:''}`;
 }
 
-// ââ EXPORT ââââââââââââââââââââââââââââââââââââââââ
+// -- EXPORT ----------------------------------------
 function exportCSV(){
   if(!products.length){showToast('No products to export');return;}
   const h=['Name','Brand','Category','Effect','THC %','CBD %','Price','Shelf','In Stock','Has Script','Push This Week','Manager Note'];
@@ -796,7 +796,7 @@ function exportCSV(){
   showToast('Exported '+products.length+' products');
 }
 
-// ââ TABS ââââââââââââââââââââââââââââââââââââââââââ
+// -- TABS ------------------------------------------
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-pane').forEach(c=>c.classList.remove('active'));
@@ -805,7 +805,7 @@ function switchTab(tab){
   if(tab==='anl'&&!anlDone){renderAnalytics();anlDone=true;}
 }
 
-// ââ ANALYTICS âââââââââââââââââââââââââââââââââââââ
+// -- ANALYTICS -------------------------------------
 function renderAnalytics(){
   const t=products.length;
   if(!t){
@@ -903,19 +903,19 @@ function renderAnalytics(){
   </div>`;
 }
 
-// ââ MODALS ââââââââââââââââââââââââââââââââââââââââ
+// -- MODALS ----------------------------------------
 function openM(id){document.getElementById(id).classList.add('open')}
 function closeM(id){document.getElementById(id).classList.remove('open')}
 document.querySelectorAll('.modal-ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-ov.open').forEach(o=>o.classList.remove('open'));});
 
-// ââ SIGN OUT ââââââââââââââââââââââââââââââââââââââ
+// -- SIGN OUT --------------------------------------
 async function signOut(){
   if(useDB){try{await sb.auth.signOut();}catch(e){}}
   window.location.href='cannascope-login.html';
 }
 
-// ââ UTILS âââââââââââââââââââââââââââââââââââââââââ
+// -- UTILS -----------------------------------------
 function xe(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
 
