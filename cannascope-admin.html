@@ -128,6 +128,17 @@ table.ptbl tbody tr:hover{background:var(--surface-hover)}
 .push-tog.on{background:var(--green-d);border-color:var(--green)}
 .push-tog.on::after{left:16px;background:var(--green)}
 
+/* ROW HIGHLIGHT */
+tr.row-push>td{background:rgba(34,197,94,.04)!important}
+tr.row-oos>td{background:rgba(239,68,68,.04)!important}
+tr.row-miss>td{background:rgba(245,158,11,.03)!important}
+tr.row-push:hover>td{background:rgba(34,197,94,.08)!important}
+tr.row-oos:hover>td{background:rgba(239,68,68,.07)!important}
+
+/* NOTE CELL */
+.note-cell{font-size:12px;color:var(--txt3);max-width:140px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;outline:none;border-radius:3px;min-height:20px}
+.note-cell:focus{outline:1px solid rgba(34,197,94,.35);background:rgba(34,197,94,.04);padding:0 4px}
+
 /* ROW ACTIONS */
 .row-acts{display:flex;gap:4px;opacity:0;transition:opacity .15s}
 tr:hover .row-acts{opacity:1}
@@ -232,9 +243,16 @@ tr:hover .row-acts{opacity:1}
 .f-ta{resize:vertical;min-height:80px}
 .f-sel{appearance:none;cursor:pointer}
 
+/* STOCK TOGGLE ROW */
+.stock-tog{display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;font-weight:500;padding:2px 7px;border-radius:4px;border:none;background:transparent;font-family:var(--font);transition:all .15s}
+
 /* TOAST */
 #toast{position:fixed;bottom:24px;right:24px;background:var(--surface-el);border:1px solid var(--border);color:var(--txt);padding:10px 16px;border-radius:var(--r);font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
 #toast.show{opacity:1;transform:translateY(0)}
+
+/* DEMO MODE BANNER */
+.demo-banner{background:rgba(59,130,246,.08);border-bottom:1px solid rgba(59,130,246,.15);padding:6px 24px;font-size:12px;color:var(--blue);display:none;align-items:center;gap:8px}
+.demo-banner.visible{display:flex}
 
 @media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:768px){.kpi-strip{grid-template-columns:repeat(2,1fr)};.pad{padding:16px};.header{padding:0 16px}}
@@ -258,6 +276,13 @@ tr:hover .row-acts{opacity:1}
     <button class="hbtn ghost" onclick="signOut()">Sign Out</button>
   </div>
 </header>
+
+<!-- DEMO BANNER -->
+<div class="demo-banner" id="demoBanner">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  Demo mode &mdash; changes saved locally in your browser. Data persists across refreshes.
+  <button class="hbtn" style="padding:2px 10px;font-size:11px;margin-left:auto" onclick="resetDemo()">Reset to demo data</button>
+</div>
 
 <!-- PAGE HEADER -->
 <div class="pg-head">
@@ -306,7 +331,7 @@ tr:hover .row-acts{opacity:1}
     <button class="hbtn primary" onclick="openAdd()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product</button>
   </div>
   <div class="tbl-wrap">
-    <div class="tbl-top"><span class="tbl-count" id="tblCount">Loading...</span></div>
+    <div class="tbl-top"><span class="tbl-count" id="tblCount"></span></div>
     <table class="ptbl">
       <thead><tr>
         <th onclick="sortBy('name')">Product</th>
@@ -320,7 +345,7 @@ tr:hover .row-acts{opacity:1}
         <th>Manager Note</th>
         <th style="width:80px"></th>
       </tr></thead>
-      <tbody id="ptbody"><tr><td colspan="10"><div class="empty"><h3>Loading inventory...</h3></div></td></tr></tbody>
+      <tbody id="ptbody"></tbody>
     </table>
   </div>
 </div>
@@ -333,7 +358,7 @@ tr:hover .row-acts{opacity:1}
   <div class="modal">
     <div class="modal-hd"><span class="modal-title">Add Product</span><button class="modal-x" onclick="closeM('addModal')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-bd"><div class="fg">
-      <div class="f-grp"><label class="f-lbl">Name</label><input class="f-inp" id="aN" placeholder="e.g. Blue Dream"></div>
+      <div class="f-grp"><label class="f-lbl">Name *</label><input class="f-inp" id="aN" placeholder="e.g. Blue Dream"></div>
       <div class="f-grp"><label class="f-lbl">Brand</label><input class="f-inp" id="aB" placeholder="e.g. Jeeter"></div>
       <div class="f-grp"><label class="f-lbl">Category</label><select class="f-sel" id="aC"><option value="flower">Flower</option><option value="vape">Vape</option><option value="edible">Edible</option><option value="concentrate">Concentrate</option><option value="tincture">Tincture</option><option value="topical">Topical</option><option value="preroll">Preroll</option></select></div>
       <div class="f-grp"><label class="f-lbl">Effect</label><select class="f-sel" id="aE"><option value="sleep">Sleep</option><option value="relax">Relax</option><option value="focus">Focus</option><option value="social">Social</option><option value="relief">Relief</option><option value="beginner">Beginner</option></select></div>
@@ -364,7 +389,11 @@ tr:hover .row-acts{opacity:1}
       <div class="f-grp full"><label class="f-lbl">Talking Points / Script</label><textarea class="f-ta" id="eTp"></textarea></div>
       <div class="f-grp full"><label class="f-lbl">Manager Note</label><input class="f-inp" id="eMn"></div>
     </div></div>
-    <div class="modal-ft"><button class="hbtn ghost" onclick="closeM('editModal')">Cancel</button><button class="hbtn primary" onclick="saveEdit()">Save Changes</button></div>
+    <div class="modal-ft">
+      <button class="hbtn ghost" onclick="closeM('editModal')">Cancel</button>
+      <button class="hbtn" style="background:var(--red-d);color:var(--red);border-color:rgba(239,68,68,.2);margin-right:auto" onclick="openDelFromEdit()">Delete</button>
+      <button class="hbtn primary" onclick="saveEdit()">Save Changes</button>
+    </div>
   </div>
 </div>
 
@@ -380,7 +409,7 @@ tr:hover .row-acts{opacity:1}
 <!-- SCRIPT MODAL -->
 <div class="modal-ov" id="scriptModal">
   <div class="modal">
-    <div class="modal-hd"><span class="modal-title">Talking Points</span><button class="modal-x" onclick="closeM('scriptModal')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-hd"><span class="modal-title" id="scriptModalTitle">Talking Points</span><button class="modal-x" onclick="closeM('scriptModal')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-bd"><p id="scriptTxt" style="font-size:13px;line-height:1.8;color:var(--txt2);white-space:pre-wrap"></p></div>
     <div class="modal-ft"><button class="hbtn primary" onclick="closeM('scriptModal')">Done</button></div>
   </div>
@@ -389,35 +418,115 @@ tr:hover .row-acts{opacity:1}
 <div id="toast"></div>
 
 <script>
+// -- CONFIG ----------------------------------------
 const SURL='https://nrcvpwyvxmplwvjrdoua.supabase.co';
 const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
 const sb=supabase.createClient(SURL,SKEY);
+const LS_KEY='cs_inventory_v2';
+const LS_ORG='cs_org_name';
 
-let products=[],sortCol='name',sortDir='asc',delTarget=null,anlDone=false;
+// -- STATE -----------------------------------------
+let products=[],sortCol='name',sortDir='asc',delTarget=null,anlDone=false,useDB=false;
 
-// ── INIT ──────────────────────────────────────────
+// -- SEED DATA -------------------------------------
+const SEED=[
+  {id:'d1',name:'Blue Dream',brand:'Green Valley Farms',category:'flower',effect:'relax',thc:22,cbd:0.5,price:38,shelf:'Top Shelf',in_stock:true,push:true,talking_points:"A legendary sativa-dominant hybrid delivering balanced full-body relaxation with gentle cerebral lift. Sweet berry aroma with hints of vanilla. Excellent for daytime consumers who want relief without heavy sedation. Recommend for stress, mild pain, and new customers seeking a crowd-pleaser.",manager_note:'Best seller  -  always keep stocked.'},
+  {id:'d2',name:'Granddaddy Purple',brand:'Purple Mountain',category:'flower',effect:'sleep',thc:24,cbd:0,price:42,shelf:'Top Shelf',in_stock:true,push:false,talking_points:"A classic indica combining Big Bud and Purple Urkle. Delivers complex grape and berry flavors with a powerfully relaxing, sedative body effect. Ideal for evening use, chronic pain, and insomnia. One of our most consistent sleep strains.",manager_note:''},
+  {id:'d3',name:'Durban Poison',brand:'African Genetics',category:'flower',effect:'focus',thc:20,cbd:0,price:36,shelf:'Mid Shelf',in_stock:true,push:false,talking_points:"Pure sativa from South Africa with an uplifting, energizing effect. Great for staying productive, creative, and alert throughout the day. Earthy-sweet pine aroma. Best for morning sessions and customers who need to stay functional.",manager_note:'Great for creative customers.'},
+  {id:'d4',name:'Wedding Cake',brand:'Cookies',category:'flower',effect:'relax',thc:28,cbd:0,price:52,shelf:'Top Shelf',in_stock:true,push:true,talking_points:"Rich, tangy flavor with earthy pepper undertones. This potent hybrid delivers deep relaxation and euphoria. High THC  -  recommend for experienced consumers. Perfect for end-of-day unwinding and social settings.",manager_note:'Premium SKU  -  high margin.'},
+  {id:'d5',name:'Sour Diesel Vape',brand:'PAX Era',category:'vape',effect:'social',thc:82,cbd:0,price:58,shelf:'',in_stock:true,push:false,talking_points:"Classic Sour D in a convenient vape format. Delivers fast-acting cerebral energy and mood lift. Perfect for social situations. Discreet, easy to dose, and very consistent. Onset in under 5 minutes.",manager_note:''},
+  {id:'d6',name:'Blueberry Kush Cart',brand:'Jetty',category:'vape',effect:'sleep',thc:88,cbd:0,price:65,shelf:'',in_stock:false,push:false,talking_points:"Rich blueberry flavor with a deeply relaxing body effect. Best used in the evening. Fast onset, long-lasting calm. High potency  -  advise customers to start with one or two puffs.",manager_note:'Reorder pending  -  expected next week.'},
+  {id:'d7',name:'Watermelon Gummies 10mg',brand:'Wyld',category:'edible',effect:'relax',thc:10,cbd:0,price:22,shelf:'',in_stock:true,push:false,talking_points:"10mg THC per gummy with a delicious watermelon flavor. Light, consistent, and very beginner-friendly. Onset 45-90 minutes  -  always remind customers to wait before taking more. 5 gummies per pack, 50mg total.",manager_note:''},
+  {id:'d8',name:'1:1 Sleep Tincture',brand:'Papa & Barkley',category:'tincture',effect:'sleep',thc:15,cbd:15,price:68,shelf:'',in_stock:true,push:true,talking_points:"Balanced 1:1 THC:CBD formula designed for sleep and relaxation without heavy psychoactive effects. Place under tongue for faster absorption. Ideal for customers with anxiety, insomnia, or those new to THC who want CBD to moderate the effect.",manager_note:'Strong performer in evening sales.'},
+  {id:'d9',name:'OG Kush Pre-Roll',brand:'Lowell Herb',category:'preroll',effect:'relief',thc:24,cbd:0,price:16,shelf:'',in_stock:true,push:false,talking_points:"Pre-ground OG Kush in a clean, hand-rolled cone. Earthy, woody, pine-forward flavor. Body-heavy effect ideal for pain and tension relief. Great grab-and-go option for customers who know what they want.",manager_note:''},
+  {id:'d10',name:'Gorilla Glue #4',brand:'High Voltage',category:'flower',effect:'relief',thc:29,cbd:0,price:48,shelf:'Top Shelf',in_stock:true,push:false,talking_points:"One of the strongest flower SKUs in the catalog. Heavy-hitting hybrid with pungent chocolate and diesel notes. Full-body sedation  -  excellent for chronic pain and severe insomnia. Not recommended for beginners or daytime use.",manager_note:''},
+  {id:'d11',name:'Pineapple Express',brand:'House Brand',category:'flower',effect:'social',thc:19,cbd:0,price:32,shelf:'Value Shelf',in_stock:true,push:false,talking_points:'',manager_note:''},
+  {id:'d12',name:'Lemon Haze Wax',brand:'710 Labs',category:'concentrate',effect:'focus',thc:72,cbd:0,price:72,shelf:'',in_stock:false,push:false,talking_points:"Premium live resin wax with bright citrus terpenes and a clear-headed energetic effect. For experienced concentrate consumers only. Dab rig or e-nail recommended. Exceptional terpene quality.",manager_note:''},
+  {id:'d13',name:'CBD Relief Drops',brand:"Charlotte's Web",category:'tincture',effect:'beginner',thc:0,cbd:30,price:45,shelf:'',in_stock:true,push:true,talking_points:"THC-free, broad-spectrum CBD oil. Perfect for customers seeking wellness benefits without any psychoactive effects. Anti-inflammatory, anxiety-reducing, and non-intoxicating. Excellent first product for CBD-curious customers.",manager_note:'Push to first-time CBD customers.'},
+  {id:'d14',name:'Northern Lights',brand:'Cookies',category:'flower',effect:'sleep',thc:21,cbd:0.5,price:40,shelf:'Mid Shelf',in_stock:true,push:false,talking_points:"A classic pure indica with earthy pine and sweet notes. Delivers a deeply relaxing, sedative body stone. The definitive sleep strain  -  recommend for insomnia and chronic pain customers. Predictable, reliable, consistent.",manager_note:''},
+  {id:'d15',name:'Green Crack',brand:'African Genetics',category:'flower',effect:'focus',thc:18,cbd:0,price:34,shelf:'Value Shelf',in_stock:false,push:false,talking_points:'',manager_note:'Expecting restock next week.'},
+];
+
+// -- STORAGE HELPERS -------------------------------
+function lsLoad(){try{const s=localStorage.getItem(LS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+function lsSave(){try{localStorage.setItem(LS_KEY,JSON.stringify(products));}catch(e){}}
+
+// -- INIT ------------------------------------------
 async function init(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(!session){window.location.href='cannascope-login.html';return;}
-  const {data:prof}=await sb.from('user_profiles').select('org_name').eq('id',session.user.id).single();
-  if(prof?.org_name)document.getElementById('orgName').textContent=prof.org_name;
-  await loadProducts();
+  // Try Supabase auth
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(session){
+      useDB=true;
+      // Get org name
+      try{
+        const {data:prof}=await sb.from('user_profiles').select('org_name,organization_id').eq('id',session.user.id).single();
+        if(prof?.org_name){
+          document.getElementById('orgName').textContent=prof.org_name;
+          localStorage.setItem(LS_ORG,prof.org_name);
+        } else if(prof?.organization_id){
+          const {data:org}=await sb.from('organizations').select('name').eq('id',prof.organization_id).single();
+          if(org?.name){document.getElementById('orgName').textContent=org.name;localStorage.setItem(LS_ORG,org.name);}
+        }
+      }catch(e){}
+      await loadFromDB();
+      return;
+    }
+  }catch(e){}
+  // No session  -  demo / local mode
+  const orgName=localStorage.getItem(LS_ORG)||'Demo Store';
+  document.getElementById('orgName').textContent=orgName;
+  showDemoBanner();
+  loadLocalProducts();
 }
 
-// ── PRODUCTS ──────────────────────────────────────
-async function loadProducts(){
+async function loadFromDB(){
   const {data,error}=await sb.from('products').select('*').order('name');
-  if(error){showToast('Error loading products');return;}
-  products=data||[];
-  renderKPIs();renderTable();renderInsights();
+  if(error||!data){
+    showToast('Using local data');
+    useDB=false;
+    showDemoBanner();
+    loadLocalProducts();
+    return;
+  }
+  // Map DB field `push` (was `push_this_week` in old code)
+  products=(data||[]).map(p=>({...p,push:p.push??p.push_this_week??false}));
+  lsSave();
+  renderAll();
 }
 
+function loadLocalProducts(){
+  const stored=lsLoad();
+  products=stored?stored:JSON.parse(JSON.stringify(SEED));
+  if(!stored)lsSave();
+  renderAll();
+}
+
+function renderAll(){
+  renderKPIs();
+  renderTable();
+  renderInsights();
+  if(anlDone){anlDone=false;}
+}
+
+function showDemoBanner(){document.getElementById('demoBanner').classList.add('visible');}
+
+function resetDemo(){
+  if(!confirm('Reset to demo data? All local changes will be lost.'))return;
+  localStorage.removeItem(LS_KEY);
+  products=JSON.parse(JSON.stringify(SEED));
+  lsSave();renderAll();showToast('Demo data restored');
+}
+
+// -- KPIs ------------------------------------------
 function renderKPIs(){
-  const t=products.length,ins=products.filter(p=>p.in_stock).length;
-  const scr=products.filter(p=>p.talking_points?.trim()).length;
-  const miss=t-scr,push=products.filter(p=>p.push_this_week).length;
-  const rate=t?Math.round(ins/t*100):0;
-  const cov=t?Math.round(scr/t*100):0;
+  const t=products.length;
+  if(!t){['kpiTotal','kpiRate','kpiCov','kpiMiss','kpiPush','kpiReady'].forEach(id=>set(id,'0'));set('kpiRateMeta','of catalog available');set('kpiCovMeta','products ready');document.getElementById('anlBadge').textContent='';return;}
+  const ins=products.filter(p=>p.in_stock).length;
+  const scr=products.filter(p=>!!(p.talking_points?.trim())).length;
+  const miss=t-scr,push=products.filter(p=>p.push).length;
+  const rate=Math.round(ins/t*100);
+  const cov=Math.round(scr/t*100);
   const ready=Math.round(rate*.4+cov*.6);
   const c=v=>v>=70?'g':v>=50?'a':'r';
   set('kpiTotal',t);
@@ -430,27 +539,28 @@ function renderKPIs(){
   if(miss>0){badge.textContent=miss+' gaps';badge.className='t-badge alert';}
   else{badge.textContent='';badge.className='t-badge';}
 }
+function set(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function setC(id,v,cls){const el=document.getElementById(id);if(el){el.textContent=v;el.className='kpi-val '+(cls||'');}}
 
-function set(id,v){document.getElementById(id).textContent=v}
-function setC(id,v,cls){const el=document.getElementById(id);el.textContent=v;el.className='kpi-val '+(cls||'')}
-
+// -- INSIGHTS --------------------------------------
 function renderInsights(){
-  const t=products.length,ins=products.filter(p=>p.in_stock).length;
-  const miss=products.filter(p=>!p.talking_points?.trim()).length;
+  const t=products.length;if(!t){document.getElementById('insBar').style.display='none';return;}
+  const ins=products.filter(p=>p.in_stock).length;
+  const miss=products.filter(p=>!(p.talking_points?.trim())).length;
   const out=t-ins;
   const effs=['sleep','relax','focus','social','relief','beginner'];
   const hasEff=new Set(products.filter(p=>p.in_stock).map(p=>p.effect));
   const noEff=effs.filter(e=>!hasEff.has(e));
   const chips=[];
-  if(miss>0)chips.push(`<span class="chip chip-a">\u26a1 ${miss} missing script${miss!==1?'s':''}</span>`);
-  if(out>0)chips.push(`<span class="chip chip-r">\u26a0 ${out} out of stock</span>`);
-  if(noEff.length>0)chips.push(`<span class="chip chip-b">\u25b3 No stock for: ${noEff.join(', ')}</span>`);
+  if(miss>0)chips.push('<span class="chip chip-a">&#9889; '+miss+' missing script'+(miss!==1?'s':'')+'</span>');
+  if(out>0)chips.push('<span class="chip chip-r">&#9888; '+out+' out of stock</span>');
+  if(noEff.length>0)chips.push('<span class="chip chip-b">&#9651; No stock for: '+noEff.join(', ')+'</span>');
   const bar=document.getElementById('insBar');
   document.getElementById('insChips').innerHTML=chips.join('');
   bar.style.display=chips.length?'flex':'none';
 }
 
-// ── TABLE ─────────────────────────────────────────
+// -- TABLE -----------------------------------------
 function renderTable(){
   const q=v('searchQ').toLowerCase(),fe=v('fxEff'),fc=v('fxCat'),fs=v('fxStock'),fsc=v('fxScript');
   let rows=products.filter(p=>{
@@ -468,68 +578,81 @@ function renderTable(){
     if(typeof va==='string')va=va.toLowerCase();if(typeof vb==='string')vb=vb.toLowerCase();
     return sortDir==='asc'?(va<vb?-1:va>vb?1:0):(va<vb?1:va>vb?-1:0);
   });
-  document.getElementById('tblCount').textContent=rows.length+' product'+(rows.length!==1?'s':'');
+  const tblCount=document.getElementById('tblCount');
+  tblCount.textContent=rows.length+' product'+(rows.length!==1?'s':'');
   const tbody=document.getElementById('ptbody');
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><h3>No products match</h3><p>Try adjusting your filters</p></div></td></tr>';return;}
+  if(!rows.length){
+    const filtered=q||fe||fc||fs||fsc;
+    tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><h3>'+(filtered?'No products match':'Catalog is empty')+'</h3><p>'+(filtered?'Try adjusting your filters':'Start by adding your first product')+'</p>'+(filtered?'':`<button class="hbtn primary" style="margin-top:16px" onclick="openAdd()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product</button>`)+'</div></td></tr>';
+    return;
+  }
   tbody.innerHTML=rows.map(p=>{
     const hs=!!(p.talking_points?.trim());
-    const thc=p.thc?p.thc+'%':'&#8212;';
+    const thc=p.thc!=null?p.thc+'%':'&#8212;';
     const cbd=p.cbd?' / '+p.cbd+'%':'';
-    const pr=p.price?'$'+Number(p.price).toFixed(2):'&#8212;';
-    const mn=p.manager_note||'';
-    return `<tr>
+    const pr=p.price!=null?'$'+Number(p.price).toFixed(2):'&#8212;';
+    const mn=xe(p.manager_note||'');
+    const rowCls=[p.push?'row-push':'',...(!p.in_stock?['row-oos']:[]),...(!hs&&p.in_stock?['row-miss']:[])].filter(Boolean).join(' ');
+    return `<tr data-id="${p.id}" class="${rowCls}">
       <td><div class="p-name">${xe(p.name||'')}</div><div class="p-brand">${xe(p.brand||'')}</div></td>
       <td><span class="badge cat-${p.category||'flower'}">${p.category||''}</span></td>
       <td><span class="mono">${thc}${cbd}</span></td>
       <td><span class="mono">${pr}</span></td>
       <td><span class="badge eff-${p.effect||'relax'}">${p.effect||''}</span></td>
-      <td>${hs?`<span class="badge bg" style="cursor:pointer" onclick="viewScript('${p.id}')"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Ready</span>`:`<span class="badge ba" style="cursor:pointer" onclick="openEdit('${p.id}')"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Missing</span>`}</td>
+      <td>${hs?`<span class="badge bg" style="cursor:pointer" title="View script" onclick="viewScript('${p.id}')"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Ready</span>`:`<span class="badge ba" style="cursor:pointer" title="Add script" onclick="openEdit('${p.id}')"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Missing</span>`}</td>
       <td>${p.in_stock?'<span class="badge bg">In Stock</span>':'<span class="badge br">Out of Stock</span>'}</td>
-      <td><div class="push-tog${p.push_this_week?' on':''}" onclick="togglePush('${p.id}')" title="Push this week"></div></td>
-      <td><span style="font-size:12px;color:var(--txt3);max-width:130px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${xe(mn)}">${xe(mn)||'<span style="opacity:.4">&#8212;</span>'}</span></td>
+      <td><div class="push-tog${p.push?' on':''}" onclick="togglePush('${p.id}')" title="${p.push?'Remove from push':'Add to push this week'}"></div></td>
+      <td><span class="note-cell" contenteditable="true" onblur="saveNote('${p.id}',this.textContent.trim())" title="${mn||'Click to add note'}">${mn||'<span style="opacity:.3">&#8212;</span>'}</span></td>
       <td><div class="row-acts">
         <button class="row-btn" onclick="openEdit('${p.id}')" title="Edit"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-        <button class="row-btn" onclick="toggleStock('${p.id}')" title="Toggle stock"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg></button>
-        <button class="row-btn del" onclick="openDel('${p.id}')" title="Delete"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+        <button class="row-btn" onclick="toggleStock('${p.id}')" title="${p.in_stock?'Mark out of stock':'Mark in stock'}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg></button>
+        <button class="row-btn del" onclick="openDel('${p.id}')" title="Remove"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
       </div></td>
     </tr>`;
   }).join('');
 }
-
 function v(id){return document.getElementById(id)?.value||''}
 
-// ── SORT ──────────────────────────────────────────
+// -- SORT ------------------------------------------
 function sortBy(col){
   if(sortCol===col)sortDir=sortDir==='asc'?'desc':'asc';
   else{sortCol=col;sortDir='asc';}
   renderTable();
 }
 
-// ── STOCK / PUSH ──────────────────────────────────
+// -- STOCK / PUSH ----------------------------------
 async function toggleStock(id){
   const p=products.find(x=>x.id===id);if(!p)return;
-  const {error}=await sb.from('products').update({in_stock:!p.in_stock}).eq('id',id);
-  if(error){showToast('Error');return;}
-  p.in_stock=!p.in_stock;renderKPIs();renderTable();renderInsights();
+  p.in_stock=!p.in_stock;
+  if(useDB){try{await sb.from('products').update({in_stock:p.in_stock}).eq('id',id);}catch(e){}}
+  lsSave();renderAll();
   showToast(p.in_stock?'Marked in stock':'Marked out of stock');
 }
 
 async function togglePush(id){
   const p=products.find(x=>x.id===id);if(!p)return;
-  const nv=!p.push_this_week;
-  await sb.from('products').update({push_this_week:nv}).eq('id',id);
-  p.push_this_week=nv;renderKPIs();renderTable();
-  showToast(nv?'Added to Push This Week':'Removed from push list');
+  p.push=!p.push;
+  if(useDB){try{await sb.from('products').update({push:p.push}).eq('id',id);}catch(e){}}
+  lsSave();renderKPIs();renderTable();anlDone=false;
+  showToast(p.push?'Added to Push This Week':'Removed from push list');
 }
 
-// ── SCRIPT VIEW ───────────────────────────────────
+function saveNote(id,txt){
+  const p=products.find(x=>x.id===id);if(!p||p.manager_note===txt)return;
+  p.manager_note=txt;
+  if(useDB){try{sb.from('products').update({manager_note:txt}).eq('id',id);}catch(e){}}
+  lsSave();
+}
+
+// -- SCRIPT VIEW -----------------------------------
 function viewScript(id){
   const p=products.find(x=>x.id===id);if(!p)return;
+  document.getElementById('scriptModalTitle').textContent=p.name+'  -  Talking Points';
   document.getElementById('scriptTxt').textContent=p.talking_points||'(No script)';
   openM('scriptModal');
 }
 
-// ── EDIT ──────────────────────────────────────────
+// -- EDIT ------------------------------------------
 function openEdit(id){
   const p=products.find(x=>x.id===id);if(!p)return;
   document.getElementById('eId').value=p.id;
@@ -537,39 +660,88 @@ function openEdit(id){
   document.getElementById('eB').value=p.brand||'';
   document.getElementById('eC').value=p.category||'flower';
   document.getElementById('eE').value=p.effect||'relax';
-  document.getElementById('eThc').value=p.thc||'';
-  document.getElementById('eCbd').value=p.cbd||'';
-  document.getElementById('ePr').value=p.price||'';
+  document.getElementById('eThc').value=p.thc!=null?p.thc:'';
+  document.getElementById('eCbd').value=p.cbd!=null?p.cbd:'';
+  document.getElementById('ePr').value=p.price!=null?p.price:'';
   document.getElementById('eSh').value=p.shelf||'';
   document.getElementById('eTp').value=p.talking_points||'';
   document.getElementById('eMn').value=p.manager_note||'';
   openM('editModal');
 }
 
-async function saveEdit(){
+function openDelFromEdit(){
   const id=document.getElementById('eId').value;
-  const u={name:document.getElementById('eN').value,brand:document.getElementById('eB').value,category:document.getElementById('eC').value,effect:document.getElementById('eE').value,thc:parseFloat(document.getElementById('eThc').value)||null,cbd:parseFloat(document.getElementById('eCbd').value)||null,price:parseFloat(document.getElementById('ePr').value)||null,shelf:document.getElementById('eSh').value,talking_points:document.getElementById('eTp').value,manager_note:document.getElementById('eMn').value};
-  const {error}=await sb.from('products').update(u).eq('id',id);
-  if(error){showToast('Error saving');return;}
-  Object.assign(products.find(p=>p.id===id)||{},u);
-  closeM('editModal');renderKPIs();renderTable();renderInsights();showToast('Product updated');
+  closeM('editModal');
+  openDel(id);
 }
 
-// ── ADD ───────────────────────────────────────────
+async function saveEdit(){
+  const id=document.getElementById('eId').value;
+  const u={
+    name:document.getElementById('eN').value.trim(),
+    brand:document.getElementById('eB').value,
+    category:document.getElementById('eC').value,
+    effect:document.getElementById('eE').value,
+    thc:parseFloat(document.getElementById('eThc').value)||null,
+    cbd:parseFloat(document.getElementById('eCbd').value)||null,
+    price:parseFloat(document.getElementById('ePr').value)||null,
+    shelf:document.getElementById('eSh').value,
+    talking_points:document.getElementById('eTp').value,
+    manager_note:document.getElementById('eMn').value
+  };
+  if(!u.name){showToast('Name required');return;}
+  if(useDB){
+    try{
+      const {error}=await sb.from('products').update(u).eq('id',id);
+      if(error){showToast('Error saving');return;}
+    }catch(e){showToast('Error saving');return;}
+  }
+  Object.assign(products.find(p=>p.id===id)||{},u);
+  lsSave();
+  closeM('editModal');renderAll();anlDone=false;showToast('Product updated');
+}
+
+// -- ADD -------------------------------------------
 function openAdd(){
   ['aN','aB','aThc','aCbd','aPr','aSh','aTp','aMn'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('aC').value='flower';
+  document.getElementById('aE').value='relax';
   openM('addModal');
+  setTimeout(()=>document.getElementById('aN').focus(),100);
 }
 
 async function saveAdd(){
-  const prod={name:document.getElementById('aN').value,brand:document.getElementById('aB').value,category:document.getElementById('aC').value,effect:document.getElementById('aE').value,thc:parseFloat(document.getElementById('aThc').value)||null,cbd:parseFloat(document.getElementById('aCbd').value)||null,price:parseFloat(document.getElementById('aPr').value)||null,shelf:document.getElementById('aSh').value,talking_points:document.getElementById('aTp').value,manager_note:document.getElementById('aMn').value,in_stock:true};
-  if(!prod.name){showToast('Name required');return;}
-  const {error}=await sb.from('products').insert([prod]);
-  if(error){showToast('Error adding product');return;}
-  closeM('addModal');await loadProducts();showToast('Product added');
+  const nm=document.getElementById('aN').value.trim();
+  if(!nm){showToast('Product name is required');document.getElementById('aN').focus();return;}
+  const prod={
+    name:nm,
+    brand:document.getElementById('aB').value,
+    category:document.getElementById('aC').value,
+    effect:document.getElementById('aE').value,
+    thc:parseFloat(document.getElementById('aThc').value)||null,
+    cbd:parseFloat(document.getElementById('aCbd').value)||null,
+    price:parseFloat(document.getElementById('aPr').value)||null,
+    shelf:document.getElementById('aSh').value,
+    talking_points:document.getElementById('aTp').value,
+    manager_note:document.getElementById('aMn').value,
+    in_stock:true,push:false
+  };
+  if(useDB){
+    try{
+      const {data,error}=await sb.from('products').insert([prod]).select().single();
+      if(error){showToast('Error adding product');return;}
+      products.push(data);
+    }catch(e){showToast('Error adding product');return;}
+  } else {
+    prod.id='local_'+Date.now();
+    prod.created_at=new Date().toISOString();
+    products.push(prod);
+  }
+  lsSave();
+  closeM('addModal');renderAll();anlDone=false;showToast(xe(prod.name)+' added');
 }
 
-// ── DELETE ────────────────────────────────────────
+// -- DELETE ----------------------------------------
 function openDel(id){
   const p=products.find(x=>x.id===id);if(!p)return;
   delTarget=id;document.getElementById('delName').textContent=p.name;openM('delModal');
@@ -577,44 +749,54 @@ function openDel(id){
 
 async function confirmDel(){
   if(!delTarget)return;
-  const {error}=await sb.from('products').delete().eq('id',delTarget);
-  if(error){showToast('Error');return;}
-  products=products.filter(p=>p.id!==delTarget);delTarget=null;
-  closeM('delModal');renderKPIs();renderTable();renderInsights();showToast('Product removed');
+  if(useDB){
+    try{
+      const {error}=await sb.from('products').delete().eq('id',delTarget);
+      if(error){showToast('Error removing');return;}
+    }catch(e){showToast('Error removing');return;}
+  }
+  products=products.filter(p=>p.id!==delTarget);
+  lsSave();delTarget=null;
+  closeM('delModal');renderAll();anlDone=false;showToast('Product removed');
 }
 
-// ── SCRIPTS ───────────────────────────────────────
+// -- AUTO SCRIPTS ----------------------------------
 async function autoScripts(){
   const miss=products.filter(p=>!p.talking_points?.trim());
-  if(!miss.length){showToast('All products have scripts!');return;}
-  showToast('Generating scripts for '+miss.length+' products...');
+  if(!miss.length){showToast('All products already have scripts');return;}
+  showToast('Generating '+miss.length+' script'+(miss.length!==1?'s':'')+'...');
   for(const p of miss){
-    const s=buildScript(p);
-    await sb.from('products').update({talking_points:s}).eq('id',p.id);
-    p.talking_points=s;
+    p.talking_points=buildScript(p);
+    if(useDB){try{await sb.from('products').update({talking_points:p.talking_points}).eq('id',p.id);}catch(e){}}
   }
-  renderKPIs();renderTable();renderInsights();showToast('Scripts generated');anlDone=false;
+  lsSave();renderAll();anlDone=false;
+  setTimeout(()=>showToast('Scripts generated for '+miss.length+' product'+(miss.length!==1?'s':'')),600);
 }
 
 function buildScript(p){
   const em={sleep:'ideal for winding down and restful sleep',relax:'perfect for stress relief and relaxation',focus:'great for staying sharp and productive',social:'a social, uplifting experience',relief:'effective for managing discomfort and tension',beginner:'a gentle, approachable option for new consumers'};
   const cm={flower:'This flower',vape:'This vape cartridge',edible:'This edible',concentrate:'This concentrate',tincture:'This tincture',topical:'This topical',preroll:'This pre-roll'};
-  const cl=cm[p.category]||'This product';const el=em[p.effect]||'a well-rounded choice';
+  const cl=cm[p.category]||'This product';
+  const el=em[p.effect]||'a well-rounded choice';
   const tn=p.thc?' At '+p.thc+'% THC'+(p.cbd?' and '+p.cbd+'% CBD':'')+', it':' It';
   const sn=p.shelf?' from our '+p.shelf+'.':'.';
-  return `${cl} from ${p.brand||'the brand'} is ${el}.${tn} delivers a balanced experience for most consumers${sn}${p.manager_note?'\n\nManager note: '+p.manager_note:''}`;
+  return `${cl} from ${p.brand||'the brand'} is ${el}.${tn} delivers a consistent experience for most consumers${sn}${p.manager_note?'\n\nManager note: '+p.manager_note:''}`;
 }
 
-// ── EXPORT ────────────────────────────────────────
+// -- EXPORT ----------------------------------------
 function exportCSV(){
-  const h=['Name','Brand','Category','Effect','THC','CBD','Price','Shelf','In Stock','Has Script','Manager Note'];
-  const r=products.map(p=>[p.name,p.brand,p.category,p.effect,p.thc,p.cbd,p.price,p.shelf,p.in_stock?'Yes':'No',p.talking_points?'Yes':'No',p.manager_note].map(x=>'"'+String(x||'').replace(/"/g,'""')+'"'));
-  const csv=[h.join(','),...r.map(x=>x.join(','))].join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='inventory.csv';a.click();
-  showToast('Exported');
+  if(!products.length){showToast('No products to export');return;}
+  const h=['Name','Brand','Category','Effect','THC %','CBD %','Price','Shelf','In Stock','Has Script','Push This Week','Manager Note'];
+  const rows=products.map(p=>[p.name,p.brand,p.category,p.effect,p.thc,p.cbd,p.price,p.shelf,p.in_stock?'Yes':'No',p.talking_points?.trim()?'Yes':'No',p.push?'Yes':'No',p.manager_note].map(x=>'"'+String(x==null?'':x).replace(/"/g,'""')+'"'));
+  const csv=[h.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='inventory_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  showToast('Exported '+products.length+' products');
 }
 
-// ── TABS ──────────────────────────────────────────
+// -- TABS ------------------------------------------
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-pane').forEach(c=>c.classList.remove('active'));
@@ -623,56 +805,48 @@ function switchTab(tab){
   if(tab==='anl'&&!anlDone){renderAnalytics();anlDone=true;}
 }
 
-// ── ANALYTICS ─────────────────────────────────────
+// -- ANALYTICS -------------------------------------
 function renderAnalytics(){
   const t=products.length;
-  if(!t){document.getElementById('anlContent').innerHTML='<div style="text-align:center;padding:80px 20px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:16px">&#128202;</div><div style="font-size:16px;color:var(--txt2);font-weight:600;margin-bottom:8px">No data yet</div><div style="font-size:13px">Add products to see analytics.</div><button class="hbtn primary" style="margin-top:16px" onclick="switchTab(\'inv\');openAdd()">Add First Product</button></div>';return;}
-
+  if(!t){
+    document.getElementById('anlContent').innerHTML='<div style="text-align:center;padding:80px 20px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:16px">&#128202;</div><div style="font-size:16px;color:var(--txt2);font-weight:600;margin-bottom:8px">No data yet</div><div style="font-size:13px">Add products to see analytics.</div><button class="hbtn primary" style="margin-top:16px" onclick="switchTab(\'inv\');openAdd()">Add First Product</button></div>';
+    return;
+  }
   const ins=products.filter(p=>p.in_stock).length;
-  const scr=products.filter(p=>p.talking_points?.trim()).length;
-  const miss=t-scr,push=products.filter(p=>p.push_this_week);
+  const scr=products.filter(p=>!!(p.talking_points?.trim())).length;
+  const miss=t-scr;
+  const push=products.filter(p=>p.push);
   const rate=Math.round(ins/t*100),cov=Math.round(scr/t*100);
   const ready=Math.round(rate*.4+cov*.6);
   const rc=ready>=70?'#22c55e':ready>=50?'#f59e0b':'#ef4444';
-
   const effs=['sleep','relax','focus','social','relief','beginner'];
   const ecol={sleep:'#a78bfa',relax:'#4ade80',focus:'#60a5fa',social:'#fbbf24',relief:'#f87171',beginner:'#2dd4bf'};
   const cats=['flower','vape','edible','concentrate','tincture','topical','preroll'];
-
   const effCnt={};effs.forEach(e=>effCnt[e]=0);products.forEach(p=>{if(p.effect&&effCnt[p.effect]!==undefined)effCnt[p.effect]++;});
   const maxE=Math.max(...Object.values(effCnt),1);
-
   const effScr={};effs.forEach(e=>{const tot=products.filter(p=>p.effect===e).length;const s=products.filter(p=>p.effect===e&&p.talking_points?.trim()).length;effScr[e]=tot?Math.round(s/tot*100):null;});
   const catScr={};cats.forEach(c=>{const tot=products.filter(p=>p.category===c).length;const s=products.filter(p=>p.category===c&&p.talking_points?.trim()).length;catScr[c]=tot?Math.round(s/tot*100):null;});
-
   const scored=products.map(p=>({...p,sc:(p.in_stock?2:0)+(p.talking_points?.trim()?1:0)})).sort((a,b)=>b.sc-a.sc);
   const top5=scored.slice(0,5);
   const out=products.filter(p=>!p.in_stock);
-
-  // Donut
   const R=44,C=2*Math.PI*R,dash=(cov/100)*C;
   const dc=cov>=70?'#22c55e':cov>=40?'#f59e0b':'#ef4444';
-
-  // Missed opp
-  const outNoAlt=out.filter(p=>{return!products.some(x=>x.in_stock&&x.effect===p.effect&&x.id!==p.id);});
+  const outNoAlt=out.filter(p=>!products.some(x=>x.in_stock&&x.effect===p.effect&&x.id!==p.id));
   const opp=outNoAlt[0]||out[0];
-
-  // Actions
   const acts=[];
-  if(miss>0)acts.push({c:'a',ico:'&#9889;',title:`Generate scripts for ${miss} product${miss!==1?'s':''}`,desc:"Budtenders can't recommend what they can't explain",fn:"autoScripts();switchTab('inv')"});
-  if(out.length>0)acts.push({c:'r',ico:'&#128230;',title:`${out.length} product${out.length!==1?' items are':' is'} out of stock`,desc:'Review reorder priorities',fn:"switchTab('inv')"});
+  if(miss>0)acts.push({c:'a',ico:'&#9889;',title:'Generate scripts for '+miss+' product'+(miss!==1?'s':''),desc:"Budtenders can't recommend what they can't explain",fn:"autoScripts()"});
+  if(out.length>0)acts.push({c:'r',ico:'&#128230;',title:out.length+' product'+(out.length!==1?' items are':' is')+' out of stock',desc:'Review reorder priorities in inventory',fn:"document.getElementById('fxStock').value='out';switchTab('inv');renderTable()"});
   const hiMiss=products.filter(p=>p.in_stock&&!p.talking_points?.trim());
-  if(hiMiss.length>0)acts.push({c:'b',ico:'&#128221;',title:`${hiMiss.length} in-stock product${hiMiss.length!==1?'s need':' needs'} a script`,desc:'In-stock products without scripts = missed revenue',fn:"document.getElementById('fxScript').value='miss';document.getElementById('fxStock').value='in';switchTab('inv');renderTable()"});
+  if(hiMiss.length>0)acts.push({c:'b',ico:'&#128221;',title:hiMiss.length+' in-stock product'+(hiMiss.length!==1?'s need':' needs')+' a script',desc:'In-stock products without scripts = missed revenue',fn:"document.getElementById('fxScript').value='miss';document.getElementById('fxStock').value='in';switchTab('inv');renderTable()"});
   if(!push.length&&t>0)acts.push({c:'g',ico:'&#127919;',title:'Set push products for this week',desc:'Use the push toggle in Inventory to feature specific SKUs',fn:"switchTab('inv')"});
 
   document.getElementById('anlContent').innerHTML=`
   <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
     <div><div style="font-size:18px;font-weight:700">Store Analytics</div><div style="font-size:12px;color:var(--txt3);margin-top:2px">Live intelligence from your catalog of ${t} products</div></div>
   </div>
-
   <div class="a-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-bottom:16px">
     <div class="a-card">
-      <div class="a-head"><div><div class="a-title">Readiness Score</div><div class="a-sub">Composite health</div></div></div>
+      <div class="a-head"><div><div class="a-title">Readiness Score</div><div class="a-sub">Composite health metric</div></div></div>
       <div class="read-wrap">
         <div class="read-score" style="color:${rc}">${ready}</div>
         <div class="read-lbl">out of 100</div>
@@ -694,10 +868,9 @@ function renderAnalytics(){
       <div class="seg-bar"><div class="seg" style="flex:${rate};background:var(--green)"></div><div class="seg" style="flex:${100-rate};background:var(--surface-el)"></div></div>
     </div>
     <div class="a-card" style="${opp?'border-color:rgba(239,68,68,.15)':''}">
-      ${opp?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px">&#9888; Biggest Gap</div><div style="font-size:15px;font-weight:700;margin-bottom:6px">${xe(opp.name)}</div><div style="font-size:12px;color:var(--txt2);line-height:1.6;margin-bottom:10px">No in-stock alternative for <strong>${opp.effect}</strong> effect.</div><div style="display:flex;gap:6px;flex-wrap:wrap">${opp.category?`<span class="badge cat-${opp.category}">${opp.category}</span>`:''}<span class="badge eff-${opp.effect}">${opp.effect||''}</span><span class="badge br">Out of Stock</span></div>`:`<div class="a-head"><div><div class="a-title">Coverage Gap</div><div class="a-sub">Inventory blind spots</div></div></div><div style="color:var(--green);font-size:13px;margin-top:8px">&#10003; No critical gaps</div><div style="font-size:12px;color:var(--txt3);margin-top:4px">All effects have in-stock coverage.</div>`}
+      ${opp?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px">&#9888; Biggest Gap</div><div style="font-size:15px;font-weight:700;margin-bottom:6px">${xe(opp.name)}</div><div style="font-size:12px;color:var(--txt2);line-height:1.6;margin-bottom:10px">No in-stock alternative for <strong>${opp.effect}</strong> effect.</div><div style="display:flex;gap:6px;flex-wrap:wrap">${opp.category?`<span class="badge cat-${opp.category}">${opp.category}</span>`:''}<span class="badge eff-${opp.effect||''}">${opp.effect||''}</span><span class="badge br">Out of Stock</span></div>`:`<div class="a-head"><div><div class="a-title">Coverage Gap</div><div class="a-sub">Inventory blind spots</div></div></div><div style="color:var(--green);font-size:13px;margin-top:8px">&#10003; No critical gaps</div><div style="font-size:12px;color:var(--txt3);margin-top:4px">All effects have in-stock coverage.</div>`}
     </div>
   </div>
-
   <div class="a-grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
     <div class="a-card">
       <div class="a-head"><div><div class="a-title">Effect Distribution</div><div class="a-sub">Products by recommended effect</div></div></div>
@@ -708,41 +881,43 @@ function renderAnalytics(){
       <div class="rank-list">${top5.map((p,i)=>`<div class="rank-item"><span class="rank-num">${i+1}</span><div class="rank-info"><div class="rank-name">${xe(p.name)}</div><div class="rank-sub">${p.brand||''} &middot; ${p.category||''}</div></div><div style="display:flex;gap:5px;align-items:center">${p.in_stock?'<span class="badge bg" style="font-size:10px">&#10003; Stock</span>':'<span class="badge br" style="font-size:10px">Out</span>'}${p.talking_points?.trim()?'<span class="badge bg" style="font-size:10px">&#10003; Script</span>':'<span class="badge ba" style="font-size:10px">No Script</span>'}</div></div>`).join('')}</div>
     </div>
   </div>
-
   <div class="a-grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
     <div class="a-card">
       <div class="a-head"><div><div class="a-title">Script Coverage by Effect</div><div class="a-sub">Where budtenders are most prepared</div></div></div>
-      <div class="bar-chart">${effs.map(e=>{const p2=effScr[e];if(p2===null)return'';const col=p2>=70?'#22c55e':p2>=40?'#f59e0b':'#ef4444';return`<div class="bar-row"><span class="bar-lbl" style="color:${ecol[e]}">${e}</span><div class="bar-track"><div class="bar-fill" style="width:${p2}%;background:${col}"></div></div><span class="bar-val" style="color:${col}">${p2}%</span></div>`;}).filter(Boolean).join('')||'<div style="color:var(--txt3);font-size:13px">No data yet</div>'}</div>
+      <div class="bar-chart">${effs.map(e=>{const pct=effScr[e];if(pct===null)return'';const col=pct>=70?'#22c55e':pct>=40?'#f59e0b':'#ef4444';return`<div class="bar-row"><span class="bar-lbl" style="color:${ecol[e]}">${e}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div><span class="bar-val" style="color:${col}">${pct}%</span></div>`;}).filter(Boolean).join('')||'<div style="color:var(--txt3);font-size:13px">No data yet</div>'}</div>
     </div>
     <div class="a-card">
       <div class="a-head"><div><div class="a-title">Script Coverage by Category</div><div class="a-sub">Training readiness per product type</div></div></div>
-      <div class="cov-grid">${cats.map(c=>{const p2=catScr[c];if(p2===null)return'';const col=p2>=70?'#22c55e':p2>=40?'#f59e0b':'#ef4444';return`<div class="cov-cell"><div class="cov-pct" style="color:${col}">${p2}%</div><div class="cov-lbl">${c}</div></div>`;}).filter(Boolean).join('')||'<div style="grid-column:span 4;color:var(--txt3);font-size:13px;text-align:center;padding:20px">No data yet</div>'}</div>
+      <div class="cov-grid">${cats.map(c=>{const pct=catScr[c];if(pct===null)return'';const col=pct>=70?'#22c55e':pct>=40?'#f59e0b':'#ef4444';return`<div class="cov-cell"><div class="cov-pct" style="color:${col}">${pct}%</div><div class="cov-lbl">${c}</div></div>`;}).filter(Boolean).join('')||'<div style="grid-column:span 4;color:var(--txt3);font-size:13px;text-align:center;padding:20px">No data yet</div>'}</div>
     </div>
   </div>
-
   <div class="a-grid" style="grid-template-columns:1fr 1fr">
     <div class="a-card">
-      <div class="a-head"><div><div class="a-title">Manager Action Center</div><div class="a-sub">Highest-priority store improvements</div></div>${acts.length===0?'<span class="a-badge" style="background:var(--green-d);color:var(--green)">All Clear</span>':''}</div>
-      ${acts.length===0?'<div style="text-align:center;padding:20px;color:var(--txt2);font-size:13px">Your store is in great shape.</div>':'<div class="act-list">'+acts.slice(0,4).map(a=>`<div class="act-item" onclick="${a.fn||''}"><div class="act-ico ai-${a.c}">${a.ico}</div><div class="act-text"><div class="act-title">${a.title}</div><div class="act-desc">${a.desc}</div></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>`).join('')+'</div>'}
+      <div class="a-head"><div><div class="a-title">Manager Action Center</div><div class="a-sub">Highest-priority improvements</div></div>${acts.length===0?'<span class="a-badge" style="background:var(--green-d);color:var(--green)">All Clear</span>':''}</div>
+      ${acts.length===0?'<div style="text-align:center;padding:20px;color:var(--txt2);font-size:13px">&#10003; Your store is in great shape.</div>':'<div class="act-list">'+acts.slice(0,4).map(a=>`<div class="act-item" onclick="${a.fn||''}"><div class="act-ico ai-${a.c}">${a.ico}</div><div class="act-text"><div class="act-title">${a.title}</div><div class="act-desc">${a.desc}</div></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>`).join('')+'</div>'}
     </div>
     <div class="a-card">
       <div class="a-head"><div><div class="a-title">Push This Week</div><div class="a-sub">Products prioritized for recommendation</div></div><button class="hbtn" style="font-size:11px;padding:4px 10px" onclick="switchTab('inv')">Manage</button></div>
-      ${push.length===0?`<div style="text-align:center;padding:24px;color:var(--txt3);font-size:13px"><div style="font-size:32px;margin-bottom:8px">&#127919;</div>No push products set.<br><span style="color:var(--txt2)">Use the toggle in Inventory to feature SKUs.</span></div>`:`<div class="push-grid">${push.slice(0,4).map(p=>`<div class="push-card"><div class="push-card-name">${xe(p.name)}</div><div class="push-card-brand">${p.brand||''}</div><div class="push-card-meta">${p.category?`<span class="badge cat-${p.category}" style="font-size:10px">${p.category}</span>`:''}<span class="badge eff-${p.effect}" style="font-size:10px">${p.effect||''}</span></div></div>`).join('')}</div>`}
+      ${push.length===0?`<div style="text-align:center;padding:24px;color:var(--txt3);font-size:13px"><div style="font-size:32px;margin-bottom:8px">&#127919;</div>No push products set.<br><span style="color:var(--txt2)">Use the toggle in Inventory to feature SKUs.</span></div>`:`<div class="push-grid">${push.slice(0,4).map(p=>`<div class="push-card" onclick="switchTab('inv');setTimeout(()=>openEdit('${p.id}'),100)"><div class="push-card-name">${xe(p.name)}</div><div class="push-card-brand">${p.brand||''}</div><div class="push-card-meta">${p.category?`<span class="badge cat-${p.category}" style="font-size:10px">${p.category}</span>`:''}<span class="badge eff-${p.effect||''}" style="font-size:10px">${p.effect||''}</span></div></div>`).join('')}</div>`}
     </div>
   </div>`;
 }
 
-// ── MODALS ────────────────────────────────────────
+// -- MODALS ----------------------------------------
 function openM(id){document.getElementById(id).classList.add('open')}
 function closeM(id){document.getElementById(id).classList.remove('open')}
 document.querySelectorAll('.modal-ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-ov.open').forEach(o=>o.classList.remove('open'));});
 
-// ── SIGN OUT ──────────────────────────────────────
-async function signOut(){await sb.auth.signOut();window.location.href='cannascope-login.html';}
+// -- SIGN OUT --------------------------------------
+async function signOut(){
+  if(useDB){try{await sb.auth.signOut();}catch(e){}}
+  window.location.href='cannascope-login.html';
+}
 
-// ── UTILS ─────────────────────────────────────────
-function xe(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+// -- UTILS -----------------------------------------
+function xe(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
 
 init();
 </script>
