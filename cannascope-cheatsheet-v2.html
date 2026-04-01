@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cannascope — Product Finder</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --accent: #059669;
+            --accent-light: #ECFDF5;
+            --accent-border: #6EE7B7;
+            --amber: #92400E;
+            --amber-light: #FFFBEB;
+            --amber-border: #FDE68A;
+            --bg: #F9FAFB;
+            --surface: #FFFFFF;
+            --surface-2: #F3F4F6;
+            --border: #E5E7EB;
+            --border-2: #D1D5DB;
+            --text: #111827;
+            --text-2: #6B7280;
+            --text-3: #9CA3AF;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* -- HEADER ---------------------------------- */
+        .header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            height: 52px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .wordmark {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+        .wordmark-accent { color: var(--accent); }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .org-label {
+            font-size: 12px;
+            color: var(--text-2);
+            font-weight: 500;
+        }
+        .inventory-badge {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-3);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            padding: 3px 10px;
+            border-radius: 100px;
+        }
+        .inventory-badge.loaded {
+            color: var(--accent);
+            background: var(--accent-light);
+            border-color: var(--accent-border);
+        }
+
+        /* -- SCREENS --------------------------------- */
+        .screen { display: none; }
+        .screen.active { display: flex; flex-direction: column; height: calc(100vh - 52px); }
+
+        /* -- SCREEN 1: INTENT ------------------------ */
+        #screenEffect {
+            align-items: center;
+            justify-content: center;
+            padding: 28px 20px 28px;
+            overflow-y: auto;
+        }
+        .screen-eyebrow {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin-bottom: 10px;
+        }
+        .screen-heading {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .screen-sub {
+            font-size: 15px;
+            color: var(--text-2);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .intent-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 900px;
+        }
+        .intent-btn {
+            padding: 22px 18px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            text-align: left;
+            transition: border-color 0.12s, background 0.12s;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .intent-btn:hover {
+            border-color: var(--border-2);
+            background: var(--surface-2);
+        }
+        .intent-btn:active { transform: scale(0.98); }
+        .intent-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+        .intent-desc {
+            font-size: 11px;
+            color: var(--text-3);
+            line-height: 1.4;
+        }
+
+        /* -- SUB-HEADER (shared) --------------------- */
+        .sub-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: sticky;
+            top: 52px;
+            z-index: 50;
+        }
+        .btn-back {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-2);
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.12s;
+        }
+        .btn-back:hover { border-color: var(--border-2); color: var(--text); }
+        .intent-tag {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-light);
+            border: 1px solid var(--accent-border);
+            padding: 4px 12px;
+            border-radius: 100px;
+            flex-shrink: 0;
+        }
+        .sub-header-spacer { flex: 1; }
+        .btn-primary {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            background: var(--accent);
+            border: none;
+            border-radius: 7px;
+            padding: 8px 18px;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: background 0.12s;
+        }
+        .btn-primary:hover { background: #047857; }
+        .btn-primary:active { transform: scale(0.97); }
+
+        /* -- SCREEN 2: FILTERS ----------------------- */
+        #screenFilters { overflow: hidden; }
+        .filter-body {
+            padding: 14px 20px 20px;
+            max-width: 860px;
+            margin: 0 auto;
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .filter-intro {
+            font-size: 12px;
+            color: var(--text-3);
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+        .filter-group { margin-bottom: 12px; }
+        .filter-group-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin-bottom: 10px;
+        }
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .chip {
+            height: 34px;
+            padding: 0 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-2);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.12s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+        }
+        .chip:hover { border-color: var(--border-2); color: var(--text); }
+        .chip.active {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .btn-find-bottom {
+            display: block;
+            width: 100%;
+            height: 44px;
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.12s;
+        }
+        .btn-find-bottom:hover { background: #047857; }
+
+        /* -- SCREEN 3: RESULTS ----------------------- */
+        #screenResults { overflow: hidden; }
+        .results-header-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .results-title {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--text);
+        }
+        .results-subtitle {
+            font-size: 11px;
+            color: var(--text-3);
+            margin-top: 1px;
+        }
+        .btn-ghost {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-2);
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: all 0.12s;
+        }
+        .btn-ghost:hover { border-color: var(--border-2); color: var(--text); }
+
+        .results-list {
+            padding: 12px 14px 16px;
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        /* -- PRODUCT CARD ---------------------------- */
+        .prod-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .prod-card.rank-1 {
+            border-color: var(--border-2);
+            border-left: 3px solid var(--accent);
+        }
+
+        .card-top {
+            padding: 14px 16px 10px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .card-rank-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin-bottom: 4px;
+        }
+        .prod-card.rank-1 .card-rank-label { color: var(--accent); }
+        .card-name {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+        .card-price-block {
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .card-price {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+        .card-match-pct {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-3);
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+        }
+        .prod-card.rank-1 .card-match-pct { color: var(--accent); }
+
+        /* Confidence badge */
+        .conf-badge {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .conf-high   { background: #DCFCE7; color: #15803D; border: 1px solid #86EFAC; }
+        .conf-medium { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+        .conf-low    { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+
+        .card-meta {
+            padding: 0 16px 10px;
+            font-size: 12px;
+            color: var(--text-2);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .meta-sep { color: var(--border-2); }
+
+        .card-chips {
+            padding: 0 16px 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .chip-match {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-light);
+            border: 1px solid var(--accent-border);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .chip-shelf {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-3);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .card-section {
+            border-top: 1px solid var(--border);
+            padding: 10px 16px;
+        }
+        .card-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin-bottom: 5px;
+        }
+        .card-section-text {
+            font-size: 12px;
+            color: var(--text-2);
+            line-height: 1.65;
+        }
+        .card-section.is-manager {
+            background: var(--amber-light);
+            border-top-color: var(--amber-border);
+        }
+        .card-section.is-manager .card-section-label { color: var(--amber); }
+        .card-section.is-manager .card-section-text  { color: var(--amber); }
+
+        /* Penalty section */
+        .card-section.is-penalty {
+            background: #FFF7ED;
+            border-top-color: #FED7AA;
+        }
+        .card-section.is-penalty .card-section-label { color: #C2410C; }
+        .card-section.is-penalty .card-section-text  { color: #9A3412; }
+
+        /* Why This Works — terpene science highlight */
+        .card-section.card-why {
+            background: var(--accent-light);
+            border-top-color: var(--accent-border);
+        }
+        .card-section.card-why .card-section-label { color: var(--accent); }
+        .card-section.card-why .card-section-text  { color: #065F46; font-weight: 500; }
+
+        /* How to Sell It — conversational script */
+        .card-section.card-talk .card-section-label { color: #4B5563; }
+        .card-section.card-talk .card-section-text  { color: var(--text); font-size: 13px; line-height: 1.7; }
+
+        /* Debug section */
+        .card-section.is-debug {
+            background: #F8FAFC;
+            border-top-color: #E2E8F0;
+        }
+        .card-section.is-debug .card-section-label { color: #64748B; }
+        .card-section.is-debug .card-section-text  {
+            color: #475569;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 11px;
+            line-height: 1.9;
+        }
+
+        /* -- UPSELL BLOCK ---------------------------- */
+        .upsell-block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .upsell-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+        .upsell-text {
+            font-size: 12px;
+            color: var(--text-2);
+            line-height: 1.65;
+        }
+
+        /* No-match banner */
+        .no-match-banner {
+            background: #FFFBEB;
+            border: 1px solid #FDE68A;
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 12px;
+            color: #78350F;
+            line-height: 1.65;
+        }
+        .no-match-banner strong {
+            display: block;
+            font-size: 13px;
+            color: #92400E;
+            margin-bottom: 5px;
+        }
+
+        /* Debug button */
+        .btn-debug {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-3);
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: all 0.12s;
+        }
+        .btn-debug.active {
+            color: var(--accent);
+            border-color: var(--accent-border);
+            background: var(--accent-light);
+        }
+
+        /* -- STATES ---------------------------------- */
+        .empty-state, .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-3);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 380px) {
+            .intent-grid { grid-template-columns: repeat(2, 1fr); }
+            .btn-primary { font-size: 12px; padding: 7px 13px; }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           POLISH PASS — layout containment + visual refinement
+        ═══════════════════════════════════════════════════════ */
+
+        /* 1. Tighter content container */
+        .filter-body {
+            max-width: 660px !important;
+            padding: 24px 28px 32px !important;
+        }
+
+        /* 2. Sub-header */
+        .sub-header {
+            padding: 0 28px !important;
+            height: 50px !important;
+            gap: 12px !important;
+            border-bottom: 1px solid var(--border) !important;
+        }
+
+        /* 3. Back button */
+        .btn-back {
+            font-size: 12px !important;
+            padding: 5px 11px !important;
+            border-radius: 7px !important;
+            color: var(--text-2) !important;
+            border-color: var(--border-2) !important;
+            letter-spacing: 0 !important;
+        }
+        .btn-back:hover {
+            background: var(--surface-2) !important;
+            color: var(--text) !important;
+        }
+
+        /* 4. Intent tag */
+        .intent-tag {
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            padding: 5px 14px !important;
+            letter-spacing: -0.01em !important;
+            border-radius: 100px !important;
+        }
+
+        /* 5. Filter group */
+        .filter-group {
+            margin-bottom: 20px !important;
+        }
+        .filter-group:last-of-type {
+            margin-bottom: 0 !important;
+        }
+
+        /* 6. Section labels */
+        .filter-group-label {
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.09em !important;
+            text-transform: uppercase !important;
+            color: var(--text-3) !important;
+            margin-bottom: 9px !important;
+        }
+
+        /* 7. Chip row */
+        .chip-row {
+            gap: 7px !important;
+        }
+
+        /* 8. Chips */
+        .chip {
+            height: 36px !important;
+            padding: 0 16px !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            color: var(--text) !important;
+            border: 1px solid var(--border-2) !important;
+            background: var(--surface) !important;
+            cursor: pointer !important;
+            transition: border-color 0.1s, background 0.1s, color 0.1s !important;
+            letter-spacing: -0.01em !important;
+            white-space: nowrap !important;
+            line-height: 1 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+        }
+        .chip:hover {
+            border-color: #9CA3AF !important;
+            background: #FAFAFA !important;
+        }
+
+        /* 9. Chip selected */
+        .chip.active {
+            background: var(--accent-light) !important;
+            border-color: var(--accent) !important;
+            color: var(--accent) !important;
+            font-weight: 600 !important;
+            box-shadow: inset 0 0 0 1px var(--accent) !important;
+        }
+
+        /* 10. Bottom CTA */
+        .btn-find-bottom {
+            height: 48px !important;
+            border-radius: 10px !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            letter-spacing: -0.01em !important;
+            margin-top: 28px !important;
+            width: 100% !important;
+        }
+
+        /* 11. Filter intro */
+        .filter-intro {
+            margin-bottom: 22px !important;
+            padding-bottom: 18px !important;
+            border-bottom: 1px solid var(--border) !important;
+        }
+        .filter-intro h2 {
+            font-size: 15px !important;
+            font-weight: 600 !important;
+            letter-spacing: -0.02em !important;
+            color: var(--text) !important;
+            margin-bottom: 3px !important;
+        }
+        .filter-intro p {
+            font-size: 13px !important;
+            color: var(--text-2) !important;
+        }
+
+        /* 12. Sub-header button */
+        .sub-header .btn-primary {
+            font-size: 12px !important;
+            height: 34px !important;
+            padding: 0 14px !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            letter-spacing: -0.01em !important;
+        }
+
+        /* 13. Spacer */
+        .sub-header-spacer { flex: 1 !important; }
+
+        /* 14. Subtle bg */
+        body { background: #F8F9FB !important; }
+        .header { background: #FFFFFF !important; }
+        .sub-header { background: #FFFFFF !important; }
+
+        /* SUB-HEADER ALIGNMENT */
+        .sub-header { padding: 0 !important; }
+        .sub-header-inner {
+            max-width: 660px !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+            padding: 10px 28px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+        }
+
+    </style>
+<style>@media (min-width: 800px) {
+  .intent-grid { gap: 12px !important; }
+  #screenEffect { padding: 40px 60px !important; }
+  .screen-heading { margin-bottom: 10px !important; }
+}
+</style></head>
+<body>
+
+<!-- -- HEADER --------------------------------------- -->
+<div class="header">
+    <div class="wordmark">Canna<span class="wordmark-accent">scope</span></div>
+    <div class="header-right">
+        <span class="org-label" id="orgLabel">Loading…</span>
+        <span class="inventory-badge" id="productCount">—</span>
+    </div>
+</div>
+
+<!-- == SCREEN 1: CUSTOMER INTENT ====================== -->
+<div id="screenEffect" class="screen active">
+    <div class="screen-eyebrow">Instant Recommendations</div>
+    <div class="screen-heading">What is the customer looking for?</div>
+    <div class="screen-sub">Tap a goal. Get the 3 best products to recommend right now.</div>
+    <div class="intent-grid">
+        <button class="intent-btn" onclick="selectEffect('sleep')">
+            <span class="intent-name">Sleep</span>
+            <span class="intent-desc">Rest &amp; recovery</span>
+        </button>
+        <button class="intent-btn" onclick="selectEffect('relax')">
+            <span class="intent-name">Relax</span>
+            <span class="intent-desc">Unwind, decompress</span>
+        </button>
+        <button class="intent-btn" onclick="selectEffect('focus')">
+            <span class="intent-name">Focus</span>
+            <span class="intent-desc">Clarity &amp; productivity</span>
+        </button>
+        <button class="intent-btn" onclick="selectEffect('social')">
+            <span class="intent-name">Social</span>
+            <span class="intent-desc">Energy &amp; mood lift</span>
+        </button>
+        <button class="intent-btn" onclick="selectEffect('relief')">
+            <span class="intent-name">Relief</span>
+            <span class="intent-desc">Pain &amp; inflammation</span>
+        </button>
+        <button class="intent-btn" onclick="selectEffect('beginner')">
+            <span class="intent-name">Balanced</span>
+            <span class="intent-desc">First-time friendly</span>
+        </button>
+    </div>
+</div>
+
+<!-- == SCREEN 2: OPTIONAL FILTERS ==================== -->
+<div id="screenFilters" class="screen">
+    <div class="sub-header">
+        <div class="sub-header-inner">
+          <button class="btn-back" onclick="goToEffect()">← Back</button>
+          <span class="intent-tag" id="selectedEffectBadge">Sleep</span>
+          <div class="sub-header-spacer"></div>
+          <button class="btn-primary" onclick="findProducts()">Apply Filters</button>
+        </div>
+    </div>
+    <div class="filter-body">
+        <p class="filter-intro">Optional — only add filters the customer specifically mentioned</p>
+
+        <div class="filter-group">
+            <div class="filter-group-label">Format</div>
+            <div class="chip-row" id="pillsFormat">
+                <button class="chip" data-group="format" data-val="flower" onclick="togglePill(this)">Flower</button>
+                <button class="chip" data-group="format" data-val="vape" onclick="togglePill(this)">Vape</button>
+                <button class="chip" data-group="format" data-val="edible" onclick="togglePill(this)">Edible</button>
+                <button class="chip" data-group="format" data-val="concentrate" onclick="togglePill(this)">Concentrate</button>
+                <button class="chip" data-group="format" data-val="preroll" onclick="togglePill(this)">Pre-roll</button>
+                <button class="chip" data-group="format" data-val="tincture" onclick="togglePill(this)">Tincture</button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-label">Customer Experience Level</div>
+            <div class="chip-row">
+                <button class="chip" data-group="experience" data-val="new" onclick="togglePill(this)">First-Timer</button>
+                <button class="chip" data-group="experience" data-val="regular" onclick="togglePill(this)">Regular User</button>
+                <button class="chip" data-group="experience" data-val="experienced" onclick="togglePill(this)">Experienced</button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-label">THC Intensity</div>
+            <div class="chip-row" id="pillsIntensity">
+                <button class="chip" data-group="intensity" data-val="mild" onclick="togglePill(this)">Mild &lt;15% THC</button>
+                <button class="chip" data-group="intensity" data-val="moderate" onclick="togglePill(this)">Moderate 15–22%</button>
+                <button class="chip" data-group="intensity" data-val="strong" onclick="togglePill(this)">Strong 22%+</button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-label">Price Range</div>
+            <div class="chip-row" id="pillsPrice">
+                <button class="chip" data-group="price" data-val="20-30" onclick="togglePill(this)">$20–30</button>
+                <button class="chip" data-group="price" data-val="30-45" onclick="togglePill(this)">$30–45</button>
+                <button class="chip" data-group="price" data-val="45-60" onclick="togglePill(this)">$45–60</button>
+                <button class="chip" data-group="price" data-val="60+" onclick="togglePill(this)">$60+</button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-label">Onset Speed</div>
+            <div class="chip-row" id="pillsOnset">
+                <button class="chip" data-group="onset" data-val="quick" onclick="togglePill(this)">Quick (5–15 min)</button>
+                <button class="chip" data-group="onset" data-val="moderate" onclick="togglePill(this)">Standard (20–45 min)</button>
+                <button class="chip" data-group="onset" data-val="slow" onclick="togglePill(this)">Long-lasting (4–8 hr)</button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-label">Special Preferences</div>
+            <div class="chip-row">
+                <button class="chip" data-group="avoidSmoke" data-val="yes" onclick="togglePill(this)">No Smoking</button>
+                <button class="chip" data-group="wantsCbd" data-val="yes" onclick="togglePill(this)">CBD Priority</button>
+            </div>
+        </div>
+
+        <button class="btn-find-bottom" onclick="findProducts()">Show Updated Results</button>
+    </div>
+</div>
+
+<!-- == SCREEN 3: RESULTS ============================== -->
+<div id="screenResults" class="screen">
+    <div class="sub-header">
+        <div class="sub-header-inner">
+            <button class="btn-back" onclick="goToEffect()">← Back</button>
+            <div class="results-header-info">
+                <div class="results-title" id="resultsTitle">Sleep</div>
+                <div class="results-subtitle" id="filterSummary"></div>
+            </div>
+            <div class="sub-header-spacer"></div>
+            <button class="btn-debug" id="debugBtn" onclick="toggleDebug()">Debug</button>
+            <button class="btn-ghost" onclick="goToFilters()">Refine</button>
+        </div>
+    </div>
+    <div class="results-list" id="productCards">
+        <div class="loading-state">Finding best matches…</div>
+    </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
+
+const EFFECT_LABELS = {
+    sleep:'Sleep', relax:'Relax', focus:'Focus',
+    social:'Social', relief:'Relief', beginner:'Balanced'
+};
+
+const UPSELL = {
+    sleep:    'Many sleep customers also add a CBD tincture or capsule for a deeper, non-psychoactive relaxation layer.',
+    relax:    'For extra relaxation without THC, suggest a high-CBD tincture alongside their main pick.',
+    focus:    'Pair with a microdose option or 1:1 CBD:THC product for sustained clarity without the edge.',
+    social:   'Suggest a fast-onset vape alongside flower for easy, controllable top-ups during their event.',
+    relief:   'Topicals layered with a systemic product (edible or tincture) provide the best dual-action relief.',
+    beginner: 'A 1:1 CBD:THC ratio product is the ideal first experience — all the comfort, fully approachable.'
+};
+
+const ONSET_MAP = {
+    flower:'quick', vape:'quick', concentrate:'quick', preroll:'quick',
+    tincture:'moderate', sublingual:'moderate',
+    edible:'slow', capsule:'slow', patch:'slow', topical:'none'
+};
+
+const FOLLOWUP = {
+    sleep:    'Ask: Are they flexible on format, or is flower specifically preferred?',
+    relax:    'Ask: Do they prefer quick relief (vape/flower) or something longer-lasting (edible/tincture)?',
+    focus:    'Ask: Is this for daytime productivity or creative work — and how THC-sensitive are they?',
+    social:   'Ask: Looking for something to share at an event, or discreet personal use?',
+    relief:   'Ask: Physical pain, anxiety, or both? Systemic vs topical makes a big difference here.',
+    beginner: 'Ask: Have they ever tried cannabis before, even casually? That changes the recommendation significantly.'
+};
+
+// ── TERPENE → EFFECT WEIGHTS ──────────────────────────────────────────────────
+// Grounded in published cannabis terpene science.
+// Values = affinity 0.0 (no relationship) to 1.0 (strong relationship).
+const TERPENE_EFFECTS = {
+    t_myrcene:       { sleep:0.90, relax:0.70, relief:0.45, beginner:0.40, social:0.10, focus:0.10 },
+    t_linalool:      { sleep:0.85, relax:0.75, relief:0.55, beginner:0.60, social:0.15, focus:0.15 },
+    t_caryophyllene: { relief:0.90, relax:0.65, sleep:0.45, beginner:0.50, social:0.25, focus:0.20 },
+    t_limonene:      { focus:0.85, social:0.80, relax:0.45, beginner:0.40, sleep:0.05, relief:0.25 },
+    t_pinene:        { focus:0.80, social:0.45, relax:0.35, beginner:0.30, sleep:0.15, relief:0.25 },
+    t_terpinolene:   { social:0.80, focus:0.70, relax:0.40, beginner:0.30, sleep:0.15, relief:0.15 },
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let orgId = null, orgName = '', allProducts = [];
+let selectedEffect = null;
+let filters = {};
+let debugMode = false;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+(async () => {
+    const params = new URLSearchParams(location.search);
+    const key    = params.get('key');
+
+    if (key) {
+        const { data: org } = await sb.from('organizations').select('id,name').eq('share_key', key).single();
+        if (org) {
+            orgId   = org.id;
+            orgName = org.name;
+            document.getElementById('orgLabel').textContent = org.name;
+            const { data: prods } = await sb.from('products')
+                .select('*').eq('organization_id', orgId).eq('in_stock', true);
+            allProducts = (prods || []).map(normalizeProduct);
+            const el = document.getElementById('productCount');
+            el.textContent = allProducts.length + ' products';
+            el.classList.add('loaded');
+        } else {
+            useDemoMode();
+        }
+    } else {
+        useDemoMode();
+    }
+})();
+
+// Fix DB naming inconsistency: score_pain→score_relief, score_balanced→score_beginner
+function normalizeProduct(p) {
+    if (p.score_pain     != null && p.score_relief   == null) p.score_relief   = p.score_pain;
+    if (p.score_balanced != null && p.score_beginner == null) p.score_beginner = p.score_balanced;
+    return p;
+}
+
+function useDemoMode() {
+    document.getElementById('orgLabel').textContent = 'Demo Store';
+    allProducts = DEMO_PRODUCTS;
+    const el = document.getElementById('productCount');
+    el.textContent = DEMO_PRODUCTS.length + ' products';
+    el.classList.add('loaded');
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+function selectEffect(eff) {
+    selectedEffect = eff;
+    filters = {};
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    document.getElementById('selectedEffectBadge').textContent = EFFECT_LABELS[eff];
+    // Skip filters — go straight to results (speed-first UX)
+    findProducts();
+}
+
+function goToEffect()   { showScreen('screenEffect'); }
+function goToFilters()  { showScreen('screenFilters'); }
+function goToResults()  { if (selectedEffect) findProducts(); }
+
+// ── PILL TOGGLE (single-select per group, click again to deselect) ────────────
+function togglePill(btn) {
+    const group     = btn.dataset.group;
+    const wasActive = btn.classList.contains('active');
+    document.querySelectorAll(`.chip[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
+    if (wasActive) {
+        delete filters[group];
+    } else {
+        btn.classList.add('active');
+        filters[group] = btn.dataset.val;
+    }
+}
+
+// ── HARD FILTERS ──────────────────────────────────────────────────────────────
+// Products failing any hard filter are completely excluded from results.
+// Only soft scoring happens after this gate.
+function passesHardFilters(p) {
+    // 1. Out of stock
+    if (p.in_stock === false) return false;
+
+    // 2. Format (hard filter: if selected, only show products of that exact format)
+    if (filters.format) {
+        if ((p.category || '').toLowerCase() !== filters.format) return false;
+    }
+
+    // 3. No smoking (exclude combustion — flower, preroll, concentrate)
+    if (filters.avoidSmoke === 'yes') {
+        const cat = (p.category || '').toLowerCase();
+        if (['flower', 'preroll', 'concentrate'].includes(cat)) return false;
+    }
+
+    // 4. First-timer safety gate (hard exclude THC > 20 for new users)
+    if (filters.experience === 'new') {
+        const thc = parseFloat(p.thc) || 0;
+        if (thc > 20) return false;
+    }
+
+    // 5. Budget (hard exclude products outside selected price range)
+    if (filters.price) {
+        const price = parseFloat(p.price) || 0;
+        if (!priceMatches(price, filters.price)) return false;
+    }
+
+    return true;
+}
+
+function priceMatches(price, pf) {
+    return (pf === '20-30' && price >= 20 && price <= 30) ||
+           (pf === '30-45' && price >  30 && price <= 45) ||
+           (pf === '45-60' && price >  45 && price <= 60) ||
+           (pf === '60+'   && price >  60);
+}
+
+// ── SCORING ENGINE ────────────────────────────────────────────────────────────
+// Deterministic: same inputs always produce identical outputs.
+// No randomness. Every point is traceable to a specific data field.
+//
+// Score = (earned / possible) × 100, normalized to the active filter set.
+// Terpene fit (30 pts) is always computed.
+// Format/Intensity/Price/Onset only add to possible when that filter is selected.
+// Business priority (5 pts) always counts.
+// Penalties reduce earned without changing possible (tanks the percentage fairly).
+
+function hasTerpeneData(p) {
+    return Object.keys(TERPENE_EFFECTS).some(t => (parseFloat(p[t]) || 0) > 0);
+}
+
+function computeTerpeneScore(p, eff) {
+    // Weighted average: sum(terpene_amount × effect_affinity) / sum(terpene_amount)
+    // This rewards having the RIGHT terpenes in HIGH amounts, not just any terpenes.
+    let weightedSum = 0;
+    let totalWeight = 0;
+    const breakdown = [];
+
+    for (const [col, affinityMap] of Object.entries(TERPENE_EFFECTS)) {
+        const amt      = parseFloat(p[col]) || 0;
+        const affinity = affinityMap[eff]   || 0;
+        if (amt === 0) continue;
+        weightedSum += amt * affinity;
+        totalWeight += amt;
+        if (affinity >= 0.60 && amt >= 0.10) {
+            breakdown.push({ terpene: col.replace('t_', ''), amount: amt, affinity });
+        }
+    }
+
+    const score = totalWeight > 0 ? Math.min(weightedSum / totalWeight, 1.0) : 0;
+    // Sort by contribution (amount × affinity) descending — top terpene first
+    breakdown.sort((a, b) => (b.amount * b.affinity) - (a.amount * a.affinity));
+    return { score, breakdown };
+}
+
+function scoreProduct(p, eff) {
+    const reasons   = [];
+    const penalties = [];
+    let   earned    = 0;
+    let   possible  = 0;
+    const dbg       = {};
+
+    // ─ 1. TERPENE FIT (30 pts) — always scored ───────────────────────────────
+    possible += 30;
+    let terpeneEarned = 0;
+
+    if (hasTerpeneData(p)) {
+        const { score: ts, breakdown } = computeTerpeneScore(p, eff);
+        terpeneEarned = Math.round(ts * 30);
+        earned += terpeneEarned;
+        // Show top 2 contributing terpenes as human-readable reasons
+        breakdown.slice(0, 2).forEach(b => {
+            reasons.push(`${cap(b.terpene)} (${(b.amount * 100).toFixed(1)}%) → ${EFFECT_LABELS[eff].toLowerCase()}`);
+        });
+        if (breakdown.length === 0 && ts > 0.25) {
+            reasons.push(`Terpene profile has moderate ${EFFECT_LABELS[eff].toLowerCase()} affinity`);
+        }
+    } else {
+        // Fallback: use pre-labeled score_X field from database
+        const rawScore = parseFloat(p['score_' + eff]) || 0;
+        terpeneEarned = Math.round(rawScore * 26); // slightly capped (no terpene verification)
+        earned += terpeneEarned;
+        if (rawScore >= 0.5) {
+            reasons.push(`Profile rated ${Math.round(rawScore * 100)}% for ${EFFECT_LABELS[eff].toLowerCase()}`);
+        }
+    }
+    dbg.terpene = `${terpeneEarned}/30`;
+
+    // ─ 2. FORMAT (20 pts) — scored only when filter selected ─────────────────
+    // Hard filter already guarantees format match if filter is set, so always award full pts.
+    if (filters.format) {
+        possible += 20;
+        earned   += 20;
+        reasons.push(`${formatLabel(filters.format)} format matches preference`);
+        dbg.format = '20/20';
+    } else {
+        dbg.format = 'n/a';
+    }
+
+    // ─ 3. THC INTENSITY (20 pts) — scored when filter selected ───────────────
+    const thc = parseFloat(p.thc) || 0;
+    let intensityEarned = 0;
+    if (filters.intensity) {
+        possible += 20;
+        const inRange = (filters.intensity === 'mild'     && thc <  15)             ||
+                        (filters.intensity === 'moderate'  && thc >= 15 && thc <= 22) ||
+                        (filters.intensity === 'strong'    && thc >  22);
+        if (inRange) {
+            intensityEarned = 20;
+            reasons.push(`THC ${thc}% fits ${filters.intensity} preference`);
+        }
+        earned += intensityEarned;
+        dbg.intensity = `${intensityEarned}/20`;
+    } else {
+        dbg.intensity = 'n/a';
+    }
+
+    // ─ 4. PRICE (10 pts) — products passing hard filter always get full pts ──
+    if (filters.price) {
+        possible += 10;
+        earned   += 10; // price hard filter guarantees match if we're here
+        reasons.push(`$${Number(p.price || 0).toFixed(0)} fits ${filters.price.replace('+', '& up')} budget`);
+        dbg.price = '10/10';
+    } else {
+        dbg.price = 'n/a';
+    }
+
+    // ─ 5. ONSET (10 pts) — scored when filter selected ───────────────────────
+    let onsetEarned = 0;
+    if (filters.onset) {
+        possible += 10;
+        const cat   = (p.category || '').toLowerCase();
+        const onset = ONSET_MAP[cat] || 'moderate';
+        if (onset === filters.onset) {
+            onsetEarned = 10;
+            reasons.push(`${onsetLabel(filters.onset)} onset via ${formatLabel(cat)}`);
+        } else if (onset !== 'none') {
+            penalties.push(`Onset: ${formatLabel(cat)} delivers ${onsetLabel(onset)}, not ${onsetLabel(filters.onset)}`);
+        }
+        earned += onsetEarned;
+        dbg.onset = `${onsetEarned}/10`;
+    } else {
+        dbg.onset = 'n/a';
+    }
+
+    // ─ 6. INVENTORY PRIORITY (5 pts) — rewards items that need to move ─────────
+    possible += 5;
+    const note   = (p.manager_note || '').toLowerCase();
+    let bizPts = 0;
+    if (note.includes('overstock') || note.includes('over stock')) bizPts = 5;
+    else if (note.includes('push') || note.includes('move'))       bizPts = 4;
+    else if (note.includes('margin') || note.includes('promo'))    bizPts = 3;
+    else if (note.includes('brand') || note.includes('feature'))   bizPts = 2;
+    earned += bizPts;
+    dbg.business = `${bizPts}/5`;
+
+    // ── SOFT PENALTIES (reduce earned, not possible) ──────────────────────────
+    let penaltyTotal = 0;
+
+    // Elevated THC for first-timers (soft: 15-20 THC still passes hard filter but gets docked)
+    if (filters.experience === 'new' && thc > 15) {
+        const pen = Math.min(10, Math.round((thc - 15) * 1.5));
+        penaltyTotal += pen;
+        penalties.push(`THC ${thc}% is elevated for a first-time user`);
+    }
+
+    // CBD wanted but product is low/no CBD
+    const cbd = parseFloat(p.cbd) || 0;
+    if (filters.wantsCbd === 'yes') {
+        if (cbd < 1) {
+            penaltyTotal += 12;
+            penalties.push(`Low CBD content (${cbd}%) — customer wants CBD`);
+        } else {
+            earned += 5; // bonus for having CBD when customer requested it
+            reasons.push(`CBD ${cbd}% matches CBD preference`);
+        }
+    }
+
+    // Weak terpene alignment (has terpene data but it's the wrong profile)
+    if (hasTerpeneData(p) && terpeneEarned < 9) {
+        penaltyTotal += 8;
+        penalties.push(`Weak terpene alignment for ${EFFECT_LABELS[eff].toLowerCase()}`);
+    }
+
+    earned = Math.max(0, earned - penaltyTotal);
+    dbg.penalties = penaltyTotal > 0 ? `-${penaltyTotal}` : '0';
+
+    // ── FINAL SCORE ───────────────────────────────────────────────────────────
+    const pct        = possible > 0 ? Math.round((earned / possible) * 100) : 0;
+    const score      = Math.max(0, Math.min(100, pct));
+    const confidence = score >= 65 ? 'HIGH' : score >= 45 ? 'MEDIUM' : 'LOW';
+
+    return { score, confidence, reasons, penalties, earned, possible, debug: dbg };
+}
+
+// ── DIVERSITY PICKER ──────────────────────────────────────────────────────────
+// From a pool of candidates, pick 3 ensuring variety in brand and category.
+// Falls back gracefully if pool is small.
+function pickDiverseTop3(pool) {
+    if (pool.length <= 3) return pool;
+    const selected = [];
+    const usedBrands = new Set();
+    const usedCats   = new Set();
+
+    // First pass: greedily add products that bring brand/category diversity
+    for (const p of pool) {
+        if (selected.length >= 3) break;
+        const brand = (p.brand || '').toLowerCase();
+        const cat   = (p.category || '').toLowerCase();
+        const brandOk = !usedBrands.has(brand) || usedBrands.size === 0;
+        const catOk   = !usedCats.has(cat)     || usedCats.size   === 0;
+        if (selected.length === 0 || brandOk || catOk) {
+            selected.push(p);
+            usedBrands.add(brand);
+            usedCats.add(cat);
+        }
+    }
+
+    // Fill remaining slots if diversity pass didn't yield 3
+    if (selected.length < 3) {
+        for (const p of pool) {
+            if (selected.length >= 3) break;
+            if (!selected.includes(p)) selected.push(p);
+        }
+    }
+    return selected;
+}
+
+// ── ROTATION SEED ─────────────────────────────────────────────────────────────
+// Changes every 2 hours so the same 3 products don't always show at the top.
+// Deterministic within that window so results are stable during a shift.
+function getRotationSeed() {
+    const now = new Date();
+    return Math.floor((now.getFullYear() * 10000 + (now.getMonth()+1) * 100 + now.getDate()) * 12
+        + Math.floor(now.getHours() / 2));
+}
+
+// Light diversity boost: rewards products that haven't shown as frequently.
+// Uses product index in the array as a proxy (rotates which items get pushed up).
+function rotationBonus(productIndex, seed) {
+    return ((productIndex + seed) % 7 === 0) ? 4 :
+           ((productIndex + seed) % 5 === 0) ? 2 : 0;
+}
+
+// ── FIND & RENDER ─────────────────────────────────────────────────────────────
+async function findProducts() {
+    if (!selectedEffect) return;
+    const eff   = selectedEffect;
+    const label = EFFECT_LABELS[eff];
+
+    document.getElementById('resultsTitle').textContent = `Top 3 for ${label}`;
+    document.getElementById('productCards').innerHTML = '<div class="loading-state">Scoring products…</div>';
+
+    // Build human-readable filter summary
+    const parts = [];
+    if (filters.format)     parts.push(formatLabel(filters.format));
+    if (filters.experience) parts.push({ new:'First-Timer', regular:'Regular', experienced:'Experienced' }[filters.experience] || '');
+    if (filters.intensity)  parts.push(cap(filters.intensity) + ' THC');
+    if (filters.price)      parts.push('$' + filters.price.replace('+', '& up'));
+    if (filters.onset)      parts.push(onsetLabel(filters.onset));
+    if (filters.avoidSmoke === 'yes') parts.push('No Smoking');
+    if (filters.wantsCbd   === 'yes') parts.push('CBD Priority');
+    document.getElementById('filterSummary').textContent =
+        parts.length ? parts.join(' · ') : 'Updated in real-time based on inventory + fit';
+
+    showScreen('screenResults');
+
+    // Step 1: Hard filter
+    const eligible = allProducts.filter(p => passesHardFilters(p));
+
+    if (eligible.length === 0) {
+        document.getElementById('productCards').innerHTML =
+            `<div class="empty-state">
+                <strong style="font-size:14px;color:#374151;display:block;margin-bottom:8px">
+                    No products match these filters
+                </strong>
+                Try removing one filter — your current combination may be too narrow.<br><br>
+                <span style="font-size:12px;color:#9CA3AF">${xe(FOLLOWUP[eff])}</span>
+            </div>`;
+        return;
+    }
+
+    // Step 2: Score all products — terpene fit + rotation bonus for diversity
+    const seed = getRotationSeed();
+    const scored = eligible
+        .map((p, i) => {
+            const result = scoreProduct(p, eff);
+            // Add a small rotation bonus so the same 3 don't always appear
+            result.score = Math.min(100, result.score + rotationBonus(i, seed));
+            return { ...p, _result: result };
+        })
+        .sort((a, b) => b._result.score - a._result.score);
+
+    // Layer 2: from Top 10 pool, pick Top 3 with variety (no 2 of same brand if avoidable)
+    const top10   = scored.slice(0, 10);
+    const top3    = pickDiverseTop3(top10);
+    const allLow  = top3.every(p => p._result.confidence === 'LOW');
+    const rankLbls = ['Top Pick', '2nd Pick', '3rd Pick'];
+
+    let cardsHtml = '';
+
+    // Confidence gate: all-LOW → show warning banner
+    if (allLow) {
+        cardsHtml += `
+        <div class="no-match-banner">
+            <strong>No strong match for these filters</strong>
+            Showing the closest available options. Consider removing a filter to improve results.<br>
+            <span style="font-size:11px;margin-top:4px;display:block;opacity:0.8">${xe(FOLLOWUP[eff])}</span>
+        </div>`;
+    }
+
+    cardsHtml += top3.map((p, i) => renderCard(p, i, eff, rankLbls[i])).join('');
+
+    // Upsell block
+    cardsHtml += `
+    <div class="upsell-block">
+        <div class="upsell-label">Upsell Opportunity</div>
+        <div class="upsell-text">${xe(UPSELL[eff])}</div>
+    </div>`;
+
+    document.getElementById('productCards').innerHTML = cardsHtml;
+
+    // Log to Supabase (best-effort, non-blocking)
+    if (orgId) {
+        await sb.from('recommendation_events').insert({
+            organization_id: orgId,
+            effect:          eff,
+            filters:         JSON.stringify(filters),
+            product_id:      top3[0]?.id || null,
+            top_score:       top3[0]?._result.score || 0,
+            top_confidence:  top3[0]?._result.confidence || 'LOW',
+            results_count:   eligible.length
+        }).catch(() => {});
+    }
+}
+
+function renderCard(p, idx, eff, rankLabel) {
+    const result  = p._result;
+    const thc     = parseFloat(p.thc)   || 0;
+    const cbd     = parseFloat(p.cbd)   || 0;
+    const cat     = (p.category || 'flower').toLowerCase();
+    const cbdNote = cbd > 0 ? ` · CBD ${cbd}%` : '';
+
+    const confLabels = { HIGH:'Strong', MEDIUM:'Good', LOW:'Weak' };
+
+    // Match chips for visual indicators
+    const chips    = getMatchChips(p);
+    const matchHtml = chips.map(c => `<span class="chip-match">${xe(c)} ✓</span>`).join('');
+    const shelfHtml = p.shelf ? `<span class="chip-shelf">Shelf ${xe(p.shelf)}</span>` : '';
+    const chipsHtml = (matchHtml || shelfHtml) ? `<div class="card-chips">${matchHtml}${shelfHtml}</div>` : '';
+
+    // Why it works — top reason as a 1-line pitch, rest as talking points context
+    const whyText = result.reasons.slice(0, 3).join(' · ');
+    const whyHtml = whyText ? `
+    <div class="card-section card-why">
+        <div class="card-section-label">Why This Works</div>
+        <div class="card-section-text">${xe(whyText)}</div>
+    </div>` : '';
+
+    // Penalty notes
+    const penHtml = result.penalties.length ? `
+    <div class="card-section is-penalty">
+        <div class="card-section-label">Note</div>
+        <div class="card-section-text">${result.penalties.map(pe => xe(pe)).join(' · ')}</div>
+    </div>` : '';
+
+    // Talking points — shown as a conversational sell script for budtenders
+    const talkHtml = p.talking_points ? `
+    <div class="card-section card-talk">
+        <div class="card-section-label">How to Sell It</div>
+        <div class="card-section-text">${xe(p.talking_points)}</div>
+    </div>` : '';
+
+    // Manager note
+    const mgrHtml = p.manager_note ? `
+    <div class="card-section is-manager">
+        <div class="card-section-label">Manager Note</div>
+        <div class="card-section-text">${xe(p.manager_note)}</div>
+    </div>` : '';
+
+    // Debug section (visible only when debugMode is on)
+    const d = result.debug || {};
+    const debugLines = [
+        'Terpene: '   + (d.terpene   || '—'),
+        'Format: '    + (d.format    || '—'),
+        'Intensity: ' + (d.intensity || '—'),
+        'Price: '     + (d.price     || '—'),
+        'Onset: '     + (d.onset     || '—'),
+        'Business: '  + (d.business  || '—'),
+        'Penalties: ' + (d.penalties || '0'),
+        'Final: '     + result.earned + '/' + result.possible + ' = ' + result.score + '% (' + result.confidence + ')'
+    ].join('\n');
+    const debugHtml = `
+    <div class="card-section is-debug debug-section" style="display:${debugMode ? 'block' : 'none'}">
+        <div class="card-section-label">Score Breakdown</div>
+        <div class="card-section-text" style="white-space:pre">${xe(debugLines)}</div>
+    </div>`;
+
+    return `
+    <div class="prod-card${idx === 0 ? ' rank-1' : ''}">
+        <div class="card-top">
+            <div>
+                <div class="card-rank-label">${rankLabel}</div>
+                <div class="card-name">${xe(p.name)}</div>
+            </div>
+            <div class="card-price-block">
+                <div class="card-price">$${Number(p.price || 0).toFixed(0)}</div>
+                <div class="card-match-pct">
+                    ${result.score}% match
+                    <span class="conf-badge conf-${result.confidence.toLowerCase()}">${confLabels[result.confidence]}</span>
+                </div>
+            </div>
+        </div>
+        <div class="card-meta">
+            <span>${xe(p.brand || '')}</span>
+            <span class="meta-sep">·</span>
+            <span>${xe(cap(cat))}</span>
+            <span class="meta-sep">·</span>
+            <span>THC ${thc > 0 ? thc + '%' : '—'}${cbdNote}</span>
+        </div>
+        ${chipsHtml}${whyHtml}${penHtml}${talkHtml}${mgrHtml}${debugHtml}
+    </div>`;
+}
+
+// ── MATCH CHIPS (visual indicators for active filters that matched) ────────────
+function getMatchChips(p) {
+    const chips = [];
+    const thc   = parseFloat(p.thc)   || 0;
+    const cat   = (p.category || '').toLowerCase();
+
+    if (filters.format && cat === filters.format)
+        chips.push(formatLabel(filters.format));
+    if (filters.intensity) {
+        const hit = (filters.intensity === 'mild'     && thc <  15)             ||
+                    (filters.intensity === 'moderate'  && thc >= 15 && thc <= 22) ||
+                    (filters.intensity === 'strong'    && thc >  22);
+        if (hit) chips.push(cap(filters.intensity) + ' intensity');
+    }
+    if (filters.onset) {
+        const onset = ONSET_MAP[cat] || 'moderate';
+        if (onset === filters.onset) chips.push(onsetLabel(filters.onset));
+    }
+    return chips;
+}
+
+// ── DEBUG TOGGLE ──────────────────────────────────────────────────────────────
+function toggleDebug() {
+    debugMode = !debugMode;
+    const btn = document.getElementById('debugBtn');
+    if (btn) {
+        btn.classList.toggle('active', debugMode);
+        btn.textContent = debugMode ? 'Debug ✓' : 'Debug';
+    }
+    document.querySelectorAll('.debug-section').forEach(el => {
+        el.style.display = debugMode ? 'block' : 'none';
+    });
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function formatLabel(v) {
+    const m = {
+        flower:'Flower', vape:'Vape', edible:'Edible',
+        concentrate:'Concentrate', preroll:'Pre-roll',
+        tincture:'Tincture', topical:'Topical', capsule:'Capsule'
+    };
+    return m[v] || cap(v);
+}
+function onsetLabel(v) {
+    return v === 'quick' ? 'Fast onset' : v === 'slow' ? 'Long-lasting' : 'Standard onset';
+}
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+function xe(s) {
+    return String(s || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── TEST HARNESS (internal — call window.__runTests() in console) ─────────────
+window.__runTests = function() {
+    console.log('=== CANNASCOPE ENGINE TEST HARNESS ===');
+    const savedFilters = filters;
+    const savedEffect  = selectedEffect;
+    let pass = 0, fail = 0;
+
+    function assert(name, condition, details) {
+        const status = condition ? 'PASS' : 'FAIL';
+        if (condition) pass++; else fail++;
+        console.log(`[${status}] ${name}${details ? ' → ' + details : ''}`);
+    }
+
+    function run(name, eff, filterSet) {
+        filters = filterSet;
+        const eligible = allProducts.filter(p => passesHardFilters(p));
+        const scored   = eligible
+            .map(p => ({ ...p, _result: scoreProduct(p, eff) }))
+            .sort((a, b) => b._result.score - a._result.score);
+        return { top: scored[0], all: scored, eligible };
+    }
+
+    // 1. Sleep + no filters → valid result, terpene profile is sleep-optimized
+    let r = run('Sleep/no filters', 'sleep', {});
+    assert('Sleep/no filters returns results', r.top !== undefined, r.top?.name);
+    assert('Sleep/no filters score > 0', r.top && r.top._result.score > 0, r.top?._result.score + '%');
+    assert('Sleep top product has reasons', r.top && r.top._result.reasons.length > 0);
+    // Top product should have high myrcene or linalool (sleep terpenes)
+    assert('Sleep top has sleep-relevant terpenes',
+        r.top && ((parseFloat(r.top.t_myrcene)||0) >= 0.3 || (parseFloat(r.top.t_linalool)||0) >= 0.2),
+        r.top?.name + ' myrcene:' + r.top?.t_myrcene + ' linalool:' + r.top?.t_linalool);
+
+    // 2. Sleep + first-timer → no THC > 20 in results
+    r = run('Sleep/first-timer hard filter', 'sleep', { experience: 'new' });
+    const highTHCInResults = r.eligible.some(p => (parseFloat(p.thc) || 0) > 20);
+    assert('Sleep/first-timer excludes THC>20', !highTHCInResults, `${r.eligible.length} eligible products`);
+
+    // 3. Sleep + edible hard filter → only edibles
+    r = run('Sleep/edible format filter', 'sleep', { format: 'edible' });
+    const nonEdible = r.eligible.some(p => (p.category || '').toLowerCase() !== 'edible');
+    assert('Sleep/edible shows only edibles', !nonEdible, `${r.eligible.length} edibles found`);
+
+    // 4. Social + no smoking → no flower/preroll/concentrate
+    r = run('Social/no smoking filter', 'social', { avoidSmoke: 'yes' });
+    const smokeFmt = ['flower', 'preroll', 'concentrate'];
+    const smokeInResults = r.eligible.some(p => smokeFmt.includes((p.category || '').toLowerCase()));
+    assert('Social/no smoking excludes combustion', !smokeInResults, `${r.eligible.length} eligible`);
+
+    // 5. Relief + CBD priority → top product should have CBD > 0
+    r = run('Relief/CBD priority', 'relief', { wantsCbd: 'yes' });
+    assert('Relief/CBD top product has CBD', r.top && (parseFloat(r.top.cbd) || 0) > 0,
+        r.top?.name + ' CBD:' + r.top?.cbd);
+
+    // 6. Focus + vape hard filter → only vapes
+    r = run('Focus/vape filter', 'focus', { format: 'vape' });
+    const nonVape = r.eligible.some(p => (p.category || '').toLowerCase() !== 'vape');
+    assert('Focus/vape shows only vapes', !nonVape, `${r.eligible.length} vapes`);
+
+    // 7. Balanced + first-timer → no products with THC > 20
+    r = run('Balanced/first-timer', 'beginner', { experience: 'new' });
+    assert('Balanced/first-timer excludes high THC', r.eligible.every(p => (parseFloat(p.thc) || 0) <= 20));
+
+    // 8. Price hard filter → all results within budget
+    r = run('Sleep/price $20-30', 'sleep', { price: '20-30' });
+    const outOfBudget = r.eligible.some(p => {
+        const price = parseFloat(p.price) || 0;
+        return price < 20 || price > 30;
+    });
+    assert('Price $20-30 filter enforced', !outOfBudget, `${r.eligible.length} in-budget products`);
+
+    // 9. Confidence levels are valid strings
+    r = run('Confidence gate values', 'relax', {});
+    const validConf = r.all.every(p => ['HIGH','MEDIUM','LOW'].includes(p._result.confidence));
+    assert('All confidence values are valid', validConf);
+
+    // 10. Score is between 0-100 for all products
+    r = run('Score range 0-100', 'focus', {});
+    const outOfRange = r.all.some(p => p._result.score < 0 || p._result.score > 100);
+    assert('All scores in 0-100 range', !outOfRange);
+
+    // 11. DETERMINISM: same product scored twice produces identical results
+    if (allProducts.length > 0) {
+        filters = {};
+        const s1 = scoreProduct(allProducts[0], 'sleep');
+        const s2 = scoreProduct(allProducts[0], 'sleep');
+        assert('Determinism: same product, same score both runs',
+            s1.score === s2.score && s1.confidence === s2.confidence,
+            `${s1.score}% === ${s2.score}%`);
+    }
+
+    // 12. Reasons array is non-empty for products with terpene data
+    r = run('Reasons populated', 'sleep', {});
+    const withTerps = r.all.filter(p => hasTerpeneData(p));
+    if (withTerps.length > 0) {
+        assert('Products with terpene data have reasons', withTerps[0]._result.reasons.length > 0,
+            withTerps[0]._result.reasons[0]);
+    }
+
+    // 13. Focus/social top products are limonene/terpinolene dominant
+    r = run('Focus top is limonene-dominant', 'focus', {});
+    assert('Focus: top product has high limonene or terpinolene',
+        r.top && ((parseFloat(r.top.t_limonene)||0) >= 0.3 || (parseFloat(r.top.t_terpinolene)||0) >= 0.25),
+        r.top?.name + ' limonene:' + r.top?.t_limonene);
+
+    // 14. Relief top product is caryophyllene-dominant (not just manager-pushed)
+    r = run('Relief top is caryophyllene-dominant', 'relief', {});
+    assert('Relief: top product has significant caryophyllene',
+        r.top && (parseFloat(r.top.t_caryophyllene)||0) >= 0.25,
+        r.top?.name + ' caryophyllene:' + r.top?.t_caryophyllene);
+
+    // 15. Sleep + no smoking → tinctures/edibles appear (not flower)
+    r = run('Sleep/no smoking → smokefree products', 'sleep', { avoidSmoke: 'yes' });
+    assert('Sleep/no smoking: smokefree products available', r.eligible.length > 0, `${r.eligible.length} products`);
+
+    // 16. Experienced user — no hard filter on THC
+    r = run('Experienced/no THC filter', 'focus', { experience: 'experienced' });
+    const highTHCAllowed = r.eligible.some(p => (parseFloat(p.thc) || 0) > 20);
+    assert('Experienced users can see high-THC products', highTHCAllowed);
+
+    // 17. First-timer + $60+ price range (dual hard filter)
+    r = run('First-timer/expensive combo', 'beginner', { experience: 'new', price: '60+' });
+    assert('First-timer/$60+ dual filter works', r.eligible.every(p => {
+        const thc   = parseFloat(p.thc)   || 0;
+        const price = parseFloat(p.price) || 0;
+        return thc <= 20 && price > 60;
+    }) || r.eligible.length === 0);
+
+    // 18. No filters → at least 3 results (enough products in demo set)
+    r = run('Relax/no filters → 3 results', 'relax', {});
+    assert('No-filter search returns 3 or more products', r.all.length >= 3);
+
+    // 19. Penalty for CBD wanted but not present
+    filters = { wantsCbd: 'yes' };
+    const lowCbdProduct = allProducts.find(p => (parseFloat(p.cbd) || 0) < 1 && passesHardFilters(p));
+    if (lowCbdProduct) {
+        const result = scoreProduct(lowCbdProduct, 'relax');
+        assert('Penalty applied for CBD wanted but absent', result.penalties.some(pe => pe.includes('CBD')),
+            result.penalties[0]);
+    }
+
+    // 20. Format hard filter + onset scoring — edible + slow onset should match
+    r = run('Sleep/edible/slow onset', 'sleep', { format: 'edible', onset: 'slow' });
+    if (r.top) {
+        assert('Edible/slow onset → correct onset reasoning', r.top._result.reasons.some(re => re.includes('ong-last')),
+            r.top._result.reasons.join(', '));
+    }
+
+    // Restore state
+    filters        = savedFilters;
+    selectedEffect = savedEffect;
+
+    console.log(`\n=== RESULTS: ${pass} passed, ${fail} failed ===`);
+    if (fail === 0) console.log('✅ All tests passed!');
+    else console.warn(`⚠️  ${fail} test(s) failed — check output above`);
+    return { pass, fail };
+};
+
+// ── DEMO PRODUCTS ─────────────────────────────────────────────────────────────
+// All products now include terpene profile columns (t_myrcene, etc.)
+// The new engine reads these directly — score_X fields kept for backwards compat.
+const DEMO_PRODUCTS = [
+    // ── SLEEP ──────────────────────────────────────────────────────────────────
+    { id:'d1', name:'Granddaddy Purple', brand:'Royal Gardens', category:'flower',
+      price:45, thc:23, cbd:0, shelf:'B3', in_stock:true,
+      t_myrcene:0.55, t_linalool:0.30, t_caryophyllene:0.22, t_limonene:0.05, t_pinene:0.04, t_terpinolene:0.02,
+      score_sleep:0.82, score_relax:0.42, score_focus:0.10, score_social:0.12, score_relief:0.38, score_beginner:0.22,
+      manager_note:'Premium shelf — highest margin in category.',
+      talking_points:'This is our most recommended for sleep. The Myrcene terpene profile produces that heavy, settled feeling most people associate with a full night of rest. Best taken 60–90 minutes before bed.' },
+
+    { id:'d2', name:'Northern Lights', brand:'Emerald Fields', category:'flower',
+      price:40, thc:18, cbd:0, shelf:'B1', in_stock:true,
+      t_myrcene:0.52, t_linalool:0.28, t_caryophyllene:0.15, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.02,
+      score_sleep:0.74, score_relax:0.50, score_focus:0.12, score_social:0.14, score_relief:0.32, score_beginner:0.35,
+      talking_points:'Lower potency makes this ideal for THC-sensitive customers or those new to cannabis. Calming without being overwhelming — most people report waking without grogginess.' },
+
+    { id:'d3', name:'Purple Punch Gummies', brand:'Green Peak', category:'edible',
+      price:25, thc:10, cbd:0, shelf:'E2', in_stock:true,
+      t_myrcene:0.48, t_linalool:0.38, t_caryophyllene:0.12, t_limonene:0.04, t_pinene:0.02, t_terpinolene:0.01,
+      score_sleep:0.68, score_relax:0.46, score_focus:0.08, score_social:0.10, score_relief:0.28, score_beginner:0.55,
+      manager_note:'Overstock — push this batch first.',
+      talking_points:'Edible format means effects last 6–8 hours. Take it 90 minutes before bed. Linalool adds a gentle calming quality similar to lavender.' },
+
+    { id:'d4', name:'Dream Tincture', brand:'Bloom Select', category:'tincture',
+      price:38, thc:5, cbd:10, shelf:'T3', in_stock:true,
+      t_myrcene:0.28, t_linalool:0.50, t_caryophyllene:0.18, t_limonene:0.03, t_pinene:0.02, t_terpinolene:0.01,
+      score_sleep:0.71, score_relax:0.55, score_focus:0.10, score_social:0.08, score_relief:0.44, score_beginner:0.62,
+      talking_points:'The high CBD ratio calms the nervous system while the low THC eases the mind. Sublingual onset in 20–30 minutes. Great for customers who prefer not to smoke.' },
+
+    // ── RELAX ──────────────────────────────────────────────────────────────────
+    { id:'d5', name:'Blue Dream', brand:'Canopy Co', category:'flower',
+      price:42, thc:22, cbd:0, shelf:'A4', in_stock:true,
+      t_myrcene:0.32, t_limonene:0.28, t_caryophyllene:0.22, t_pinene:0.10, t_linalool:0.06, t_terpinolene:0.04,
+      score_sleep:0.38, score_relax:0.78, score_focus:0.40, score_social:0.44, score_relief:0.30, score_beginner:0.28,
+      manager_note:'Overstock — push first.',
+      talking_points:'The go-to after-work strain. Relaxes the body without sedation — you can still function normally. Very smooth and consistent.' },
+
+    { id:'d6', name:'OG Kush', brand:'Canopy Co', category:'flower',
+      price:48, thc:21, cbd:0, shelf:'A2', in_stock:true,
+      t_myrcene:0.42, t_caryophyllene:0.28, t_limonene:0.18, t_linalool:0.08, t_pinene:0.05, t_terpinolene:0.02,
+      score_sleep:0.44, score_relax:0.72, score_focus:0.22, score_social:0.28, score_relief:0.38, score_beginner:0.24,
+      manager_note:'High margin product.',
+      talking_points:'A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties — particularly good for customers carrying physical tension or stress.' },
+
+    { id:'d7', name:'Wedding Cake Vape', brand:'Summit Select', category:'vape',
+      price:55, thc:25, cbd:0, shelf:'V1', in_stock:true,
+      t_myrcene:0.28, t_limonene:0.32, t_caryophyllene:0.22, t_linalool:0.10, t_pinene:0.05, t_terpinolene:0.04,
+      score_sleep:0.30, score_relax:0.65, score_focus:0.38, score_social:0.50, score_relief:0.22, score_beginner:0.15,
+      talking_points:'Vape format means fast onset and easy dose control. One to two pulls, wait five minutes. Limonene adds a slight uplift that prevents sedation.' },
+
+    // ── FOCUS ──────────────────────────────────────────────────────────────────
+    { id:'d8', name:'Sour Diesel', brand:'Green Peak', category:'flower',
+      price:46, thc:24, cbd:0, shelf:'C3', in_stock:true,
+      t_limonene:0.52, t_pinene:0.20, t_myrcene:0.12, t_terpinolene:0.10, t_caryophyllene:0.06, t_linalool:0.02,
+      score_sleep:0.10, score_relax:0.38, score_focus:0.80, score_social:0.55, score_relief:0.18, score_beginner:0.20,
+      manager_note:'Brand promotion this week.',
+      talking_points:'Most requested for creative focus. Limonene-dominant — that citrus-forward energy sharpens thinking without causing anxiety. Works well for writing, design, or anything requiring mental engagement.' },
+
+    { id:'d9', name:'Jack Herer', brand:'Harvest Gold', category:'flower',
+      price:44, thc:19, cbd:1, shelf:'C1', in_stock:true,
+      t_terpinolene:0.42, t_pinene:0.32, t_limonene:0.18, t_myrcene:0.08, t_caryophyllene:0.05, t_linalool:0.02,
+      score_sleep:0.12, score_relax:0.42, score_focus:0.74, score_social:0.52, score_relief:0.20, score_beginner:0.32,
+      talking_points:'Legendary for clear-headed creativity. Terpinolene and pinene create a focused, alert experience without the edge of higher-THC sativas. Excellent for daytime productivity.' },
+
+    { id:'d10', name:'Green Crack Vape', brand:'Summit Select', category:'vape',
+      price:50, thc:21, cbd:0, shelf:'V2', in_stock:true,
+      t_limonene:0.48, t_terpinolene:0.30, t_pinene:0.15, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.01,
+      score_sleep:0.08, score_relax:0.30, score_focus:0.70, score_social:0.60, score_relief:0.15, score_beginner:0.18,
+      talking_points:'Fast-acting vape that delivers clean, energetic focus within minutes. Great for customers who need to stay functional and sharp throughout the day.' },
+
+    // ── SOCIAL ─────────────────────────────────────────────────────────────────
+    { id:'d11', name:'Pineapple Express', brand:'Coastal Farms', category:'flower',
+      price:43, thc:20, cbd:0, shelf:'D2', in_stock:true,
+      t_limonene:0.45, t_terpinolene:0.22, t_myrcene:0.18, t_pinene:0.10, t_caryophyllene:0.05, t_linalool:0.02,
+      score_sleep:0.15, score_relax:0.48, score_focus:0.46, score_social:0.78, score_relief:0.20, score_beginner:0.30,
+      talking_points:'Classic uplifting strain with a tropical, euphoric lift. Keeps energy levels up and conversation flowing. Very consistent and widely loved.' },
+
+    { id:'d12', name:'Tangie Vape', brand:'Summit Select', category:'vape',
+      price:52, thc:22, cbd:0, shelf:'V3', in_stock:true,
+      t_limonene:0.58, t_terpinolene:0.22, t_pinene:0.10, t_myrcene:0.06, t_caryophyllene:0.03, t_linalool:0.01,
+      score_sleep:0.08, score_relax:0.35, score_focus:0.48, score_social:0.75, score_relief:0.14, score_beginner:0.22,
+      talking_points:'High limonene content equals elevated mood and social energy. Vape format is discreet and fast — perfect for events where they need a quick refresh.' },
+
+    { id:'d13', name:'Mimosa', brand:'Canopy Co', category:'flower',
+      price:48, thc:22, cbd:0, shelf:'D4', in_stock:true,
+      t_limonene:0.52, t_terpinolene:0.20, t_pinene:0.12, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.02,
+      score_sleep:0.10, score_relax:0.42, score_focus:0.50, score_social:0.72, score_relief:0.16, score_beginner:0.28,
+      talking_points:'Great daytime, social-setting strain. The citrus-dominant terpene profile creates a bubbly, uplifted feeling. Popular choice for weekend activities and gatherings.' },
+
+    // ── RELIEF ─────────────────────────────────────────────────────────────────
+    { id:'d14', name:'ACDC', brand:'Remedy Farms', category:'flower',
+      price:50, thc:2, cbd:14, shelf:'R1', in_stock:true,
+      t_caryophyllene:0.48, t_myrcene:0.32, t_linalool:0.18, t_limonene:0.06, t_pinene:0.04, t_terpinolene:0.01,
+      score_sleep:0.38, score_relax:0.60, score_focus:0.30, score_social:0.20, score_relief:0.88, score_beginner:0.72,
+      talking_points:'One of the highest-CBD flower options we carry. 14% CBD with minimal THC means strong anti-inflammatory relief without psychoactive effects. Best for daytime pain management.' },
+
+    { id:'d15', name:'Harlequin', brand:'Remedy Farms', category:'flower',
+      price:46, thc:6, cbd:10, shelf:'R2', in_stock:true,
+      t_caryophyllene:0.42, t_myrcene:0.38, t_linalool:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.01,
+      score_sleep:0.42, score_relax:0.62, score_focus:0.35, score_social:0.22, score_relief:0.82, score_beginner:0.68,
+      talking_points:'The 1:2 THC:CBD ratio delivers functional pain relief while still allowing full clarity. Excellent for chronic pain customers who need to stay sharp during the day.' },
+
+    { id:'d16', name:'Relief Topical', brand:'Bloom Select', category:'topical',
+      price:35, thc:0, cbd:500, shelf:'T1', in_stock:true,
+      t_caryophyllene:0.52, t_myrcene:0.28, t_linalool:0.12, t_limonene:0.04, t_pinene:0.02, t_terpinolene:0.01,
+      score_sleep:0.10, score_relax:0.30, score_focus:0.10, score_social:0.05, score_relief:0.76, score_beginner:0.80,
+      talking_points:'Targets specific areas directly. No psychoactive effect whatsoever — apply directly to joints, muscles, or areas of tension. Works in 15–20 minutes. Great add-on for any pain customer.' },
+
+    // ── BALANCED / BEGINNER ────────────────────────────────────────────────────
+    { id:'d17', name:'Harlequin 1:1', brand:'Remedy Farms', category:'tincture',
+      price:40, thc:5, cbd:5, shelf:'T2', in_stock:true,
+      t_caryophyllene:0.32, t_linalool:0.30, t_myrcene:0.22, t_limonene:0.12, t_pinene:0.04, t_terpinolene:0.02,
+      score_sleep:0.42, score_relax:0.62, score_focus:0.38, score_social:0.30, score_relief:0.58, score_beginner:0.84,
+      talking_points:'The 1:1 CBD:THC ratio is the most forgiving introduction to cannabis. CBD tempers the psychoactive effect while enhancing the therapeutic benefits. Predictable, gentle, and reliable.' },
+
+    { id:'d18', name:"Charlotte's Web", brand:'Green Gate', category:'edible',
+      price:28, thc:5, cbd:5, shelf:'E1', in_stock:true,
+      t_linalool:0.38, t_caryophyllene:0.28, t_myrcene:0.20, t_limonene:0.10, t_pinene:0.04, t_terpinolene:0.02,
+      score_sleep:0.48, score_relax:0.58, score_focus:0.32, score_social:0.28, score_relief:0.52, score_beginner:0.78,
+      talking_points:'Low dose, balanced edible for first-timers. Take half a piece, wait 90 minutes before deciding if they want more. The balanced ratio makes overconsumption very unlikely.' },
+
+    { id:'d19', name:'Northern Lights Low-Dose', brand:'Emerald Fields', category:'preroll',
+      price:22, thc:12, cbd:2, shelf:'P1', in_stock:true,
+      t_myrcene:0.38, t_linalool:0.22, t_caryophyllene:0.15, t_pinene:0.08, t_limonene:0.04, t_terpinolene:0.02,
+      score_sleep:0.55, score_relax:0.50, score_focus:0.28, score_social:0.32, score_relief:0.35, score_beginner:0.75,
+      talking_points:'Low THC, pre-measured dose — perfect for someone trying flower for the first time. Take one or two puffs and wait 10 minutes before deciding if they want more.' }
+];
+</script>
+
+</body></html>
