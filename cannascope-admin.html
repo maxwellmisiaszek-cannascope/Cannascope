@@ -1229,17 +1229,27 @@ async function confirmImport(){
     }catch(e){}
   }
 
+  // Build the set of columns to try — will shrink if Supabase says a col is missing
+  const tryCols=new Set(DB_COLS);
+
   for(const row of importRows){
     if(useDB){
-      // Strip computed/unknown columns — only send what Supabase actually has
-      const prod={};
-      DB_COLS.forEach(k=>{if(row[k]!==undefined&&row[k]!==null&&row[k]!=='')prod[k]=row[k];});
-      if(userOrgId)prod.organization_id=userOrgId;
-      try{
+      let attempts=0;
+      while(attempts<8){
+        attempts++;
+        const prod={};
+        tryCols.forEach(k=>{if(row[k]!==undefined&&row[k]!==null&&row[k]!=='')prod[k]=row[k];});
+        if(userOrgId)prod.organization_id=userOrgId;
         const {data,error}=await sb.from('products').insert([prod]).select().single();
-        if(error){failed++;lastErr=error.message||JSON.stringify(error);}
-        else if(data){products.push(data);added++;}
-      }catch(e){failed++;lastErr=e.message||String(e);}
+        if(!error&&data){products.push(data);added++;break;}
+        if(error){
+          // If Supabase says a column doesn't exist, drop it and retry this row
+          const missing=error.message?.match(/Could not find the '(\w+)' column/)?.[1];
+          if(missing&&tryCols.has(missing)){tryCols.delete(missing);continue;}
+          // Any other error — log and move on
+          failed++;lastErr=error.message||JSON.stringify(error);break;
+        }
+      }
     } else {
       const prod={...row};
       prod.id='import_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
