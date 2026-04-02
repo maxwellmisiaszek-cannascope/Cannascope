@@ -953,6 +953,136 @@ let selectedEffect = null;
 let filters = {};
 let debugMode = false; // kept for score engine compatibility, not exposed in UI
 
+// ── DEMO PRODUCTS ─────────────────────────────────────────────────────────────
+// Must be declared BEFORE the init IIFE so useDemoMode() can reference it.
+// (const is block-scoped with TDZ — declaring after the IIFE call causes ReferenceError)
+const DEMO_PRODUCTS = [
+    // ── SLEEP ──────────────────────────────────────────────────────────────────
+    { id:'d1', name:'Granddaddy Purple', brand:'Royal Gardens', category:'flower',
+      price:45, thc:23, cbd:0, shelf:'B3', in_stock:true,
+      t_myrcene:0.55, t_linalool:0.30, t_caryophyllene:0.22, t_limonene:0.05, t_pinene:0.04, t_terpinolene:0.02,
+      score_sleep:0.82, score_relax:0.42, score_focus:0.10, score_social:0.12, score_relief:0.38, score_beginner:0.22,
+      manager_note:'Premium shelf — highest margin in category.',
+      talking_points:'This is our most recommended for sleep. The Myrcene terpene profile produces that heavy, settled feeling most people associate with a full night of rest. Best taken 60–90 minutes before bed.' },
+
+    { id:'d2', name:'Northern Lights', brand:'Emerald Fields', category:'flower',
+      price:40, thc:18, cbd:0, shelf:'B1', in_stock:true,
+      t_myrcene:0.52, t_linalool:0.28, t_caryophyllene:0.15, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.02,
+      score_sleep:0.74, score_relax:0.50, score_focus:0.12, score_social:0.14, score_relief:0.32, score_beginner:0.35,
+      talking_points:'Lower potency makes this ideal for THC-sensitive customers or those new to cannabis. Calming without being overwhelming — most people report waking without grogginess.' },
+
+    { id:'d3', name:'Purple Punch Gummies', brand:'Green Peak', category:'edible',
+      price:25, thc:10, cbd:0, shelf:'E2', in_stock:true,
+      t_myrcene:0.48, t_linalool:0.38, t_caryophyllene:0.12, t_limonene:0.04, t_pinene:0.02, t_terpinolene:0.01,
+      score_sleep:0.68, score_relax:0.46, score_focus:0.08, score_social:0.10, score_relief:0.28, score_beginner:0.55,
+      manager_note:'Overstock — push this batch first.',
+      talking_points:'Edible format means effects last 6–8 hours. Take it 90 minutes before bed. Linalool adds a gentle calming quality similar to lavender.' },
+
+    { id:'d4', name:'Dream Tincture', brand:'Bloom Select', category:'tincture',
+      price:38, thc:5, cbd:10, shelf:'T3', in_stock:true,
+      t_myrcene:0.28, t_linalool:0.50, t_caryophyllene:0.18, t_limonene:0.03, t_pinene:0.02, t_terpinolene:0.01,
+      score_sleep:0.71, score_relax:0.55, score_focus:0.10, score_social:0.08, score_relief:0.44, score_beginner:0.62,
+      talking_points:'The high CBD ratio calms the nervous system while the low THC eases the mind. Sublingual onset in 20–30 minutes. Great for customers who prefer not to smoke.' },
+
+    // ── RELAX ──────────────────────────────────────────────────────────────────
+    { id:'d5', name:'Blue Dream', brand:'Canopy Co', category:'flower',
+      price:42, thc:22, cbd:0, shelf:'A4', in_stock:true,
+      t_myrcene:0.32, t_limonene:0.28, t_caryophyllene:0.22, t_pinene:0.10, t_linalool:0.06, t_terpinolene:0.04,
+      score_sleep:0.38, score_relax:0.78, score_focus:0.40, score_social:0.44, score_relief:0.30, score_beginner:0.28,
+      manager_note:'Overstock — push first.',
+      talking_points:'The go-to after-work strain. Relaxes the body without sedation — you can still function normally. Very smooth and consistent.' },
+
+    { id:'d6', name:'OG Kush', brand:'Canopy Co', category:'flower',
+      price:48, thc:21, cbd:0, shelf:'A2', in_stock:true,
+      t_myrcene:0.42, t_caryophyllene:0.28, t_limonene:0.18, t_linalool:0.08, t_pinene:0.05, t_terpinolene:0.02,
+      score_sleep:0.44, score_relax:0.72, score_focus:0.22, score_social:0.28, score_relief:0.38, score_beginner:0.24,
+      manager_note:'High margin product.',
+      talking_points:'A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties — particularly good for customers carrying physical tension or stress.' },
+
+    { id:'d7', name:'Wedding Cake Vape', brand:'Summit Select', category:'vape',
+      price:55, thc:25, cbd:0, shelf:'V1', in_stock:true,
+      t_myrcene:0.28, t_limonene:0.32, t_caryophyllene:0.22, t_linalool:0.10, t_pinene:0.05, t_terpinolene:0.04,
+      score_sleep:0.30, score_relax:0.65, score_focus:0.38, score_social:0.50, score_relief:0.22, score_beginner:0.15,
+      talking_points:'Vape format means fast onset and easy dose control. One to two pulls, wait five minutes. Limonene adds a slight uplift that prevents sedation.' },
+
+    // ── FOCUS ──────────────────────────────────────────────────────────────────
+    { id:'d8', name:'Sour Diesel', brand:'Green Peak', category:'flower',
+      price:46, thc:24, cbd:0, shelf:'C3', in_stock:true,
+      t_limonene:0.52, t_pinene:0.20, t_myrcene:0.12, t_terpinolene:0.10, t_caryophyllene:0.06, t_linalool:0.02,
+      score_sleep:0.10, score_relax:0.38, score_focus:0.80, score_social:0.55, score_relief:0.18, score_beginner:0.20,
+      manager_note:'Brand promotion this week.',
+      talking_points:'Most requested for creative focus. Limonene-dominant — that citrus-forward energy sharpens thinking without causing anxiety. Works well for writing, design, or anything requiring mental engagement.' },
+
+    { id:'d9', name:'Jack Herer', brand:'Harvest Gold', category:'flower',
+      price:44, thc:19, cbd:1, shelf:'C1', in_stock:true,
+      t_terpinolene:0.42, t_pinene:0.32, t_limonene:0.18, t_myrcene:0.08, t_caryophyllene:0.05, t_linalool:0.02,
+      score_sleep:0.12, score_relax:0.42, score_focus:0.74, score_social:0.52, score_relief:0.20, score_beginner:0.32,
+      talking_points:'Legendary for clear-headed creativity. Terpinolene and pinene create a focused, alert experience without the edge of higher-THC sativas. Excellent for daytime productivity.' },
+
+    { id:'d10', name:'Green Crack Vape', brand:'Summit Select', category:'vape',
+      price:50, thc:21, cbd:0, shelf:'V2', in_stock:true,
+      t_limonene:0.48, t_terpinolene:0.30, t_pinene:0.15, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.01,
+      score_sleep:0.08, score_relax:0.30, score_focus:0.70, score_social:0.60, score_relief:0.15, score_beginner:0.18,
+      talking_points:'Fast-acting vape that delivers clean, energetic focus within minutes. Great for customers who need to stay functional and sharp throughout the day.' },
+
+    // ── SOCIAL ─────────────────────────────────────────────────────────────────
+    { id:'d11', name:'Pineapple Express', brand:'Coastal Farms', category:'flower',
+      price:43, thc:20, cbd:0, shelf:'D2', in_stock:true,
+      t_limonene:0.45, t_terpinolene:0.22, t_myrcene:0.18, t_pinene:0.10, t_caryophyllene:0.05, t_linalool:0.02,
+      score_sleep:0.15, score_relax:0.48, score_focus:0.46, score_social:0.78, score_relief:0.20, score_beginner:0.30,
+      talking_points:'Classic uplifting strain with a tropical, euphoric lift. Keeps energy levels up and conversation flowing. Very consistent and widely loved.' },
+
+    { id:'d12', name:'Tangie Vape', brand:'Summit Select', category:'vape',
+      price:52, thc:22, cbd:0, shelf:'V3', in_stock:true,
+      t_limonene:0.58, t_terpinolene:0.22, t_pinene:0.10, t_myrcene:0.06, t_caryophyllene:0.03, t_linalool:0.01,
+      score_sleep:0.08, score_relax:0.35, score_focus:0.48, score_social:0.75, score_relief:0.14, score_beginner:0.22,
+      talking_points:'High limonene content equals elevated mood and social energy. Vape format is discreet and fast — perfect for events where they need a quick refresh.' },
+
+    { id:'d13', name:'Mimosa', brand:'Canopy Co', category:'flower',
+      price:48, thc:22, cbd:0, shelf:'D4', in_stock:true,
+      t_limonene:0.52, t_terpinolene:0.20, t_pinene:0.12, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.02,
+      score_sleep:0.10, score_relax:0.42, score_focus:0.50, score_social:0.72, score_relief:0.16, score_beginner:0.28,
+      talking_points:'Great daytime, social-setting strain. The citrus-dominant terpene profile creates a bubbly, uplifted feeling. Popular choice for weekend activities and gatherings.' },
+
+    // ── RELIEF ─────────────────────────────────────────────────────────────────
+    { id:'d14', name:'ACDC', brand:'Remedy Farms', category:'flower',
+      price:50, thc:2, cbd:14, shelf:'R1', in_stock:true,
+      t_caryophyllene:0.48, t_myrcene:0.32, t_linalool:0.18, t_limonene:0.06, t_pinene:0.04, t_terpinolene:0.01,
+      score_sleep:0.38, score_relax:0.60, score_focus:0.30, score_social:0.20, score_relief:0.88, score_beginner:0.72,
+      talking_points:'One of the highest-CBD flower options we carry. 14% CBD with minimal THC means strong anti-inflammatory relief without psychoactive effects. Best for daytime pain management.' },
+
+    { id:'d15', name:'Harlequin', brand:'Remedy Farms', category:'flower',
+      price:46, thc:6, cbd:10, shelf:'R2', in_stock:true,
+      t_caryophyllene:0.42, t_myrcene:0.38, t_linalool:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.01,
+      score_sleep:0.42, score_relax:0.62, score_focus:0.35, score_social:0.22, score_relief:0.82, score_beginner:0.68,
+      talking_points:'The 1:2 THC:CBD ratio delivers functional pain relief while still allowing full clarity. Excellent for chronic pain customers who need to stay sharp during the day.' },
+
+    { id:'d16', name:'Relief Topical', brand:'Bloom Select', category:'topical',
+      price:35, thc:0, cbd:500, shelf:'T1', in_stock:true,
+      t_caryophyllene:0.52, t_myrcene:0.28, t_linalool:0.12, t_limonene:0.04, t_pinene:0.02, t_terpinolene:0.01,
+      score_sleep:0.10, score_relax:0.30, score_focus:0.10, score_social:0.05, score_relief:0.76, score_beginner:0.80,
+      talking_points:'Targets specific areas directly. No psychoactive effect whatsoever — apply directly to joints, muscles, or areas of tension. Works in 15–20 minutes. Great add-on for any pain customer.' },
+
+    // ── BALANCED / BEGINNER ────────────────────────────────────────────────────
+    { id:'d17', name:'Harlequin 1:1', brand:'Remedy Farms', category:'tincture',
+      price:40, thc:5, cbd:5, shelf:'T2', in_stock:true,
+      t_caryophyllene:0.32, t_linalool:0.30, t_myrcene:0.22, t_limonene:0.12, t_pinene:0.04, t_terpinolene:0.02,
+      score_sleep:0.42, score_relax:0.62, score_focus:0.38, score_social:0.30, score_relief:0.58, score_beginner:0.84,
+      talking_points:'The 1:1 CBD:THC ratio is the most forgiving introduction to cannabis. CBD tempers the psychoactive effect while enhancing the therapeutic benefits. Predictable, gentle, and reliable.' },
+
+    { id:'d18', name:"Charlotte's Web", brand:'Green Gate', category:'edible',
+      price:28, thc:5, cbd:5, shelf:'E1', in_stock:true,
+      t_linalool:0.38, t_caryophyllene:0.28, t_myrcene:0.20, t_limonene:0.10, t_pinene:0.04, t_terpinolene:0.02,
+      score_sleep:0.48, score_relax:0.58, score_focus:0.32, score_social:0.28, score_relief:0.52, score_beginner:0.78,
+      talking_points:'Low dose, balanced edible for first-timers. Take half a piece, wait 90 minutes before deciding if they want more. The balanced ratio makes overconsumption very unlikely.' },
+
+    { id:'d19', name:'Northern Lights Low-Dose', brand:'Emerald Fields', category:'preroll',
+      price:22, thc:12, cbd:2, shelf:'P1', in_stock:true,
+      t_myrcene:0.38, t_linalool:0.22, t_caryophyllene:0.15, t_pinene:0.08, t_limonene:0.04, t_terpinolene:0.02,
+      score_sleep:0.55, score_relax:0.50, score_focus:0.28, score_social:0.32, score_relief:0.35, score_beginner:0.75,
+      talking_points:'Low THC, pre-measured dose — perfect for someone trying flower for the first time. Take one or two puffs and wait 10 minutes before deciding if they want more.' }
+];
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 (async () => {
     const params = new URLSearchParams(location.search);
@@ -1708,135 +1838,7 @@ window.__runTests = function() {
     return { pass, fail };
 };
 
-// ── DEMO PRODUCTS ─────────────────────────────────────────────────────────────
-// All products now include terpene profile columns (t_myrcene, etc.)
-// The new engine reads these directly — score_X fields kept for backwards compat.
-const DEMO_PRODUCTS = [
-    // ── SLEEP ──────────────────────────────────────────────────────────────────
-    { id:'d1', name:'Granddaddy Purple', brand:'Royal Gardens', category:'flower',
-      price:45, thc:23, cbd:0, shelf:'B3', in_stock:true,
-      t_myrcene:0.55, t_linalool:0.30, t_caryophyllene:0.22, t_limonene:0.05, t_pinene:0.04, t_terpinolene:0.02,
-      score_sleep:0.82, score_relax:0.42, score_focus:0.10, score_social:0.12, score_relief:0.38, score_beginner:0.22,
-      manager_note:'Premium shelf — highest margin in category.',
-      talking_points:'This is our most recommended for sleep. The Myrcene terpene profile produces that heavy, settled feeling most people associate with a full night of rest. Best taken 60–90 minutes before bed.' },
-
-    { id:'d2', name:'Northern Lights', brand:'Emerald Fields', category:'flower',
-      price:40, thc:18, cbd:0, shelf:'B1', in_stock:true,
-      t_myrcene:0.52, t_linalool:0.28, t_caryophyllene:0.15, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.02,
-      score_sleep:0.74, score_relax:0.50, score_focus:0.12, score_social:0.14, score_relief:0.32, score_beginner:0.35,
-      talking_points:'Lower potency makes this ideal for THC-sensitive customers or those new to cannabis. Calming without being overwhelming — most people report waking without grogginess.' },
-
-    { id:'d3', name:'Purple Punch Gummies', brand:'Green Peak', category:'edible',
-      price:25, thc:10, cbd:0, shelf:'E2', in_stock:true,
-      t_myrcene:0.48, t_linalool:0.38, t_caryophyllene:0.12, t_limonene:0.04, t_pinene:0.02, t_terpinolene:0.01,
-      score_sleep:0.68, score_relax:0.46, score_focus:0.08, score_social:0.10, score_relief:0.28, score_beginner:0.55,
-      manager_note:'Overstock — push this batch first.',
-      talking_points:'Edible format means effects last 6–8 hours. Take it 90 minutes before bed. Linalool adds a gentle calming quality similar to lavender.' },
-
-    { id:'d4', name:'Dream Tincture', brand:'Bloom Select', category:'tincture',
-      price:38, thc:5, cbd:10, shelf:'T3', in_stock:true,
-      t_myrcene:0.28, t_linalool:0.50, t_caryophyllene:0.18, t_limonene:0.03, t_pinene:0.02, t_terpinolene:0.01,
-      score_sleep:0.71, score_relax:0.55, score_focus:0.10, score_social:0.08, score_relief:0.44, score_beginner:0.62,
-      talking_points:'The high CBD ratio calms the nervous system while the low THC eases the mind. Sublingual onset in 20–30 minutes. Great for customers who prefer not to smoke.' },
-
-    // ── RELAX ──────────────────────────────────────────────────────────────────
-    { id:'d5', name:'Blue Dream', brand:'Canopy Co', category:'flower',
-      price:42, thc:22, cbd:0, shelf:'A4', in_stock:true,
-      t_myrcene:0.32, t_limonene:0.28, t_caryophyllene:0.22, t_pinene:0.10, t_linalool:0.06, t_terpinolene:0.04,
-      score_sleep:0.38, score_relax:0.78, score_focus:0.40, score_social:0.44, score_relief:0.30, score_beginner:0.28,
-      manager_note:'Overstock — push first.',
-      talking_points:'The go-to after-work strain. Relaxes the body without sedation — you can still function normally. Very smooth and consistent.' },
-
-    { id:'d6', name:'OG Kush', brand:'Canopy Co', category:'flower',
-      price:48, thc:21, cbd:0, shelf:'A2', in_stock:true,
-      t_myrcene:0.42, t_caryophyllene:0.28, t_limonene:0.18, t_linalool:0.08, t_pinene:0.05, t_terpinolene:0.02,
-      score_sleep:0.44, score_relax:0.72, score_focus:0.22, score_social:0.28, score_relief:0.38, score_beginner:0.24,
-      manager_note:'High margin product.',
-      talking_points:'A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties — particularly good for customers carrying physical tension or stress.' },
-
-    { id:'d7', name:'Wedding Cake Vape', brand:'Summit Select', category:'vape',
-      price:55, thc:25, cbd:0, shelf:'V1', in_stock:true,
-      t_myrcene:0.28, t_limonene:0.32, t_caryophyllene:0.22, t_linalool:0.10, t_pinene:0.05, t_terpinolene:0.04,
-      score_sleep:0.30, score_relax:0.65, score_focus:0.38, score_social:0.50, score_relief:0.22, score_beginner:0.15,
-      talking_points:'Vape format means fast onset and easy dose control. One to two pulls, wait five minutes. Limonene adds a slight uplift that prevents sedation.' },
-
-    // ── FOCUS ──────────────────────────────────────────────────────────────────
-    { id:'d8', name:'Sour Diesel', brand:'Green Peak', category:'flower',
-      price:46, thc:24, cbd:0, shelf:'C3', in_stock:true,
-      t_limonene:0.52, t_pinene:0.20, t_myrcene:0.12, t_terpinolene:0.10, t_caryophyllene:0.06, t_linalool:0.02,
-      score_sleep:0.10, score_relax:0.38, score_focus:0.80, score_social:0.55, score_relief:0.18, score_beginner:0.20,
-      manager_note:'Brand promotion this week.',
-      talking_points:'Most requested for creative focus. Limonene-dominant — that citrus-forward energy sharpens thinking without causing anxiety. Works well for writing, design, or anything requiring mental engagement.' },
-
-    { id:'d9', name:'Jack Herer', brand:'Harvest Gold', category:'flower',
-      price:44, thc:19, cbd:1, shelf:'C1', in_stock:true,
-      t_terpinolene:0.42, t_pinene:0.32, t_limonene:0.18, t_myrcene:0.08, t_caryophyllene:0.05, t_linalool:0.02,
-      score_sleep:0.12, score_relax:0.42, score_focus:0.74, score_social:0.52, score_relief:0.20, score_beginner:0.32,
-      talking_points:'Legendary for clear-headed creativity. Terpinolene and pinene create a focused, alert experience without the edge of higher-THC sativas. Excellent for daytime productivity.' },
-
-    { id:'d10', name:'Green Crack Vape', brand:'Summit Select', category:'vape',
-      price:50, thc:21, cbd:0, shelf:'V2', in_stock:true,
-      t_limonene:0.48, t_terpinolene:0.30, t_pinene:0.15, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.01,
-      score_sleep:0.08, score_relax:0.30, score_focus:0.70, score_social:0.60, score_relief:0.15, score_beginner:0.18,
-      talking_points:'Fast-acting vape that delivers clean, energetic focus within minutes. Great for customers who need to stay functional and sharp throughout the day.' },
-
-    // ── SOCIAL ─────────────────────────────────────────────────────────────────
-    { id:'d11', name:'Pineapple Express', brand:'Coastal Farms', category:'flower',
-      price:43, thc:20, cbd:0, shelf:'D2', in_stock:true,
-      t_limonene:0.45, t_terpinolene:0.22, t_myrcene:0.18, t_pinene:0.10, t_caryophyllene:0.05, t_linalool:0.02,
-      score_sleep:0.15, score_relax:0.48, score_focus:0.46, score_social:0.78, score_relief:0.20, score_beginner:0.30,
-      talking_points:'Classic uplifting strain with a tropical, euphoric lift. Keeps energy levels up and conversation flowing. Very consistent and widely loved.' },
-
-    { id:'d12', name:'Tangie Vape', brand:'Summit Select', category:'vape',
-      price:52, thc:22, cbd:0, shelf:'V3', in_stock:true,
-      t_limonene:0.58, t_terpinolene:0.22, t_pinene:0.10, t_myrcene:0.06, t_caryophyllene:0.03, t_linalool:0.01,
-      score_sleep:0.08, score_relax:0.35, score_focus:0.48, score_social:0.75, score_relief:0.14, score_beginner:0.22,
-      talking_points:'High limonene content equals elevated mood and social energy. Vape format is discreet and fast — perfect for events where they need a quick refresh.' },
-
-    { id:'d13', name:'Mimosa', brand:'Canopy Co', category:'flower',
-      price:48, thc:22, cbd:0, shelf:'D4', in_stock:true,
-      t_limonene:0.52, t_terpinolene:0.20, t_pinene:0.12, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.02,
-      score_sleep:0.10, score_relax:0.42, score_focus:0.50, score_social:0.72, score_relief:0.16, score_beginner:0.28,
-      talking_points:'Great daytime, social-setting strain. The citrus-dominant terpene profile creates a bubbly, uplifted feeling. Popular choice for weekend activities and gatherings.' },
-
-    // ── RELIEF ─────────────────────────────────────────────────────────────────
-    { id:'d14', name:'ACDC', brand:'Remedy Farms', category:'flower',
-      price:50, thc:2, cbd:14, shelf:'R1', in_stock:true,
-      t_caryophyllene:0.48, t_myrcene:0.32, t_linalool:0.18, t_limonene:0.06, t_pinene:0.04, t_terpinolene:0.01,
-      score_sleep:0.38, score_relax:0.60, score_focus:0.30, score_social:0.20, score_relief:0.88, score_beginner:0.72,
-      talking_points:'One of the highest-CBD flower options we carry. 14% CBD with minimal THC means strong anti-inflammatory relief without psychoactive effects. Best for daytime pain management.' },
-
-    { id:'d15', name:'Harlequin', brand:'Remedy Farms', category:'flower',
-      price:46, thc:6, cbd:10, shelf:'R2', in_stock:true,
-      t_caryophyllene:0.42, t_myrcene:0.38, t_linalool:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.01,
-      score_sleep:0.42, score_relax:0.62, score_focus:0.35, score_social:0.22, score_relief:0.82, score_beginner:0.68,
-      talking_points:'The 1:2 THC:CBD ratio delivers functional pain relief while still allowing full clarity. Excellent for chronic pain customers who need to stay sharp during the day.' },
-
-    { id:'d16', name:'Relief Topical', brand:'Bloom Select', category:'topical',
-      price:35, thc:0, cbd:500, shelf:'T1', in_stock:true,
-      t_caryophyllene:0.52, t_myrcene:0.28, t_linalool:0.12, t_limonene:0.04, t_pinene:0.02, t_terpinolene:0.01,
-      score_sleep:0.10, score_relax:0.30, score_focus:0.10, score_social:0.05, score_relief:0.76, score_beginner:0.80,
-      talking_points:'Targets specific areas directly. No psychoactive effect whatsoever — apply directly to joints, muscles, or areas of tension. Works in 15–20 minutes. Great add-on for any pain customer.' },
-
-    // ── BALANCED / BEGINNER ────────────────────────────────────────────────────
-    { id:'d17', name:'Harlequin 1:1', brand:'Remedy Farms', category:'tincture',
-      price:40, thc:5, cbd:5, shelf:'T2', in_stock:true,
-      t_caryophyllene:0.32, t_linalool:0.30, t_myrcene:0.22, t_limonene:0.12, t_pinene:0.04, t_terpinolene:0.02,
-      score_sleep:0.42, score_relax:0.62, score_focus:0.38, score_social:0.30, score_relief:0.58, score_beginner:0.84,
-      talking_points:'The 1:1 CBD:THC ratio is the most forgiving introduction to cannabis. CBD tempers the psychoactive effect while enhancing the therapeutic benefits. Predictable, gentle, and reliable.' },
-
-    { id:'d18', name:"Charlotte's Web", brand:'Green Gate', category:'edible',
-      price:28, thc:5, cbd:5, shelf:'E1', in_stock:true,
-      t_linalool:0.38, t_caryophyllene:0.28, t_myrcene:0.20, t_limonene:0.10, t_pinene:0.04, t_terpinolene:0.02,
-      score_sleep:0.48, score_relax:0.58, score_focus:0.32, score_social:0.28, score_relief:0.52, score_beginner:0.78,
-      talking_points:'Low dose, balanced edible for first-timers. Take half a piece, wait 90 minutes before deciding if they want more. The balanced ratio makes overconsumption very unlikely.' },
-
-    { id:'d19', name:'Northern Lights Low-Dose', brand:'Emerald Fields', category:'preroll',
-      price:22, thc:12, cbd:2, shelf:'P1', in_stock:true,
-      t_myrcene:0.38, t_linalool:0.22, t_caryophyllene:0.15, t_pinene:0.08, t_limonene:0.04, t_terpinolene:0.02,
-      score_sleep:0.55, score_relax:0.50, score_focus:0.28, score_social:0.32, score_relief:0.35, score_beginner:0.75,
-      talking_points:'Low THC, pre-measured dose — perfect for someone trying flower for the first time. Take one or two puffs and wait 10 minutes before deciding if they want more.' }
-];
+// (DEMO_PRODUCTS moved to top of script — must be declared before the init IIFE)
 </script>
 
 </body></html>
