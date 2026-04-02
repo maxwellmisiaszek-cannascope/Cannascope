@@ -1211,22 +1211,54 @@ async function confirmImport(){
   if(!importRows.length)return;
   const btn=document.getElementById('importConfirmBtn');
   btn.disabled=true;btn.textContent='Importing…';
-  let added=0;
+  let added=0,failed=0,lastErr='';
+
+  // Columns that definitely live in the products table
+  const DB_COLS=['name','brand','category','effect','thc','cbd','price','shelf',
+    'in_stock','push','manager_note','talking_points',
+    't_myrcene','t_linalool','t_caryophyllene','t_limonene','t_pinene','t_terpinolene'];
+
+  // If userOrgId wasn't set at login, try to pull it from the active session now
+  if(useDB&&!userOrgId){
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      if(session){
+        const {data:prof}=await sb.from('user_profiles').select('organization_id').eq('id',session.user.id).single();
+        if(prof?.organization_id)userOrgId=prof.organization_id;
+      }
+    }catch(e){}
+  }
+
   for(const row of importRows){
-    const prod={...row,id:undefined};
-    if(useDB&&userOrgId){prod.organization_id=userOrgId;}
     if(useDB){
+      // Strip computed/unknown columns — only send what Supabase actually has
+      const prod={};
+      DB_COLS.forEach(k=>{if(row[k]!==undefined&&row[k]!==null&&row[k]!=='')prod[k]=row[k];});
+      if(userOrgId)prod.organization_id=userOrgId;
       try{
         const {data,error}=await sb.from('products').insert([prod]).select().single();
-        if(!error&&data){products.push(data);added++;}
-      }catch(e){}
+        if(error){failed++;lastErr=error.message||JSON.stringify(error);}
+        else if(data){products.push(data);added++;}
+      }catch(e){failed++;lastErr=e.message||String(e);}
     } else {
+      const prod={...row};
       prod.id='import_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
       products.push(prod);added++;
     }
   }
-  lsSave();closeM('importModal');renderAll();anlDone=false;
-  showToast(added+' product'+(added!==1?'s':'')+' imported');
+
+  lsSave();renderAll();anlDone=false;
+  if(added>0){
+    closeM('importModal');
+    showToast(added+' product'+(added!==1?'s':'')+' imported'+(failed?' ('+failed+' failed)':''));
+  } else {
+    // Stay in modal and show the actual error so we know what went wrong
+    btn.disabled=false;btn.textContent='Retry Import';
+    const errMsg=failed>0
+      ? failed+' inserts failed. Supabase error: '+lastErr
+      : 'Nothing was imported — check your connection and try again.';
+    showImportStatus(errMsg,'err');
+  }
   importRows=[];
 }
 
