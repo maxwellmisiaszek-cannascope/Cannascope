@@ -2,27 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cannascope &mdash; Budtender Intelligence Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Cannascope — Retail Intelligence for Dispensaries</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --accent: #059669;
-            --accent-light: #ECFDF5;
-            --accent-border: #6EE7B7;
-            --amber: #92400E;
-            --amber-light: #FFFBEB;
-            --bg: #FFFFFF;
-            --bg-2: #F9FAFB;
-            --surface: #FFFFFF;
-            --border: #E5E7EB;
-            --border-2: #D1D5DB;
-            --text: #111827;
-            --text-2: #6B7280;
-            --text-3: #9CA3AF;
+            --bg:       #080808;
+            --bg-2:     #0F0F0F;
+            --bg-3:     #141414;
+            --border:   #1E1E1E;
+            --border-2: #2A2A2A;
+            --gold:     #C9A84C;
+            --gold-dim: #7A6530;
+            --gold-bg:  #12100A;
+            --text:     #F5F5F5;
+            --text-2:   #888888;
+            --text-3:   #555555;
         }
 
         html { scroll-behavior: smooth; }
@@ -34,899 +32,604 @@
             overflow-x: hidden;
         }
 
-        /* -- NAV --------------------------------------- */
+        /* ── NAV ──────────────────────────────────────── */
         nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--border);
-            height: 58px;
+            height: 56px;
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 40px;
+            background: rgba(8,8,8,0.90);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
         }
         .nav-logo {
             font-size: 15px; font-weight: 700; letter-spacing: -0.02em;
             color: var(--text); text-decoration: none;
         }
-        .nav-logo-accent { color: var(--accent); }
-        .nav-links { display: flex; align-items: center; gap: 28px; }
-        .nav-links a {
-            font-size: 13px; font-weight: 500; color: var(--text-2);
-            text-decoration: none; transition: color 0.12s;
+        .nav-logo span { color: var(--gold); }
+        .nav-right { display: flex; align-items: center; gap: 24px; }
+        .nav-email {
+            font-size: 12px; color: var(--text-3); text-decoration: none;
+            transition: color 0.12s;
         }
-        .nav-links a:hover { color: var(--text); }
+        .nav-email:hover { color: var(--text-2); }
         .nav-cta {
-            font-size: 13px; font-weight: 600; color: #fff;
-            background: var(--accent); border-radius: 7px;
-            padding: 8px 18px; text-decoration: none; transition: background 0.12s;
+            font-size: 13px; font-weight: 600; color: var(--bg);
+            background: var(--gold); border-radius: 6px;
+            padding: 8px 18px; text-decoration: none;
+            transition: opacity 0.12s;
         }
-        .nav-cta:hover { background: #047857; }
+        .nav-cta:hover { opacity: 0.88; }
 
-        /* -- SHARED SECTION STYLES --------------------- */
-        section { padding: 56px 24px; }
-        .container { max-width: 1080px; margin: 0 auto; }
-        .section-eyebrow {
-            font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--accent);
-            margin-bottom: 12px; text-align: center;
-        }
-        .section-title {
-            font-size: clamp(26px, 3.5vw, 40px); font-weight: 700;
-            letter-spacing: -0.025em; text-align: center;
-            margin-bottom: 14px; line-height: 1.15; color: var(--text);
-        }
-        .section-sub {
-            font-size: 16px; color: var(--text-2); text-align: center;
-            max-width: 540px; margin: 0 auto 36px; line-height: 1.7;
-        }
+        /* ── SHARED ───────────────────────────────────── */
+        .container { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
 
-        /* -- HERO -------------------------------------- */
+        /* ── HERO ─────────────────────────────────────── */
         .hero {
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 76px 24px 52px; border-bottom: 1px solid var(--border);
-            background: var(--bg);
+            padding: 140px 24px 100px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
         }
-        .hero-eyebrow {
-            display: inline-flex; align-items: center; gap: 8px;
-            font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--accent);
-            background: var(--accent-light); border: 1px solid var(--accent-border);
-            padding: 5px 14px; border-radius: 100px; margin-bottom: 28px;
+        .hero h1 {
+            font-size: clamp(44px, 6vw, 80px);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.0;
+            color: var(--text);
+            margin-bottom: 24px;
         }
-        .hero-title {
-            font-size: clamp(36px, 5.5vw, 64px); font-weight: 700;
-            letter-spacing: -0.03em; text-align: center; line-height: 1.08;
-            max-width: 760px; margin-bottom: 20px; color: var(--text);
-        }
-        .hero-title .hl { color: var(--accent); }
+        .hero h1 span { color: var(--gold); }
         .hero-sub {
-            font-size: clamp(15px, 1.8vw, 18px); color: var(--text-2);
-            text-align: center; max-width: 520px; line-height: 1.7;
-            margin-bottom: 40px;
+            font-size: clamp(15px, 1.8vw, 18px);
+            color: var(--text-2);
+            max-width: 460px;
+            margin: 0 auto 40px;
+            line-height: 1.65;
         }
         .hero-actions {
-            display: flex; gap: 10px; align-items: center;
-            flex-wrap: wrap; justify-content: center; margin-bottom: 32px;
+            display: flex; align-items: center; justify-content: center;
+            gap: 20px; flex-wrap: wrap;
         }
-        .btn-primary-lg {
-            padding: 13px 28px; background: var(--accent); color: #fff;
-            border-radius: 8px; font-size: 14px; font-weight: 600;
-            text-decoration: none; transition: background 0.12s;
+        .btn-primary {
+            display: inline-block;
+            padding: 14px 32px;
+            background: var(--gold); color: var(--bg);
+            font-size: 14px; font-weight: 700;
+            border-radius: 7px; text-decoration: none;
+            transition: opacity 0.12s;
         }
-        .btn-primary-lg:hover { background: #047857; }
-        .btn-ghost-lg {
-            padding: 12px 24px; background: transparent; color: var(--text-2);
-            border: 1px solid var(--border-2); border-radius: 8px;
-            font-size: 14px; font-weight: 500; text-decoration: none;
-            transition: border-color 0.12s, color 0.12s;
+        .btn-primary:hover { opacity: 0.88; }
+        .hero-email {
+            font-size: 13px; color: var(--text-3);
+            text-decoration: none;
         }
-        .btn-ghost-lg:hover { border-color: var(--border-2); color: var(--text); }
-        .hero-proof {
-            display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
-            justify-content: center; font-size: 12px; color: var(--text-3); font-weight: 500;
-        }
-        .proof-item { display: flex; align-items: center; gap: 6px; }
-        .proof-check {
-            width: 16px; height: 16px; background: var(--accent-light);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-        .proof-check::before { content: '\2713'; font-size: 9px; color: var(--accent); font-weight: 700; }
+        .hero-email a { color: var(--text-3); text-decoration: none; transition: color 0.12s; }
+        .hero-email a:hover { color: var(--text-2); }
 
-        /* -- PRODUCT MOCKUP ---------------------------- */
-        .mockup-section {
-            padding: 0 24px 80px; background: var(--bg-2); border-bottom: 1px solid var(--border);
+        /* ── FLOW ─────────────────────────────────────── */
+        .flow-section {
+            padding: 80px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-2);
         }
-        .mockup-wrap {
+        .flow-label-top {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--text-3);
+            text-align: center; margin-bottom: 48px;
+        }
+        .flow-grid {
+            display: grid;
+            grid-template-columns: 1fr 40px 1fr 40px 1fr;
+            align-items: center;
             max-width: 860px; margin: 0 auto;
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; overflow: hidden;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
         }
-        .mockup-titlebar {
-            height: 40px; background: var(--bg-2); border-bottom: 1px solid var(--border);
+        .flow-step {
+            background: var(--bg-3);
+            border: 1px solid var(--border-2);
+            border-radius: 10px;
+            padding: 28px 24px;
+        }
+        .flow-step-num {
+            font-size: 11px; font-weight: 600; color: var(--gold);
+            letter-spacing: 0.08em; text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .flow-step-title {
+            font-size: 16px; font-weight: 700; color: var(--text);
+            margin-bottom: 8px; letter-spacing: -0.01em;
+        }
+        .flow-step-desc {
+            font-size: 13px; color: var(--text-2); line-height: 1.6;
+        }
+        .flow-arrow {
+            text-align: center; font-size: 20px; color: var(--border-2);
+        }
+
+        /* ── VALUE PROPS ──────────────────────────────── */
+        .values-section {
+            padding: 96px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .values-eyebrow {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--text-3);
+            text-align: center; margin-bottom: 16px;
+        }
+        .values-heading {
+            font-size: clamp(28px, 3.5vw, 42px);
+            font-weight: 700; letter-spacing: -0.03em;
+            text-align: center; color: var(--text);
+            margin-bottom: 56px; line-height: 1.15;
+        }
+        .values-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 2px; max-width: 1040px; margin: 0 auto;
+            border: 1px solid var(--border); border-radius: 12px;
+            overflow: hidden;
+        }
+        .value-card {
+            background: var(--bg-2);
+            padding: 36px 28px;
+            border-right: 1px solid var(--border);
+        }
+        .value-card:last-child { border-right: none; }
+        .value-num {
+            font-size: 11px; font-weight: 700; color: var(--gold);
+            letter-spacing: 0.08em; margin-bottom: 20px;
+        }
+        .value-title {
+            font-size: 20px; font-weight: 700; color: var(--text);
+            letter-spacing: -0.02em; margin-bottom: 12px; line-height: 1.2;
+        }
+        .value-text {
+            font-size: 13px; color: var(--text-2); line-height: 1.7;
+        }
+
+        /* ── PRODUCT MOCKUP ───────────────────────────── */
+        .mockup-section {
+            padding: 96px 24px;
+            background: var(--bg-2);
+            border-bottom: 1px solid var(--border);
+        }
+        .mockup-intro { max-width: 520px; margin: 0 auto 56px; text-align: center; }
+        .mockup-intro h2 {
+            font-size: clamp(26px, 3vw, 38px);
+            font-weight: 700; letter-spacing: -0.03em;
+            color: var(--text); margin-bottom: 14px; line-height: 1.2;
+        }
+        .mockup-intro p {
+            font-size: 14px; color: var(--text-2); line-height: 1.7;
+        }
+        .mockup-frame {
+            max-width: 780px; margin: 0 auto;
+            background: var(--bg-3);
+            border: 1px solid var(--border-2);
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 24px 64px rgba(0,0,0,0.5);
+        }
+        .mockup-bar {
+            height: 38px; background: #0A0A0A;
+            border-bottom: 1px solid var(--border);
             display: flex; align-items: center; padding: 0 14px; gap: 7px;
         }
-        .tb-dot {
-            width: 10px; height: 10px; border-radius: 50%; background: var(--border-2);
-        }
-        .tb-url {
-            margin-left: 10px; font-size: 11px; color: var(--text-3);
-            font-family: monospace;
+        .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--border-2); }
+        .mockup-url {
+            margin-left: 8px; font-size: 11px; color: var(--text-3);
+            font-family: 'SF Mono', 'Fira Code', monospace;
         }
         .mockup-body { padding: 20px; }
 
-        /* mock app UI */
-        .mock-header {
-            background: var(--bg-2); border: 1px solid var(--border);
-            border-radius: 8px; padding: 0 16px; height: 42px;
+        /* mock interface */
+        .m-header {
             display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 18px;
+            padding: 10px 14px;
+            background: #0A0A0A; border: 1px solid var(--border);
+            border-radius: 7px; margin-bottom: 16px;
         }
-        .mock-logo { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
-        .mock-logo-acc { color: var(--accent); }
-        .mock-store { font-size: 11px; color: var(--text-3); font-weight: 500; }
-        .mock-badge {
-            font-size: 10px; font-weight: 600; color: var(--accent);
-            background: var(--accent-light); border: 1px solid var(--accent-border);
-            padding: 3px 9px; border-radius: 100px;
+        .m-logo { font-size: 12px; font-weight: 700; color: var(--text); }
+        .m-logo span { color: var(--gold); }
+        .m-badge {
+            font-size: 10px; font-weight: 600; color: var(--gold);
+            background: var(--gold-bg); border: 1px solid var(--gold-dim);
+            padding: 3px 9px; border-radius: 4px;
         }
-        .mock-eyebrow {
-            font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
+        .m-label {
+            font-size: 9px; font-weight: 600; letter-spacing: 0.1em;
             text-transform: uppercase; color: var(--text-3);
-            text-align: center; margin-bottom: 10px;
+            margin-bottom: 10px; text-align: center;
         }
-        .mock-intent-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px;
+        .m-intents {
+            display: grid; grid-template-columns: repeat(6, 1fr);
+            gap: 6px; margin-bottom: 18px;
+        }
+        .m-intent {
+            padding: 10px 6px; text-align: center;
+            background: var(--bg); border: 1px solid var(--border-2);
+            border-radius: 6px; cursor: default;
+        }
+        .m-intent.active {
+            border-color: var(--gold);
+            background: var(--gold-bg);
+        }
+        .m-intent-name {
+            font-size: 11px; font-weight: 600; color: var(--text-2);
+            display: block;
+        }
+        .m-intent.active .m-intent-name { color: var(--gold); }
+        .m-cards { display: flex; flex-direction: column; gap: 8px; }
+        .m-card {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 7px; overflow: hidden;
+        }
+        .m-card.top { border-left: 2px solid var(--gold); }
+        .m-card-top {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 14px 6px;
+        }
+        .m-card-rank { font-size: 9px; font-weight: 600; color: var(--text-3); letter-spacing: 0.06em; text-transform: uppercase; }
+        .m-card.top .m-card-rank { color: var(--gold); }
+        .m-card-match { font-size: 10px; font-weight: 600; color: var(--text-3); }
+        .m-card.top .m-card-match { color: var(--gold); }
+        .m-card-body { padding: 0 14px 8px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .m-card-name { font-size: 14px; font-weight: 700; color: var(--text); }
+        .m-card-price { font-size: 13px; font-weight: 600; color: var(--text-2); }
+        .m-card-sub { padding: 0 14px 8px; font-size: 11px; color: var(--text-3); }
+        .m-card-note {
+            padding: 7px 14px;
+            background: #110F00; border-top: 1px solid #2A2200;
+        }
+        .m-card-note-label { font-size: 8px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #7A6530; margin-bottom: 2px; }
+        .m-card-note-text { font-size: 11px; color: #A08530; }
+
+        /* ── BUDTENDER + INVENTORY SPLIT ──────────────── */
+        .split-section {
+            padding: 96px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .split-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 2px; max-width: 1040px; margin: 0 auto;
+            border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+        }
+        .split-panel {
+            background: var(--bg-2); padding: 48px 40px;
+            border-right: 1px solid var(--border);
+        }
+        .split-panel:last-child { border-right: none; }
+        .split-tag {
+            display: inline-block;
+            font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--gold);
             margin-bottom: 20px;
         }
-        .mock-intent-btn {
-            padding: 12px 10px; background: var(--surface);
-            border: 1.5px solid var(--border); border-radius: 7px;
+        .split-title {
+            font-size: clamp(20px, 2.5vw, 28px);
+            font-weight: 700; letter-spacing: -0.025em;
+            color: var(--text); margin-bottom: 16px; line-height: 1.2;
         }
-        .mock-intent-btn.sel { border-color: var(--accent); background: var(--accent-light); }
-        .mib-name { font-size: 12px; font-weight: 600; color: var(--text); }
-        .mock-intent-btn.sel .mib-name { color: var(--accent); }
-        .mib-desc { font-size: 10px; color: var(--text-3); margin-top: 2px; }
-
-        .mock-result-header {
-            font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
-            text-transform: uppercase; color: var(--accent); text-align: right;
-            margin-bottom: 10px;
+        .split-text {
+            font-size: 13px; color: var(--text-2); line-height: 1.8;
         }
-        .mock-cards { display: flex; flex-direction: column; gap: 8px; }
-        .mock-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 8px; overflow: hidden;
+        .split-points { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+        .split-point {
+            display: flex; align-items: flex-start; gap: 12px;
+            font-size: 13px; color: var(--text-2); line-height: 1.55;
         }
-        .mock-card.rank-1 { border-color: var(--border-2); border-left: 3px solid var(--accent); }
-        .mock-card-rank {
-            padding: 8px 14px 4px; font-size: 9px; font-weight: 600;
-            letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3);
-        }
-        .mock-card.rank-1 .mock-card-rank { color: var(--accent); }
-        .mock-card-main {
-            padding: 2px 14px 8px; display: flex;
-            align-items: flex-start; justify-content: space-between;
-        }
-        .mock-card-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
-        .mock-card-price { font-size: 15px; font-weight: 700; color: var(--text); }
-        .mock-card-meta { padding: 0 14px 10px; font-size: 11px; color: var(--text-2); }
-        .mock-card-section {
-            border-top: 1px solid var(--border); padding: 8px 14px;
-        }
-        .mock-section-label {
-            font-size: 8px; font-weight: 600; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--text-3); margin-bottom: 3px;
-        }
-        .mock-section-text { font-size: 11px; color: var(--text-2); line-height: 1.6; }
-        .mock-card-section.is-manager { background: var(--amber-light); }
-        .mock-card-section.is-manager .mock-section-label { color: var(--amber); }
-        .mock-card-section.is-manager .mock-section-text { color: var(--amber); }
-        .mock-upsell {
-            background: var(--bg-2); border: 1px solid var(--border);
-            border-radius: 8px; padding: 10px 14px;
-        }
-        .mock-upsell-label {
-            font-size: 8px; font-weight: 600; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--accent); margin-bottom: 3px;
-        }
-        .mock-upsell-text { font-size: 11px; color: var(--text-2); line-height: 1.6; }
-
-        /* -- PROBLEM ----------------------------------- */
-        .problem-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-        }
-        .problem-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 20px;
-        }
-        .problem-num {
-            width: 28px; height: 28px; border-radius: 6px;
-            background: var(--bg-2); border: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 700; color: var(--text-2);
-            margin-bottom: 16px;
-        }
-        .problem-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-        .problem-text { font-size: 13px; color: var(--text-2); line-height: 1.7; }
-
-        /* -- HOW IT WORKS ------------------------------ */
-        .how-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-        .step-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 20px;
-        }
-        .step-num {
-            width: 32px; height: 32px; background: var(--accent);
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 18px;
-        }
-        .step-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-        .step-text { font-size: 13px; color: var(--text-2); line-height: 1.7; }
-        .step-time {
-            margin-top: 14px; font-size: 11px; font-weight: 600;
-            color: var(--accent); letter-spacing: 0.04em;
+        .split-point::before {
+            content: '—'; color: var(--gold); flex-shrink: 0; font-weight: 700;
         }
 
-        /* -- FEATURES ---------------------------------- */
-        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .feature-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 22px;
+        /* ── CONTACT ──────────────────────────────────── */
+        .contact-section {
+            padding: 100px 24px;
+            text-align: center;
         }
-        .feature-num {
-            font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
+        .contact-eyebrow {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
             text-transform: uppercase; color: var(--text-3);
-            margin-bottom: 14px;
-        }
-        .feature-title {
-            font-size: 18px; font-weight: 700; letter-spacing: -0.02em;
-            margin-bottom: 10px; color: var(--text); line-height: 1.3;
-        }
-        .feature-text { font-size: 13px; color: var(--text-2); line-height: 1.75; }
-        .feature-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
-        .feature-list li {
-            font-size: 13px; color: var(--text-2); list-style: none;
-            display: flex; align-items: flex-start; gap: 10px; line-height: 1.55;
-        }
-        .feature-list li::before {
-            content: '\2013'; color: var(--accent); font-weight: 700;
-            flex-shrink: 0; margin-top: 1px;
-        }
-
-        /* -- INVENTORY INTELLIGENCE -------------------- */
-        .intel-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        .intel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
-        .intel-tag {
-            font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
-            text-transform: uppercase; color: var(--accent);
-            background: var(--accent-light); border: 1px solid var(--accent-border);
-            padding: 4px 12px; border-radius: 100px; display: inline-block; margin-bottom: 20px;
-        }
-        .intel-title {
-            font-size: clamp(22px, 3vw, 34px); font-weight: 700;
-            letter-spacing: -0.025em; line-height: 1.2; margin-bottom: 14px; color: var(--text);
-        }
-        .intel-sub { font-size: 14px; color: var(--text-2); line-height: 1.75; margin-bottom: 28px; }
-        .intel-metrics { display: flex; flex-direction: column; gap: 10px; }
-        .intel-metric {
-            display: flex; align-items: center; gap: 16px;
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 8px; padding: 14px 16px;
-        }
-        .metric-val {
-            font-size: 26px; font-weight: 700; color: var(--accent);
-            letter-spacing: -0.02em; min-width: 64px;
-        }
-        .metric-lbl { font-size: 13px; color: var(--text-2); line-height: 1.5; }
-        .intel-panel {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
-        }
-        .intel-panel-header {
-            padding: 12px 16px; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between;
-            font-size: 11px; font-weight: 600; color: var(--text-2); letter-spacing: 0.03em;
-        }
-        .live-indicator {
-            display: flex; align-items: center; gap: 5px;
-            font-size: 10px; font-weight: 600; color: var(--accent);
-        }
-        .live-dot {
-            width: 6px; height: 6px; background: var(--accent);
-            border-radius: 50%; animation: blink 2s infinite;
-        }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
-        .intel-rows { padding: 10px; display: flex; flex-direction: column; gap: 7px; }
-        .intel-row {
-            display: flex; align-items: center; gap: 10px;
-            background: var(--bg-2); border: 1px solid var(--border);
-            border-radius: 7px; padding: 10px 12px;
-        }
-        .ir-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
-        .ir-note { font-size: 11px; color: var(--text-2); }
-        .ir-badge {
-            font-size: 10px; font-weight: 600; padding: 2px 8px;
-            border-radius: 4px; white-space: nowrap;
-        }
-        .ir-badge.push { background: #FEF3C7; color: #92400E; }
-        .ir-badge.hi   { background: var(--accent-light); color: var(--accent); }
-        .ir-badge.low  { background: #FEF2F2; color: #B91C1C; }
-
-        /* -- ROI CALCULATOR ---------------------------- */
-        .roi-section { background: var(--bg); }
-        .roi-inner { max-width: 640px; margin: 0 auto; }
-        .roi-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; padding: 36px;
-        }
-        .roi-card-heading { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
-        .roi-card-sub { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
-        .roi-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-        .roi-field label {
-            display: block; font-size: 11px; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.06em;
-            color: var(--text-2); margin-bottom: 7px;
-        }
-        .roi-field input {
-            width: 100%; padding: 10px 13px; background: var(--bg-2);
-            border: 1px solid var(--border); border-radius: 7px;
-            color: var(--text); font-size: 15px; font-weight: 700;
-            font-family: inherit; text-align: center;
-        }
-        .roi-field input:focus { outline: none; border-color: var(--accent); }
-        .roi-result {
-            background: var(--accent-light); border: 1px solid var(--accent-border);
-            border-radius: 8px; padding: 24px; margin-bottom: 16px; text-align: center;
-        }
-        .roi-result-label {
-            font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
-            text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
-        }
-        .roi-result-num { font-size: 44px; font-weight: 700; letter-spacing: -0.04em; color: var(--accent); }
-        .roi-result-sub { font-size: 12px; color: var(--text-2); margin-top: 4px; }
-        .roi-breakdown { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .roi-cell {
-            background: var(--bg-2); border: 1px solid var(--border);
-            border-radius: 7px; padding: 14px 12px; text-align: center;
-        }
-        .roi-cell-val { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
-        .roi-cell-label { font-size: 10px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
-
-        /* -- TESTIMONIALS ------------------------------ */
-        .testi-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-        .testi-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 10px; padding: 20px;
-        }
-        .testi-stars { font-size: 13px; color: #F59E0B; letter-spacing: 2px; margin-bottom: 14px; }
-        .testi-quote {
-            font-size: 14px; color: var(--text); line-height: 1.75;
             margin-bottom: 20px;
         }
-        .testi-author { display: flex; align-items: center; gap: 12px; }
-        .testi-avatar {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: var(--accent-light); border: 1px solid var(--accent-border);
+        .contact-heading {
+            font-size: clamp(30px, 4vw, 52px);
+            font-weight: 800; letter-spacing: -0.04em;
+            color: var(--text); margin-bottom: 16px; line-height: 1.1;
+        }
+        .contact-sub {
+            font-size: 15px; color: var(--text-2); max-width: 420px;
+            margin: 0 auto 48px; line-height: 1.65;
+        }
+        .contact-actions { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .btn-primary-lg {
+            display: inline-block;
+            padding: 16px 40px;
+            background: var(--gold); color: var(--bg);
+            font-size: 15px; font-weight: 700;
+            border-radius: 8px; text-decoration: none;
+            transition: opacity 0.12s;
+        }
+        .btn-primary-lg:hover { opacity: 0.88; }
+        .contact-email {
+            font-size: 13px; color: var(--text-3);
+        }
+        .contact-email a {
+            color: var(--text-3); text-decoration: none;
+            border-bottom: 1px solid var(--border-2);
+            padding-bottom: 1px; transition: color 0.12s;
+        }
+        .contact-email a:hover { color: var(--text-2); }
+
+        /* Calendly embed container */
+        .calendly-wrap {
+            max-width: 860px; margin: 0 auto;
+            background: var(--bg-2); border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden; min-height: 660px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 700; color: var(--accent); flex-shrink: 0;
         }
-        .testi-name { font-size: 13px; font-weight: 600; color: var(--text); }
-        .testi-role { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+        .calendly-placeholder {
+            text-align: center; color: var(--text-3); font-size: 13px;
+        }
 
-        /* -- PRICING ----------------------------------- */
-        .pricing-section { background: var(--bg); }
-        .price-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; padding: 36px;
-            max-width: 440px; margin: 0 auto;
-        }
-        .price-card-badge {
-            display: inline-block; font-size: 10px; font-weight: 600;
-            letter-spacing: 0.07em; text-transform: uppercase;
-            background: var(--text); color: #fff;
-            padding: 3px 10px; border-radius: 4px; margin-bottom: 18px;
-        }
-        .price-name {
-            font-size: 12px; font-weight: 600; color: var(--text-2);
-            text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px;
-        }
-        .price-amount {
-            font-size: 48px; font-weight: 700; letter-spacing: -0.04em;
-            color: var(--text); margin-bottom: 2px; line-height: 1;
-        }
-        .price-amount span { font-size: 22px; font-weight: 500; color: var(--text-2); vertical-align: top; margin-top: 10px; display: inline-block; }
-        .price-period { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
-        .price-desc { font-size: 13px; color: var(--text-2); line-height: 1.65; margin-bottom: 24px; border-top: 1px solid var(--border); padding-top: 20px; }
-        .price-features { display: flex; flex-direction: column; gap: 9px; margin-bottom: 28px; }
-        .pf {
-            font-size: 13px; color: var(--text-2); display: flex;
-            align-items: flex-start; gap: 9px; line-height: 1.5;
-        }
-        .pf::before { content: '\2713'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
-        .price-btn {
-            display: block; text-align: center; padding: 12px;
-            border-radius: 7px; font-size: 14px; font-weight: 600;
-            text-decoration: none; transition: background 0.12s;
-            background: var(--accent); color: #fff;
-        }
-        .price-btn:hover { background: #047857; }
-        .price-note { text-align: center; font-size: 12px; color: var(--text-3); margin-top: 12px; }
-
-        /* -- CTA --------------------------------------- */
-        .cta-section {
-            padding: 56px 24px; text-align: center;
-            background: var(--bg-2); border-top: 1px solid var(--border);
-        }
-        .cta-title {
-            font-size: clamp(28px, 4.5vw, 52px); font-weight: 700;
-            letter-spacing: -0.03em; margin-bottom: 14px;
-            line-height: 1.1; color: var(--text);
-        }
-        .cta-sub {
-            font-size: 16px; color: var(--text-2); max-width: 480px;
-            margin: 0 auto 36px; line-height: 1.7;
-        }
-        .cta-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
-        .cta-note { font-size: 12px; color: var(--text-3); }
-
-        /* -- FOOTER ------------------------------------ */
+        /* ── FOOTER ───────────────────────────────────── */
         footer {
-            padding: 32px 40px; border-top: 1px solid var(--border);
+            padding: 28px 40px;
+            border-top: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between;
-            flex-wrap: wrap; gap: 16px; background: var(--bg);
         }
-        .footer-logo { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
-        .footer-logo-acc { color: var(--accent); }
-        .footer-links { display: flex; gap: 24px; }
-        .footer-links a { font-size: 12px; color: var(--text-3); text-decoration: none; transition: color 0.12s; }
-        .footer-links a:hover { color: var(--text-2); }
-        .footer-copy { font-size: 12px; color: var(--text-3); }
+        .footer-logo {
+            font-size: 13px; font-weight: 700; color: var(--text-3);
+            letter-spacing: -0.01em;
+        }
+        .footer-logo span { color: var(--gold); }
+        .footer-right { font-size: 12px; color: var(--text-3); }
+        .footer-right a { color: var(--text-3); text-decoration: none; transition: color 0.12s; }
+        .footer-right a:hover { color: var(--text-2); }
 
-        /* -- RESPONSIVE -------------------------------- */
+        /* ── RESPONSIVE ───────────────────────────────── */
         @media (max-width: 768px) {
             nav { padding: 0 20px; }
-            .nav-links { display: none; }
-            section { padding: 40px 20px; }
-            .problem-grid, .steps-grid, .features-grid,
-            .intel-grid, .testi-grid { grid-template-columns: 1fr; }
-            .intel-grid { gap: 32px; }
-            .roi-inputs, .roi-breakdown { grid-template-columns: 1fr; }
-            footer { flex-direction: column; text-align: center; padding: 28px 20px; }
-            .footer-links { justify-content: center; }
-            .mock-intent-grid { grid-template-columns: repeat(2, 1fr); }
+            .nav-email { display: none; }
+            .hero { padding: 110px 20px 72px; }
+            .flow-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .flow-arrow { transform: rotate(90deg); padding: 8px 0; }
+            .values-grid { grid-template-columns: 1fr; }
+            .value-card { border-right: none; border-bottom: 1px solid var(--border); }
+            .value-card:last-child { border-bottom: none; }
+            .m-intents { grid-template-columns: repeat(3, 1fr); }
+            .split-grid { grid-template-columns: 1fr; }
+            .split-panel { border-right: none; border-bottom: 1px solid var(--border); }
+            .split-panel:last-child { border-bottom: none; }
+            footer { flex-direction: column; gap: 8px; text-align: center; }
         }
     </style>
 </head>
 <body>
 
-<!-- -- NAV ------------------------------------------- -->
+<!-- ── NAV ──────────────────────────────────────────────── -->
 <nav>
-    <a href="cannascope-landing.html" class="nav-logo">Canna<span class="nav-logo-accent">scope</span></a>
-    <div class="nav-links">
-        <a href="#how-it-works">How It Works</a>
-        <a href="#features">Features</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#roi">ROI Calculator</a>
-        <a href="cannascope-login.html">Sign In</a>
+    <a href="/" class="nav-logo">Canna<span>scope</span></a>
+    <div class="nav-right">
+        <a href="mailto:maxwell@cannascope.us" class="nav-email">maxwell@cannascope.us</a>
+        <a href="#contact" class="nav-cta">Book a Demo</a>
     </div>
-    <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="nav-cta">Request Access</a>
 </nav>
 
-<!-- -- HERO ------------------------------------------- -->
+<!-- ── HERO ─────────────────────────────────────────────── -->
 <section class="hero">
-    <div class="hero-eyebrow">Built for Dispensary Revenue</div>
-    <h1 class="hero-title">Your budtenders recommend<br><span class="hl">the same 3 products.</span></h1>
-    <p class="hero-sub">Cannascope turns every budtender into your best one &mdash; instant terpene-based recommendations, manager-directed inventory pushes, and upsell prompts that grow basket size automatically.</p>
+    <h1>Move inventory.<br><span>Increase basket size.</span></h1>
+    <p class="hero-sub">Cannascope gives every budtender instant, ranked product recommendations — driven by customer intent and your store's inventory priorities.</p>
     <div class="hero-actions">
-        <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="btn-primary-lg">Request Access</a>
-        <a href="#how-it-works" class="btn-ghost-lg">See How It Works</a>
-    </div>
-    <div class="hero-proof">
-        <div class="proof-item"><div class="proof-check"></div>3-minute setup</div>
-        <div class="proof-item"><div class="proof-check"></div>No app download for budtenders</div>
-        <div class="proof-item"><div class="proof-check"></div>Works with any POS</div>
-        <div class="proof-item"><div class="proof-check"></div>Revenue uplift in the first week</div>
+        <a href="#contact" class="btn-primary">Book a Demo</a>
+        <span class="hero-email"><a href="mailto:maxwell@cannascope.us">maxwell@cannascope.us</a></span>
     </div>
 </section>
 
-<!-- -- PRODUCT MOCKUP -------------------------------- -->
-<div class="mockup-section" style="padding-top:60px;">
-    <div class="mockup-wrap">
-        <div class="mockup-titlebar">
-            <div class="tb-dot"></div><div class="tb-dot"></div><div class="tb-dot"></div>
-            <span class="tb-url">cannascope.app/bud?key=&hellip;</span>
-        </div>
-        <div class="mockup-body">
-            <div class="mock-header">
-                <div class="mock-logo">Canna<span class="mock-logo-acc">scope</span></div>
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <span class="mock-store">Green Leaf Dispensary</span>
-                    <span class="mock-badge">47 products</span>
-                </div>
-            </div>
-            <div class="mock-eyebrow">Customer Intent</div>
-            <div class="mock-intent-grid">
-                <div class="mock-intent-btn"><div class="mib-name">Sleep</div><div class="mib-desc">Rest &amp; recovery</div></div>
-                <div class="mock-intent-btn sel"><div class="mib-name">Relax</div><div class="mib-desc">Unwind, decompress</div></div>
-                <div class="mock-intent-btn"><div class="mib-name">Focus</div><div class="mib-desc">Clarity &amp; productivity</div></div>
-                <div class="mock-intent-btn"><div class="mib-name">Social</div><div class="mib-desc">Energy &amp; mood lift</div></div>
-                <div class="mock-intent-btn"><div class="mib-name">Relief</div><div class="mib-desc">Pain &amp; inflammation</div></div>
-                <div class="mock-intent-btn"><div class="mib-name">Balanced</div><div class="mib-desc">First-time friendly</div></div>
-            </div>
-            <div class="mock-result-header">Relax &mdash; Top 3 Matches</div>
-            <div class="mock-cards">
-                <div class="mock-card rank-1">
-                    <div class="mock-card-rank">#1 Best Match &middot; 94% match</div>
-                    <div class="mock-card-main">
-                        <div class="mock-card-name">Blue Dream</div>
-                        <div class="mock-card-price">$42</div>
-                    </div>
-                    <div class="mock-card-meta">Canopy Co &middot; Flower &middot; THC 22% &middot; Shelf A4</div>
-                    <div class="mock-card-section">
-                        <div class="mock-section-label">Talking Point</div>
-                        <div class="mock-section-text">The go-to after-work strain. Relaxes the body without sedation &mdash; you can still function normally. Very smooth and consistent.</div>
-                    </div>
-                    <div class="mock-card-section is-manager">
-                        <div class="mock-section-label">Manager Note</div>
-                        <div class="mock-section-text">Overstock &mdash; push first.</div>
-                    </div>
-                </div>
-                <div class="mock-card">
-                    <div class="mock-card-rank">#2 Pick &middot; 81% match</div>
-                    <div class="mock-card-main">
-                        <div class="mock-card-name">OG Kush</div>
-                        <div class="mock-card-price">$48</div>
-                    </div>
-                    <div class="mock-card-meta">Canopy Co &middot; Flower &middot; THC 21% &middot; Shelf A2</div>
-                    <div class="mock-card-section">
-                        <div class="mock-section-label">Talking Point</div>
-                        <div class="mock-section-text">A grounding, settled relaxation. Caryophyllene has anti-inflammatory properties &mdash; particularly good for customers carrying physical tension.</div>
-                    </div>
-                    <div class="mock-card-section is-manager">
-                        <div class="mock-section-label">Manager Note</div>
-                        <div class="mock-section-text">High margin product.</div>
-                    </div>
-                </div>
-                <div class="mock-upsell">
-                    <div class="mock-upsell-label">Upsell Opportunity</div>
-                    <div class="mock-upsell-text">Customers who buy relax flower often add low-dose gummies for a longer, more sustained effect throughout the evening.</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- -- PROBLEM ----------------------------------------- -->
-<section id="problem">
+<!-- ── SYSTEM FLOW ───────────────────────────────────────── -->
+<section class="flow-section">
     <div class="container">
-        <div class="section-eyebrow">The Problem</div>
-        <h2 class="section-title">Every dispensary has the same broken sales floor</h2>
-        <p class="section-sub">New budtenders take months to become effective. Overstock sits while popular items run out. Margins suffer.</p>
-        <div class="problem-grid">
-            <div class="problem-card">
-                <div class="problem-num">1</div>
-                <div class="problem-title">New budtenders struggle for months</div>
-                <div class="problem-text">It takes 60&ndash;90 days for a new hire to know the menu well enough to recommend confidently. Until then, they under-sell and over-apologize.</div>
+        <p class="flow-label-top">How it works</p>
+        <div class="flow-grid">
+            <div class="flow-step">
+                <div class="flow-step-num">Input</div>
+                <div class="flow-step-title">Customer intent</div>
+                <div class="flow-step-desc">Sleep. Focus. Relief. Social. Relaxation. Beginner. The budtender selects what the customer is looking for — one tap.</div>
             </div>
-            <div class="problem-card">
-                <div class="problem-num">2</div>
-                <div class="problem-title">Inventory moves at random</div>
-                <div class="problem-text">Managers have no way to systematically direct budtenders toward overstock or high-margin items. Products sit while staff improvise.</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+                <div class="flow-step-num">Engine</div>
+                <div class="flow-step-title">Cannascope scores your inventory</div>
+                <div class="flow-step-desc">Every in-stock product is scored for terpene fit, format, THC level, margin, and manager priority — in real time.</div>
             </div>
-            <div class="problem-card">
-                <div class="problem-num">3</div>
-                <div class="problem-title">Upsells never happen</div>
-                <div class="problem-text">Budtenders are focused on getting through the interaction. Basket size stays flat because nobody has a systematic reason to suggest an add-on.</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+                <div class="flow-step-num">Output</div>
+                <div class="flow-step-title">Top 3 products surfaced</div>
+                <div class="flow-step-desc">Ranked by fit + dispensary priority. Includes talking points, shelf location, and manager notes for the budtender.</div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- -- HOW IT WORKS ------------------------------------ -->
-<section id="how-it-works" class="how-section">
+<!-- ── VALUE PROPS ───────────────────────────────────────── -->
+<section class="values-section">
     <div class="container">
-        <div class="section-eyebrow">How It Works</div>
-        <h2 class="section-title">Up and running in 3 minutes</h2>
-        <p class="section-sub">No integrations, no IT team, no onboarding calls. Upload your CSV and you're live.</p>
-        <div class="steps-grid">
-            <div class="step-card">
-                <div class="step-num">1</div>
-                <div class="step-title">Export your inventory CSV</div>
-                <div class="step-text">Download your product list from Dutchie, Flowhub, Treez, or any POS. It takes about 30 seconds.</div>
-                <div class="step-time">~30 seconds</div>
+        <p class="values-eyebrow">What it does</p>
+        <h2 class="values-heading">Three outcomes. No guesswork.</h2>
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-num">01</div>
+                <div class="value-title">Bigger baskets</div>
+                <div class="value-text">Recommendations are ranked by fit and margin. Budtenders lead with the right product at the right price point — consistently, without upselling pressure.</div>
             </div>
-            <div class="step-card">
-                <div class="step-num">2</div>
-                <div class="step-title">Upload and auto-tag products</div>
-                <div class="step-text">Cannascope reads your inventory, maps each product to effect profiles, and writes talking points &mdash; automatically.</div>
-                <div class="step-time">~2 minutes</div>
+            <div class="value-card">
+                <div class="value-num">02</div>
+                <div class="value-title">No training dependency</div>
+                <div class="value-text">New hires are effective on day one. Every budtender works from the same scored list — your best employee's knowledge, systematized across your entire floor.</div>
             </div>
-            <div class="step-card">
-                <div class="step-num">3</div>
-                <div class="step-title">Send the link to your budtenders</div>
-                <div class="step-text">Your team opens the Cannascope link on any phone or tablet. No login, no app, no training required.</div>
-                <div class="step-time">~30 seconds</div>
+            <div class="value-card">
+                <div class="value-num">03</div>
+                <div class="value-title">Inventory moves intelligently</div>
+                <div class="value-text">Overstocked products, high-margin SKUs, and manager priorities are factored into every recommendation. What needs to move gets surfaced.</div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- -- FEATURES ---------------------------------------- -->
-<section id="features">
+<!-- ── PRODUCT MOCKUP ────────────────────────────────────── -->
+<section class="mockup-section">
     <div class="container">
-        <div class="section-eyebrow">Features</div>
-        <h2 class="section-title">Built for how dispensaries actually operate</h2>
-        <p class="section-sub">Not a chatbot. Not a quiz. A real tool your team will actually use during a transaction.</p>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-num">01 &mdash; Recommendation Engine</div>
-                <div class="feature-title">Tap an effect. Get three products.</div>
-                <div class="feature-text">Customer says they want to relax. Budtender taps Relax. Cannascope shows the top 3 products from your live inventory &mdash; scored by terpene profile and effect match.</div>
-                <ul class="feature-list">
-                    <li>Six effect categories: Sleep, Relax, Focus, Social, Relief, Balanced</li>
-                    <li>Results scored using real terpene data &mdash; not just indica/sativa</li>
-                    <li>Always pulls from your live, in-stock inventory</li>
-                </ul>
+        <div class="mockup-intro">
+            <h2>The interface budtenders actually use</h2>
+            <p>One screen. One tap. Three recommendations. No training, no memorization, no inconsistency.</p>
+        </div>
+        <div class="mockup-frame">
+            <div class="mockup-bar">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <span class="mockup-url">cannascope.app · budtender view</span>
             </div>
-            <div class="feature-card">
-                <div class="feature-num">02 &mdash; Manager Notes</div>
-                <div class="feature-title">Tell your team what to push &mdash; without saying a word.</div>
-                <div class="feature-text">Managers attach notes directly to products: "Overstock &mdash; push first," "High margin," "Brand promo this week." Those notes appear on the recommendation card, right below the talking point.</div>
-                <ul class="feature-list">
-                    <li>Notes surface automatically during recommendations</li>
-                    <li>Directs budtender attention without a daily briefing</li>
-                    <li>Updated in real time from the Admin panel</li>
-                </ul>
-            </div>
-            <div class="feature-card">
-                <div class="feature-num">03 &mdash; Talking Points</div>
-                <div class="feature-title">Every product has a script. Nobody has to wing it.</div>
-                <div class="feature-text">Cannascope generates a natural-language talking point for every product &mdash; grounded in terpenes, potency, and format. New budtenders sound experienced from Day 1.</div>
-                <ul class="feature-list">
-                    <li>Auto-generated from product data on import</li>
-                    <li>Editable in the Admin panel</li>
-                    <li>Consistent across the whole floor &mdash; no conflicting recommendations</li>
-                </ul>
-            </div>
-            <div class="feature-card">
-                <div class="feature-num">04 &mdash; Upsell Prompts</div>
-                <div class="feature-title">Basket size grows automatically.</div>
-                <div class="feature-text">After showing the main recommendations, Cannascope surfaces a contextual upsell suggestion &mdash; tied to the effect category. No extra training. No pressure. Just a prompt.</div>
-                <ul class="feature-list">
-                    <li>Effect-specific upsell logic (relax flower &rarr; gummies for longer effect)</li>
-                    <li>Shown at the bottom of every recommendation screen</li>
-                    <li>Designed to feel like helpful advice, not a hard sell</li>
-                </ul>
+            <div class="mockup-body">
+                <div class="m-header">
+                    <span class="m-logo">Canna<span>scope</span></span>
+                    <span class="m-badge">22 products in stock</span>
+                </div>
+                <div class="m-label">What is the customer looking for?</div>
+                <div class="m-intents">
+                    <div class="m-intent"><span class="m-intent-name">Sleep</span></div>
+                    <div class="m-intent"><span class="m-intent-name">Relax</span></div>
+                    <div class="m-intent"><span class="m-intent-name">Focus</span></div>
+                    <div class="m-intent active"><span class="m-intent-name">Social</span></div>
+                    <div class="m-intent"><span class="m-intent-name">Relief</span></div>
+                    <div class="m-intent"><span class="m-intent-name">Balanced</span></div>
+                </div>
+                <div class="m-label" style="margin-bottom:12px;">Top 3 for Social — ranked by fit &amp; store priority</div>
+                <div class="m-cards">
+                    <div class="m-card top">
+                        <div class="m-card-top">
+                            <span class="m-card-rank">Best match</span>
+                            <span class="m-card-match">92% fit</span>
+                        </div>
+                        <div class="m-card-body">
+                            <span class="m-card-name">Pineapple Express</span>
+                            <span class="m-card-price">$43</span>
+                        </div>
+                        <div class="m-card-sub">Flower · 20% THC · Shelf D2 · Coastal Farms</div>
+                        <div class="m-card-note">
+                            <div class="m-card-note-label">Manager note</div>
+                            <div class="m-card-note-text">Overstock — push this batch first.</div>
+                        </div>
+                    </div>
+                    <div class="m-card">
+                        <div class="m-card-top">
+                            <span class="m-card-rank">2nd</span>
+                            <span class="m-card-match">84% fit</span>
+                        </div>
+                        <div class="m-card-body">
+                            <span class="m-card-name">Tangie Vape</span>
+                            <span class="m-card-price">$52</span>
+                        </div>
+                        <div class="m-card-sub">Vape · 22% THC · Shelf V3 · Summit Select</div>
+                    </div>
+                    <div class="m-card">
+                        <div class="m-card-top">
+                            <span class="m-card-rank">3rd</span>
+                            <span class="m-card-match">78% fit</span>
+                        </div>
+                        <div class="m-card-body">
+                            <span class="m-card-name">Mimosa</span>
+                            <span class="m-card-price">$48</span>
+                        </div>
+                        <div class="m-card-sub">Flower · 22% THC · Shelf D4 · Canopy Co</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- -- INVENTORY INTELLIGENCE --------------------------- -->
-<section class="intel-section">
+<!-- ── BUDTENDER + INVENTORY ─────────────────────────────── -->
+<section class="split-section">
     <div class="container">
-        <div class="intel-grid">
-            <div>
-                <div class="intel-tag">Inventory Intelligence</div>
-                <h2 class="intel-title">Recommendations that serve your store, not just the customer.</h2>
-                <p class="intel-sub">Most dispensary software is customer-facing. Cannascope is also <em>manager-facing</em> &mdash; it lets you systematically influence what gets sold, without micromanaging your floor.</p>
-                <div class="intel-metrics">
-                    <div class="intel-metric">
-                        <div class="metric-val">23%</div>
-                        <div class="metric-lbl">Average increase in overstock movement when manager notes are active</div>
-                    </div>
-                    <div class="intel-metric">
-                        <div class="metric-val">$12</div>
-                        <div class="metric-lbl">Estimated average basket size increase from upsell prompts per transaction</div>
-                    </div>
-                    <div class="intel-metric">
-                        <div class="metric-val">Day 1</div>
-                        <div class="metric-lbl">New budtenders are productive &mdash; no more 90-day learning curve</div>
-                    </div>
+        <div class="split-grid">
+            <div class="split-panel">
+                <span class="split-tag">Staff performance</span>
+                <h3 class="split-title">Every budtender performs like your best one</h3>
+                <p class="split-text">Cannascope doesn't require product memorization. The system surfaces the right recommendation based on what the customer needs — not what the budtender happens to know.</p>
+                <div class="split-points">
+                    <div class="split-point">New hires are effective on day one</div>
+                    <div class="split-point">Consistent recommendations across every shift</div>
+                    <div class="split-point">Talking points included — no improvisation required</div>
                 </div>
             </div>
-            <div class="intel-panel">
-                <div class="intel-panel-header">
-                    <span>Manager Dashboard &mdash; Live Inventory</span>
-                    <div class="live-indicator"><div class="live-dot"></div>Live</div>
-                </div>
-                <div class="intel-rows">
-                    <div class="intel-row">
-                        <div class="ir-name">Blue Dream</div>
-                        <div class="ir-note">Push first</div>
-                        <div class="ir-badge push">Overstock</div>
-                    </div>
-                    <div class="intel-row">
-                        <div class="ir-name">OG Kush</div>
-                        <div class="ir-note">High margin</div>
-                        <div class="ir-badge hi">In Stock</div>
-                    </div>
-                    <div class="intel-row">
-                        <div class="ir-name">Granddaddy Purple</div>
-                        <div class="ir-note">End of batch</div>
-                        <div class="ir-badge low">Low Stock</div>
-                    </div>
-                    <div class="intel-row">
-                        <div class="ir-name">Sour Diesel</div>
-                        <div class="ir-note">Brand promo this week</div>
-                        <div class="ir-badge hi">In Stock</div>
-                    </div>
-                    <div class="intel-row">
-                        <div class="ir-name">ACDC</div>
-                        <div class="ir-note">Pair with flower purchase</div>
-                        <div class="ir-badge hi">In Stock</div>
-                    </div>
+            <div class="split-panel">
+                <span class="split-tag">Inventory intelligence</span>
+                <h3 class="split-title">The system that ensures priority products get surfaced</h3>
+                <p class="split-text">Managers flag overstock, high-margin SKUs, and promotional products. Those priorities are built into every recommendation — so the floor automatically moves what needs to move.</p>
+                <div class="split-points">
+                    <div class="split-point">Overstock surfaces automatically, not by accident</div>
+                    <div class="split-point">Manager priorities woven into every recommendation</div>
+                    <div class="split-point">No separate training session needed when product changes</div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- -- ROI CALCULATOR ---------------------------------- -->
-<section id="roi" class="roi-section">
+<!-- ── CONTACT ───────────────────────────────────────────── -->
+<section class="contact-section" id="contact">
     <div class="container">
-        <div class="section-eyebrow">ROI Calculator</div>
-        <h2 class="section-title">See what Cannascope pays for itself</h2>
-        <p class="section-sub">Adjust your numbers. The math is straightforward.</p>
-        <div class="roi-inner">
-            <div class="roi-card">
-                <div class="roi-card-heading">Your Dispensary Numbers</div>
-                <div class="roi-card-sub">Estimated impact based on industry averages</div>
-                <div class="roi-inputs">
-                    <div class="roi-field">
-                        <label>Daily Transactions</label>
-                        <input type="number" id="roi-txns" value="80" min="1" oninput="calcROI()">
-                    </div>
-                    <div class="roi-field">
-                        <label>Avg Basket Size ($)</label>
-                        <input type="number" id="roi-basket" value="55" min="1" oninput="calcROI()">
-                    </div>
-                </div>
-                <div class="roi-result">
-                    <div class="roi-result-label">Estimated Monthly Revenue Increase</div>
-                    <div class="roi-result-num" id="roi-monthly">$0</div>
-                    <div class="roi-result-sub" id="roi-sub">vs. $199/mo for Cannascope</div>
-                </div>
-                <div class="roi-breakdown">
-                    <div class="roi-cell">
-                        <div class="roi-cell-val" id="roi-upsell-val">$0</div>
-                        <div class="roi-cell-label">Upsell Lift</div>
-                    </div>
-                    <div class="roi-cell">
-                        <div class="roi-cell-val" id="roi-inventory-val">$0</div>
-                        <div class="roi-cell-label">Inventory Movement</div>
-                    </div>
-                    <div class="roi-cell">
-                        <div class="roi-cell-val" id="roi-roi-val">0x</div>
-                        <div class="roi-cell-label">Return on Investment</div>
-                    </div>
-                </div>
+        <p class="contact-eyebrow">Get started</p>
+        <h2 class="contact-heading">See Cannascope in your store</h2>
+        <p class="contact-sub">We'll walk you through how it fits into your floor and inventory. No pitch deck. Just the product.</p>
+        <div class="contact-actions">
+            <a href="https://calendly.com/maxwell-cannascope" target="_blank" class="btn-primary-lg">Book a Demo</a>
+            <p class="contact-email">Or reach out directly: <a href="mailto:maxwell@cannascope.us">maxwell@cannascope.us</a></p>
+        </div>
+        <div style="height:48px;"></div>
+        <!-- Calendly inline widget -->
+        <div class="calendly-wrap">
+            <div class="calendly-placeholder" id="calendly-loader">
+                <p style="margin-bottom:8px;font-weight:600;color:var(--text-2);">Scheduling</p>
+                <p>Loading Calendly…</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- -- TESTIMONIALS ------------------------------------ -->
-<section class="testi-section">
-    <div class="container">
-        <div class="section-eyebrow">Early Users</div>
-        <h2 class="section-title">Dispensary operators on Cannascope</h2>
-        <p class="section-sub">Feedback from beta locations during our initial rollout.</p>
-        <div class="testi-grid">
-            <div class="testi-card">
-                <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <div class="testi-quote">"New hires are useful from day one now. Before Cannascope, it took 6&ndash;8 weeks before they could handle a customer without checking with a senior budtender."</div>
-                <div class="testi-author">
-                    <div class="testi-avatar">JR</div>
-                    <div>
-                        <div class="testi-name">Jordan R.</div>
-                        <div class="testi-role">GM, Green Leaf Dispensary &mdash; Portland, OR</div>
-                    </div>
-                </div>
-            </div>
-            <div class="testi-card">
-                <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <div class="testi-quote">"I put a manager note on our overstock batch Friday morning. By end of day Saturday it was gone. That's never happened that fast with just a pre-shift briefing."</div>
-                <div class="testi-author">
-                    <div class="testi-avatar">MS</div>
-                    <div>
-                        <div class="testi-name">Maria S.</div>
-                        <div class="testi-role">Owner, Elevate Cannabis Co. &mdash; Denver, CO</div>
-                    </div>
-                </div>
-            </div>
-            <div class="testi-card">
-                <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <div class="testi-quote">"Our average ticket is up about $11 since we started using the upsell prompts. That's real money when you're doing 150 transactions a day."</div>
-                <div class="testi-author">
-                    <div class="testi-avatar">TC</div>
-                    <div>
-                        <div class="testi-name">Tyler C.</div>
-                        <div class="testi-role">Operations Director, Peak State &mdash; Las Vegas, NV</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- -- PRICING ----------------------------------------- -->
-<section id="pricing" class="pricing-section">
-    <div class="container">
-        <div class="section-eyebrow">Pricing</div>
-        <h2 class="section-title">Simple, flat pricing per location</h2>
-        <p class="section-sub">No per-seat fees. No usage limits. One price covers your whole team.</p>
-        <div class="price-card">
-            <div class="price-card-badge">Invite Only</div>
-            <div class="price-name">Per Location</div>
-            <div class="price-amount"><span>$</span>199</div>
-            <div class="price-period">per location / month</div>
-            <div class="price-desc">The full Cannascope experience &mdash; inventory intelligence, manager notes, and upsell prompts included.</div>
-            <div class="price-features">
-                <div class="pf">Terpene-based recommendation engine</div>
-                <div class="pf">Unlimited budtender access &mdash; no per-seat fees</div>
-                <div class="pf">AI talking points generated per product</div>
-                <div class="pf">Upsell prompts at point of recommendation</div>
-                <div class="pf">Full admin dashboard and CSV import</div>
-                <div class="pf">Personally onboarded by the Cannascope team</div>
-            </div>
-            <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="price-btn">Request Access</a>
-            <div class="price-note">We'll reach out and onboard you personally</div>
-        </div>
-    </div>
-</section>
-
-<!-- -- CTA --------------------------------------------- -->
-<section class="cta-section">
-    <div class="cta-inner">
-        <h2 class="cta-title">Your best budtender<br>can't work every shift.</h2>
-        <p class="cta-sub">Dispensaries that prioritize revenue use Cannascope to make every shift count. We onboard you personally.</p>
-        <div class="cta-actions">
-            <a href="mailto:maxwellmisiaszek@gmail.com?subject=Cannascope%20Access%20Request&body=Hi%2C%20I%27m%20interested%20in%20getting%20access%20to%20Cannascope%20for%20my%20dispensary." class="btn-primary-lg">Request Access</a>
-            <a href="cannascope-cheatsheet-v2.html" class="btn-ghost-lg">Try the Demo</a>
-        </div>
-        <div class="cta-note">Interested? Email us and we'll onboard you personally.</div>
-    </div>
-</section>
-
-<!-- -- FOOTER ------------------------------------------ -->
+<!-- ── FOOTER ────────────────────────────────────────────── -->
 <footer>
-    <div class="footer-logo">Canna<span class="footer-logo-acc">scope</span></div>
-    <div class="footer-links">
-        <a href="#how-it-works">How It Works</a>
-        <a href="#features">Features</a>
-        <a href="#pricing">Pricing</a>
-        <a href="cannascope-login.html">Sign In</a>
-    </div>
-    <div class="footer-copy">&copy; 2026 Cannascope. All rights reserved.</div>
+    <span class="footer-logo">Canna<span>scope</span></span>
+    <span class="footer-right">
+        <a href="mailto:maxwell@cannascope.us">maxwell@cannascope.us</a>
+    </span>
 </footer>
 
 <script>
-function calcROI() {
-    const txns   = parseInt(document.getElementById('roi-txns').value)   || 80;
-    const basket = parseInt(document.getElementById('roi-basket').value) || 55;
-    const upsellPerMonth    = txns * 30 * 0.15 * 12;
-    const inventoryPerMonth = 200 + (txns * 0.01 * basket * 30);
-    const totalPerMonth     = Math.round(upsellPerMonth + inventoryPerMonth);
-    const roi               = Math.round(totalPerMonth / 199);
-    document.getElementById('roi-monthly').textContent       = '$' + totalPerMonth.toLocaleString();
-    document.getElementById('roi-sub').textContent           = 'vs. $199/mo for Cannascope';
-    document.getElementById('roi-upsell-val').textContent    = '$' + Math.round(upsellPerMonth).toLocaleString();
-    document.getElementById('roi-inventory-val').textContent = '$' + Math.round(inventoryPerMonth).toLocaleString();
-    document.getElementById('roi-roi-val').textContent       = roi + 'x';
-}
-calcROI();
+    // Load Calendly inline widget
+    (function loadCalendly() {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://assets.calendly.com/assets/external/widget.css';
+        document.head.appendChild(link);
 
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-        const t = document.querySelector(a.getAttribute('href'));
-        if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-    });
-});
+        const script = document.createElement('script');
+        script.src = 'https://assets.calendly.com/assets/external/widget.js';
+        script.onload = function() {
+            const wrap = document.querySelector('.calendly-wrap');
+            wrap.innerHTML = '';
+            Calendly.initInlineWidget({
+                url: 'https://calendly.com/maxwell-cannascope',
+                parentElement: wrap,
+                prefill: {},
+                utm: {}
+            });
+        };
+        document.head.appendChild(script);
+    })();
 </script>
+
 </body>
 </html>
