@@ -260,6 +260,40 @@ tr:hover .row-acts{opacity:1}
 
 @media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:768px){.kpi-strip{grid-template-columns:repeat(2,1fr)};.pad{padding:16px 20px};.header{padding:0 16px};.pg-head{padding:20px 20px 0};.tabs-bar{padding:20px 20px 0}}
+
+/* CHECKBOXES */
+.row-cb{width:36px;padding-left:14px!important;padding-right:4px!important}
+.cb{width:15px;height:15px;border:1.5px solid var(--border);border-radius:3px;cursor:pointer;appearance:none;background:var(--surface);transition:all .12s;flex-shrink:0;vertical-align:middle;display:inline-block;position:relative}
+.cb:checked{background:var(--green);border-color:var(--green)}
+.cb:checked::after{content:'';position:absolute;left:4px;top:1px;width:5px;height:9px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg)}
+.cb:hover:not(:checked){border-color:var(--green-mid)}
+th.row-cb .cb{margin-top:1px}
+
+/* BULK ACTION BAR */
+.bulk-bar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--txt);color:#fff;border-radius:var(--rl);padding:10px 14px 10px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(28,28,22,0.22);z-index:200;transition:transform .22s cubic-bezier(.34,1.56,.64,1);min-width:400px;white-space:nowrap}
+.bulk-bar.visible{transform:translateX(-50%) translateY(0)}
+.bulk-sel-count{font-size:13px;font-weight:600;opacity:.9;margin-right:4px}
+.bulk-sep{width:1px;height:18px;background:rgba(255,255,255,0.15)}
+.bulk-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:rgba(255,255,255,0.12);color:#fff;font-family:var(--font);transition:background .12s}
+.bulk-btn:hover{background:rgba(255,255,255,0.22)}
+.bulk-btn.danger:hover{background:rgba(239,68,68,0.55)}
+.bulk-clear{background:transparent;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:12px;font-family:var(--font);padding:4px 6px;border-radius:4px;margin-left:auto;transition:color .12s}
+.bulk-clear:hover{color:#fff}
+
+/* CSV IMPORT MODAL EXTRAS */
+.drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:32px 20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--green-mid);background:var(--green-d)}
+.drop-zone-icon{color:var(--txt3);margin-bottom:10px}
+.drop-zone-label{font-size:13px;color:var(--txt2);font-weight:500}
+.drop-zone-sub{font-size:11px;color:var(--txt3);margin-top:4px}
+.import-preview{max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);margin-top:14px}
+.import-preview table{width:100%;border-collapse:collapse;font-size:11px}
+.import-preview th{padding:7px 10px;text-align:left;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0}
+.import-preview td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--txt2)}
+.import-preview tr:last-child td{border-bottom:none}
+.import-status{font-size:12px;font-weight:500;margin-top:10px;padding:8px 12px;border-radius:var(--rs)}
+.import-status.ok{background:var(--green-d);color:var(--green)}
+.import-status.err{background:var(--red-d);color:var(--red)}
 </style>
 </head>
 <body>
@@ -330,14 +364,16 @@ tr:hover .row-acts{opacity:1}
     <select class="fsel" id="fxStock" onchange="renderTable()"><option value="">All Stock</option><option value="in">In Stock</option><option value="out">Out of Stock</option></select>
     <select class="fsel" id="fxScript" onchange="renderTable()"><option value="">All Scripts</option><option value="has">Has Script</option><option value="miss">Needs Script</option></select>
     <div class="f-spacer"></div>
+    <button class="hbtn" onclick="openImportCSV()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import CSV</button>
     <button class="hbtn" onclick="exportCSV()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button>
     <button class="hbtn" onclick="autoScripts()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Generate Scripts</button>
     <button class="hbtn primary" onclick="openAdd()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product</button>
   </div>
   <div class="tbl-wrap">
-    <div class="tbl-top"><span class="tbl-count" id="tblCount"></span></div>
+    <div class="tbl-top"><span class="tbl-count" id="tblCount"></span><span id="bulkHint" style="font-size:11px;color:var(--txt3);margin-left:10px;display:none">Select rows to bulk-edit</span></div>
     <table class="ptbl">
       <thead><tr>
+        <th class="row-cb"><input type="checkbox" class="cb" id="selectAllCb" onclick="toggleSelectAll(this.checked)" title="Select all"></th>
         <th onclick="sortBy('name')">Product</th>
         <th onclick="sortBy('category')">Category</th>
         <th onclick="sortBy('thc')">THC / CBD</th>
@@ -419,6 +455,70 @@ tr:hover .row-acts{opacity:1}
   </div>
 </div>
 
+<!-- BULK ACTION BAR -->
+<div class="bulk-bar" id="bulkBar">
+  <span class="bulk-sel-count" id="bulkCount">0 selected</span>
+  <div class="bulk-sep"></div>
+  <button class="bulk-btn" onclick="bulkMarkStock(true)" title="Mark all selected as In Stock">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>In Stock
+  </button>
+  <button class="bulk-btn" onclick="bulkMarkStock(false)" title="Mark all selected as Out of Stock">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Out of Stock
+  </button>
+  <button class="bulk-btn" onclick="bulkSetPush(true)">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Push On
+  </button>
+  <button class="bulk-btn" onclick="bulkSetPush(false)">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Push Off
+  </button>
+  <div class="bulk-sep"></div>
+  <button class="bulk-btn danger" onclick="bulkDelete()">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Delete
+  </button>
+  <button class="bulk-clear" onclick="clearSelection()">✕ Clear</button>
+</div>
+
+<!-- IMPORT CSV MODAL -->
+<div class="modal-ov" id="importModal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-hd">
+      <span class="modal-title">Import Products from CSV</span>
+      <button class="modal-x" onclick="closeM('importModal')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-bd">
+      <div style="font-size:12px;color:var(--txt3);margin-bottom:14px;line-height:1.6">
+        Upload a CSV with columns: <code style="background:var(--surface-el);padding:1px 5px;border-radius:3px;font-size:11px">name, brand, category, effect, thc, cbd, price, shelf, in_stock, push, manager_note, talking_points</code><br>
+        Terpene columns (<code style="background:var(--surface-el);padding:1px 5px;border-radius:3px;font-size:11px">t_myrcene</code>, etc.) are optional. <strong style="color:var(--txt2)">Existing products with matching names will be skipped.</strong>
+      </div>
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('csvFileInput').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleCSVDrop(event)">
+        <div class="drop-zone-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+        <div class="drop-zone-label">Drop CSV file here or click to browse</div>
+        <div class="drop-zone-sub">Supports .csv files up to 5MB</div>
+      </div>
+      <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCSVFile(this.files[0])">
+      <div id="importStatus" style="display:none"></div>
+      <div id="importPreview" style="display:none" class="import-preview"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="hbtn ghost" onclick="closeM('importModal')">Cancel</button>
+      <span id="importSummary" style="font-size:12px;color:var(--txt3);margin-right:auto;align-self:center"></span>
+      <button class="hbtn primary" id="importConfirmBtn" onclick="confirmImport()" style="display:none">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Import Products
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- BULK DELETE CONFIRM MODAL -->
+<div class="modal-ov" id="bulkDelModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-hd"><span class="modal-title">Delete Selected Products</span><button class="modal-x" onclick="closeM('bulkDelModal')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-bd"><p style="color:var(--txt2);font-size:13px;line-height:1.6">Remove <strong id="bulkDelCount" style="color:var(--txt)"></strong> from your inventory? This cannot be undone.</p></div>
+    <div class="modal-ft"><button class="hbtn ghost" onclick="closeM('bulkDelModal')">Cancel</button><button class="hbtn" style="background:var(--red-d);color:var(--red);border-color:rgba(239,68,68,.2)" onclick="confirmBulkDelete()">Delete All</button></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -432,6 +532,8 @@ const LS_ORG='cs_org_name';
 // -- STATE -----------------------------------------
 let products=[],sortCol='name',sortDir='asc',delTarget=null,anlDone=false,useDB=false;
 let userOrgId=null; // set at login — used to scope all DB writes to this org
+let selectedIds=new Set(); // tracks checked rows for bulk actions
+let importRows=[]; // parsed CSV rows pending confirmation
 
 // -- SEED DATA -------------------------------------
 const SEED=[
@@ -589,7 +691,7 @@ function renderTable(){
   const tbody=document.getElementById('ptbody');
   if(!rows.length){
     const filtered=q||fe||fc||fs||fsc;
-    tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><h3>'+(filtered?'No products match':'Catalog is empty')+'</h3><p>'+(filtered?'Try adjusting your filters':'Start by adding your first product')+'</p>'+(filtered?'':`<button class="hbtn primary" style="margin-top:16px" onclick="openAdd()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product</button>`)+'</div></td></tr>';
+    tbody.innerHTML='<tr><td colspan="11"><div class="empty"><div class="empty-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div><h3>'+(filtered?'No products match':'Catalog is empty')+'</h3><p>'+(filtered?'Try adjusting your filters':'Start by adding your first product')+'</p>'+(filtered?'':`<button class="hbtn primary" style="margin-top:16px" onclick="openAdd()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Product</button>`)+'</div></td></tr>';
     return;
   }
   tbody.innerHTML=rows.map(p=>{
@@ -599,7 +701,9 @@ function renderTable(){
     const pr=p.price!=null?'$'+Number(p.price).toFixed(2):'&#8212;';
     const mn=xe(p.manager_note||'');
     const rowCls=[p.push?'row-push':'',...(!p.in_stock?['row-oos']:[]),...(!hs&&p.in_stock?['row-miss']:[])].filter(Boolean).join(' ');
+    const checked=selectedIds.has(p.id)?'checked':'';
     return `<tr data-id="${p.id}" class="${rowCls}">
+      <td class="row-cb"><input type="checkbox" class="cb row-check" ${checked} onclick="toggleSelectRow('${p.id}',this.checked)"></td>
       <td><div class="p-name">${xe(p.name||'')}</div><div class="p-brand">${xe(p.brand||'')}</div></td>
       <td><span class="badge cat-${p.category||'flower'}">${p.category||''}</span></td>
       <td><span class="mono">${thc}${cbd}</span></td>
@@ -920,6 +1024,210 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelect
 async function signOut(){
   if(useDB){try{await sb.auth.signOut();}catch(e){}}
   window.location.href='cannascope-login.html';
+}
+
+// -- SELECTION / BULK ---------------------------------
+function toggleSelectRow(id,checked){
+  if(checked)selectedIds.add(id);else selectedIds.delete(id);
+  updateBulkBar();
+  // sync header checkbox state
+  const allCb=document.getElementById('selectAllCb');
+  const visibleIds=getVisibleIds();
+  if(selectedIds.size===0)allCb.checked=allCb.indeterminate=false;
+  else if(visibleIds.every(id=>selectedIds.has(id))){allCb.checked=true;allCb.indeterminate=false;}
+  else{allCb.checked=false;allCb.indeterminate=true;}
+}
+
+function toggleSelectAll(checked){
+  getVisibleIds().forEach(id=>checked?selectedIds.add(id):selectedIds.delete(id));
+  document.getElementById('selectAllCb').indeterminate=false;
+  renderTable();
+  updateBulkBar();
+}
+
+function getVisibleIds(){
+  return Array.from(document.querySelectorAll('#ptbody tr[data-id]')).map(tr=>tr.dataset.id);
+}
+
+function clearSelection(){
+  selectedIds.clear();
+  document.getElementById('selectAllCb').checked=false;
+  document.getElementById('selectAllCb').indeterminate=false;
+  renderTable();
+  updateBulkBar();
+}
+
+function updateBulkBar(){
+  const bar=document.getElementById('bulkBar');
+  const hint=document.getElementById('bulkHint');
+  const n=selectedIds.size;
+  document.getElementById('bulkCount').textContent=n+' selected';
+  if(n>0){bar.classList.add('visible');if(hint)hint.style.display='inline';}
+  else{bar.classList.remove('visible');if(hint)hint.style.display='none';}
+}
+
+async function bulkMarkStock(val){
+  const ids=Array.from(selectedIds);if(!ids.length)return;
+  ids.forEach(id=>{const p=products.find(x=>x.id===id);if(p)p.in_stock=val;});
+  if(useDB){try{await Promise.all(ids.map(id=>sb.from('products').update({in_stock:val}).eq('id',id)));}catch(e){}}
+  lsSave();renderAll();anlDone=false;
+  showToast(ids.length+' products marked '+(val?'in stock':'out of stock'));
+}
+
+async function bulkSetPush(val){
+  const ids=Array.from(selectedIds);if(!ids.length)return;
+  ids.forEach(id=>{const p=products.find(x=>x.id===id);if(p)p.push=val;});
+  if(useDB){try{await Promise.all(ids.map(id=>sb.from('products').update({push:val}).eq('id',id)));}catch(e){}}
+  lsSave();renderAll();anlDone=false;
+  showToast(ids.length+' products '+(val?'added to push':'removed from push'));
+}
+
+function bulkDelete(){
+  const n=selectedIds.size;if(!n)return;
+  document.getElementById('bulkDelCount').textContent=n+' product'+(n!==1?'s':'');
+  openM('bulkDelModal');
+}
+
+async function confirmBulkDelete(){
+  const ids=Array.from(selectedIds);
+  if(useDB){try{await Promise.all(ids.map(id=>sb.from('products').delete().eq('id',id)));}catch(e){showToast('Error deleting');return;}}
+  products=products.filter(p=>!ids.includes(p.id));
+  selectedIds.clear();
+  lsSave();closeM('bulkDelModal');renderAll();anlDone=false;
+  updateBulkBar();
+  showToast(ids.length+' products removed');
+}
+
+// -- CSV IMPORT ----------------------------------------
+function openImportCSV(){
+  importRows=[];
+  document.getElementById('importStatus').style.display='none';
+  document.getElementById('importPreview').style.display='none';
+  document.getElementById('importConfirmBtn').style.display='none';
+  document.getElementById('importSummary').textContent='';
+  document.getElementById('csvFileInput').value='';
+  document.getElementById('dropZone').classList.remove('drag');
+  openM('importModal');
+}
+
+function handleCSVDrop(e){
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file&&file.name.endsWith('.csv'))handleCSVFile(file);
+  else showImportStatus('Please drop a .csv file','err');
+}
+
+function handleCSVFile(file){
+  if(!file)return;
+  if(file.size>5*1024*1024){showImportStatus('File too large (max 5MB)','err');return;}
+  const reader=new FileReader();
+  reader.onload=e=>parseCSVImport(e.target.result);
+  reader.readAsText(file);
+}
+
+function parseCSVImport(text){
+  const lines=text.trim().split(/\r?\n/);
+  if(lines.length<2){showImportStatus('CSV must have a header row and at least one product','err');return;}
+  const headers=parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim());
+  const nameIdx=headers.indexOf('name');
+  if(nameIdx===-1){showImportStatus('CSV must have a "name" column','err');return;}
+
+  const FIELD_MAP={
+    name:'name',brand:'brand',category:'category',effect:'effect',
+    thc:'thc',cbd:'cbd',price:'price',shelf:'shelf',
+    in_stock:'in_stock',push:'push',manager_note:'manager_note',
+    talking_points:'talking_points',
+    t_myrcene:'t_myrcene',t_linalool:'t_linalool',t_caryophyllene:'t_caryophyllene',
+    t_limonene:'t_limonene',t_pinene:'t_pinene',t_terpinolene:'t_terpinolene',
+    score_sleep:'score_sleep',score_relax:'score_relax',score_focus:'score_focus',
+    score_social:'score_social',score_relief:'score_relief',score_beginner:'score_beginner'
+  };
+
+  const existingNames=new Set(products.map(p=>(p.name||'').toLowerCase()));
+  const parsed=[];const skipped=[];
+
+  for(let i=1;i<lines.length;i++){
+    const vals=parseCSVLine(lines[i]);
+    if(!vals.length||!vals[nameIdx]?.trim())continue;
+    const row={};
+    headers.forEach((h,j)=>{if(FIELD_MAP[h]!==undefined)row[FIELD_MAP[h]]=vals[j]?.trim()||'';});
+    if(!row.name)continue;
+    if(existingNames.has(row.name.toLowerCase())){skipped.push(row.name);continue;}
+    // coerce types
+    row.thc=parseFloat(row.thc)||null;
+    row.cbd=parseFloat(row.cbd)||null;
+    row.price=parseFloat(row.price)||null;
+    row.in_stock=['true','yes','1'].includes((row.in_stock||'').toLowerCase());
+    row.push=['true','yes','1'].includes((row.push||'').toLowerCase());
+    ['t_myrcene','t_linalool','t_caryophyllene','t_limonene','t_pinene','t_terpinolene',
+     'score_sleep','score_relax','score_focus','score_social','score_relief','score_beginner'].forEach(f=>{if(row[f]!==undefined)row[f]=parseFloat(row[f])||null;});
+    parsed.push(row);
+  }
+
+  importRows=parsed;
+  const btn=document.getElementById('importConfirmBtn');
+  const summary=document.getElementById('importSummary');
+
+  if(!parsed.length&&!skipped.length){showImportStatus('No valid products found in CSV','err');btn.style.display='none';return;}
+  if(!parsed.length){showImportStatus(skipped.length+' product'+(skipped.length!==1?'s already exist':'  already exists')+', nothing new to import','err');btn.style.display='none';}
+  else{
+    showImportStatus((parsed.length)+' new product'+(parsed.length!==1?'s':'')+(skipped.length?' ('+skipped.length+' skipped — already exist)':''),'ok');
+    btn.style.display='inline-flex';
+    summary.textContent='';
+  }
+
+  // preview first 8 rows
+  if(parsed.length){
+    const prev=parsed.slice(0,8);
+    document.getElementById('importPreview').style.display='block';
+    document.getElementById('importPreview').innerHTML=`<table>
+      <thead><tr><th>Name</th><th>Brand</th><th>Category</th><th>Effect</th><th>THC</th><th>Price</th><th>Stock</th></tr></thead>
+      <tbody>${prev.map(r=>`<tr><td>${xe(r.name)}</td><td>${xe(r.brand||'')}</td><td>${xe(r.category||'')}</td><td>${xe(r.effect||'')}</td><td>${r.thc!=null?r.thc+'%':'—'}</td><td>${r.price!=null?'$'+r.price:'—'}</td><td>${r.in_stock?'✓':'✗'}</td></tr>`).join('')}
+      ${parsed.length>8?`<tr><td colspan="7" style="text-align:center;color:var(--txt3);padding:8px">…and ${parsed.length-8} more</td></tr>`:''}</tbody></table>`;
+  }
+}
+
+function parseCSVLine(line){
+  const result=[];let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(c===','&&!inQ){result.push(cur);cur='';}
+    else cur+=c;
+  }
+  result.push(cur);
+  return result.map(s=>s.trim());
+}
+
+function showImportStatus(msg,type){
+  const el=document.getElementById('importStatus');
+  el.style.display='block';
+  el.className='import-status '+(type==='ok'?'ok':'err');
+  el.textContent=msg;
+}
+
+async function confirmImport(){
+  if(!importRows.length)return;
+  const btn=document.getElementById('importConfirmBtn');
+  btn.disabled=true;btn.textContent='Importing…';
+  let added=0;
+  for(const row of importRows){
+    const prod={...row,id:undefined};
+    if(useDB&&userOrgId){prod.organization_id=userOrgId;}
+    if(useDB){
+      try{
+        const {data,error}=await sb.from('products').insert([prod]).select().single();
+        if(!error&&data){products.push(data);added++;}
+      }catch(e){}
+    } else {
+      prod.id='import_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+      products.push(prod);added++;
+    }
+  }
+  lsSave();closeM('importModal');renderAll();anlDone=false;
+  showToast(added+' product'+(added!==1?'s':'')+' imported');
+  importRows=[];
 }
 
 // -- UTILS -----------------------------------------
