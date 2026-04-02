@@ -427,6 +427,7 @@ const LS_ORG='cs_org_name';
 
 // -- STATE -----------------------------------------
 let products=[],sortCol='name',sortDir='asc',delTarget=null,anlDone=false,useDB=false;
+let userOrgId=null; // set at login — used to scope all DB writes to this org
 
 // -- SEED DATA -------------------------------------
 const SEED=[
@@ -461,6 +462,7 @@ async function init(){
       // Get org name
       try{
         const {data:prof}=await sb.from('user_profiles').select('org_name,organization_id').eq('id',session.user.id).single();
+        if(prof?.organization_id) userOrgId=prof.organization_id; // store for scoped inserts
         if(prof?.org_name){
           document.getElementById('orgName').textContent=prof.org_name;
           localStorage.setItem(LS_ORG,prof.org_name);
@@ -724,7 +726,8 @@ async function saveAdd(){
     shelf:document.getElementById('aSh').value,
     talking_points:document.getElementById('aTp').value,
     manager_note:document.getElementById('aMn').value,
-    in_stock:true,push:false
+    in_stock:true,push:false,
+    ...(userOrgId ? {organization_id:userOrgId} : {})
   };
   if(useDB){
     try{

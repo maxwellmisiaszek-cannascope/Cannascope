@@ -13,20 +13,21 @@
         }
 
         :root {
-            --accent: #059669;
-            --accent-light: #ECFDF5;
-            --accent-border: #6EE7B7;
+            --accent: #2D6A4F;
+            --accent-mid: #40916C;
+            --accent-light: #EAF4EE;
+            --accent-border: #A8D5B8;
             --amber: #92400E;
             --amber-light: #FFFBEB;
             --amber-border: #FDE68A;
-            --bg: #F9FAFB;
+            --bg: #F8F6F1;
             --surface: #FFFFFF;
-            --surface-2: #F3F4F6;
-            --border: #E5E7EB;
-            --border-2: #D1D5DB;
-            --text: #111827;
-            --text-2: #6B7280;
-            --text-3: #9CA3AF;
+            --surface-2: #F2EFE8;
+            --border: #E4DFCF;
+            --border-2: #CEC8B4;
+            --text: #1C1C16;
+            --text-2: #5A5A48;
+            --text-3: #9A9A82;
         }
 
         html, body {
@@ -206,7 +207,7 @@
             flex-shrink: 0;
             transition: background 0.12s;
         }
-        .btn-primary:hover { background: #047857; }
+        .btn-primary:hover { background: var(--accent-mid); }
         .btn-primary:active { transform: scale(0.97); }
 
         /* -- SCREEN 2: FILTERS ----------------------- */
@@ -280,7 +281,7 @@
             font-family: inherit;
             transition: background 0.12s;
         }
-        .btn-find-bottom:hover { background: #047857; }
+        .btn-find-bottom:hover { background: var(--accent-mid); }
 
         /* -- SCREEN 3: RESULTS ----------------------- */
         #screenResults { overflow: hidden; }
@@ -391,7 +392,7 @@
             padding: 2px 6px;
             border-radius: 4px;
         }
-        .conf-high   { background: #DCFCE7; color: #15803D; border: 1px solid #86EFAC; }
+        .conf-high   { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent-border); }
         .conf-medium { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
         .conf-low    { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
 
@@ -469,7 +470,7 @@
             border-top-color: var(--accent-border);
         }
         .card-section.card-why .card-section-label { color: var(--accent); }
-        .card-section.card-why .card-section-text  { color: #065F46; font-weight: 500; }
+        .card-section.card-why .card-section-text  { color: var(--accent); font-weight: 500; }
 
         /* How to Sell It — conversational script */
         .card-section.card-talk .card-section-label { color: #4B5563; }

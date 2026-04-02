@@ -11,19 +11,20 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --accent: #059669;
-            --accent-light: #ECFDF5;
-            --accent-border: #6EE7B7;
+            --accent: #2D6A4F;
+            --accent-mid: #40916C;
+            --accent-light: #EAF4EE;
+            --accent-border: #A8D5B8;
             --danger: #DC2626;
             --danger-light: #FEF2F2;
             --danger-border: #FECACA;
-            --bg: #F9FAFB;
+            --bg: #F8F6F1;
             --surface: #FFFFFF;
-            --border: #E5E7EB;
-            --border-2: #D1D5DB;
-            --text: #111827;
-            --text-2: #6B7280;
-            --text-3: #9CA3AF;
+            --border: #E4DFCF;
+            --border-2: #CEC8B4;
+            --text: #1C1C16;
+            --text-2: #5A5A48;
+            --text-3: #9A9A82;
         }
 
         html, body {
@@ -148,7 +149,7 @@
             transition: background 0.12s;
             margin-top: 4px;
         }
-        .btn-submit:hover { background: #047857; }
+        .btn-submit:hover { background: var(--accent-mid); }
         .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .page-footer {
