@@ -1346,6 +1346,42 @@ async function findProducts() {
     }
 }
 
+// ── PITCH LINE GENERATOR ──────────────────────────────────────────────────────
+// Generates a short, conversational 1-line pitch for budtenders to lead with.
+// Based on effect goal + product format (fast vs slow onset).
+function generatePitch(p, eff) {
+    const cat    = (p.category || '').toLowerCase();
+    const isQuick = ['flower', 'vape', 'preroll', 'concentrate'].includes(cat);
+    const isSlow  = ['edible', 'capsule', 'patch'].includes(cat);
+
+    switch (eff) {
+        case 'sleep':
+            if (isQuick) return 'Fast-acting — great for customers who have trouble falling asleep.';
+            if (isSlow)  return 'Long-lasting sleep support — good for customers who wake up through the night.';
+            return 'Well-suited for nighttime use and winding down before bed.';
+        case 'relax':
+            if (isQuick) return 'Quick body relaxation — takes the edge off without being overwhelming.';
+            if (isSlow)  return 'Steady, long-lasting relaxation — ideal for a full evening of unwinding.';
+            return 'Smooth and manageable — perfect for customers who want to decompress.';
+        case 'focus':
+            if (isSlow)  return 'Sustained mental clarity over several hours — good for long work sessions.';
+            return 'Clear-headed and uplifting — helps customers stay productive without anxiety.';
+        case 'social':
+            if (isQuick) return 'Fast mood lift — great for events, being outdoors, or socializing.';
+            if (isSlow)  return 'Gradual, lasting energy — good for all-day events or long nights out.';
+            return 'Uplifting and energetic — a solid pick for social situations.';
+        case 'relief':
+            if (cat === 'topical') return 'Targeted local relief — goes right to the source without psychoactive effects.';
+            if (isSlow)  return 'Deep, long-lasting relief — good for chronic pain or inflammation throughout the day.';
+            return 'Targets pain and inflammation — customers report strong full-body relief.';
+        case 'beginner':
+            if (isQuick) return 'Controllable and approachable — easy to find the right amount and stop there.';
+            return 'Gentle and smooth — ideal for customers who are new or returning after a long break.';
+        default:
+            return 'Strong match for this customer\'s goal based on product profile.';
+    }
+}
+
 function renderCard(p, idx, eff, rankLabel) {
     const result  = p._result;
     const thc     = parseFloat(p.thc)   || 0;
@@ -1361,13 +1397,13 @@ function renderCard(p, idx, eff, rankLabel) {
     const shelfHtml = p.shelf ? `<span class="chip-shelf">Shelf ${xe(p.shelf)}</span>` : '';
     const chipsHtml = (matchHtml || shelfHtml) ? `<div class="card-chips">${matchHtml}${shelfHtml}</div>` : '';
 
-    // Why it works — top reason as a 1-line pitch, rest as talking points context
-    const whyText = result.reasons.slice(0, 3).join(' · ');
-    const whyHtml = whyText ? `
+    // Why it works — conversational 1-line pitch based on effect + product format
+    const pitchLine = generatePitch(p, eff);
+    const whyHtml = `
     <div class="card-section card-why">
         <div class="card-section-label">Why This Works</div>
-        <div class="card-section-text">${xe(whyText)}</div>
-    </div>` : '';
+        <div class="card-section-text">${xe(pitchLine)}</div>
+    </div>`;
 
     // Penalty notes
     const penHtml = result.penalties.length ? `
@@ -1376,11 +1412,12 @@ function renderCard(p, idx, eff, rankLabel) {
         <div class="card-section-text">${result.penalties.map(pe => xe(pe)).join(' · ')}</div>
     </div>` : '';
 
-    // Talking points — shown as a conversational sell script for budtenders
-    const talkHtml = p.talking_points ? `
+    // Talking points — use DB talking_points if available, fall back to terpene reasons
+    const tpSource = p.talking_points || (result.reasons.slice(0, 3).join(' · '));
+    const talkHtml = tpSource ? `
     <div class="card-section card-talk">
-        <div class="card-section-label">How to Sell It</div>
-        <div class="card-section-text">${xe(p.talking_points)}</div>
+        <div class="card-section-label">Talking Points</div>
+        <div class="card-section-text">${xe(tpSource)}</div>
     </div>` : '';
 
     // Manager note
