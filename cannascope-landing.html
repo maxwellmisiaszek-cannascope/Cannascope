@@ -134,7 +134,7 @@
 
         /* ── HERO ─────────────────────────────────────────── */
         .hero {
-            padding: 140px 24px 108px;
+            padding: 100px 24px 80px;
             border-bottom: 1px solid var(--border);
             text-align: center;
             position: relative;
@@ -623,14 +623,6 @@
             padding-bottom: 1px; transition: color 0.12s;
         }
         .contact-email a:hover { color: var(--text-2); }
-        .calendly-wrap {
-            max-width: 860px; margin: 0 auto;
-            background: var(--bg-3); border: 1px solid var(--border);
-            border-radius: 14px; overflow: hidden; min-height: 660px;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: var(--shadow-sm);
-        }
-        .calendly-placeholder { text-align: center; color: var(--text-3); font-size: 13px; }
 
         /* ── FOOTER ───────────────────────────────────────── */
         footer {
@@ -936,13 +928,6 @@
             <a href="https://calendly.com/maxwellmisiaszek/30min" target="_blank" class="btn-primary-lg">Book a 10-Minute Demo</a>
             <p class="contact-email">Or reach out: <a href="mailto:maxwell@cannascope.us">maxwell@cannascope.us</a></p>
         </div>
-        <div style="height:48px;"></div>
-        <div class="calendly-wrap reveal">
-            <div class="calendly-placeholder" id="calendly-loader">
-                <p style="margin-bottom:8px;font-weight:600;color:var(--text-2);">Scheduling</p>
-                <p>Loading Calendly…</p>
-            </div>
-        </div>
     </div>
 </section>
 
@@ -974,27 +959,6 @@
 
     document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-    // ── CALENDLY ──────────────────────────────────────────
-    (function loadCalendly() {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://assets.calendly.com/assets/external/widget.css';
-        document.head.appendChild(link);
-
-        const script = document.createElement('script');
-        script.src = 'https://assets.calendly.com/assets/external/widget.js';
-        script.onload = function() {
-            const wrap = document.querySelector('.calendly-wrap');
-            wrap.innerHTML = '';
-            Calendly.initInlineWidget({
-                url: 'https://calendly.com/maxwellmisiaszek/30min',
-                parentElement: wrap,
-                prefill: {},
-                utm: {}
-            });
-        };
-        document.head.appendChild(script);
-    })();
 </script>
 
 </body>

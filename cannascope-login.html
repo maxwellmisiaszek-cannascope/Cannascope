@@ -172,6 +172,15 @@
         <div id="msgErr" class="msg msg-err"></div>
         <div id="msgOk"  class="msg msg-ok"></div>
 
+        <!-- Already signed in state -->
+        <div id="alreadyIn" style="display:none;">
+            <p style="font-size:13px;color:var(--text-2);margin-bottom:6px;">You're signed in as</p>
+            <p style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:20px;" id="alreadyEmail"></p>
+            <a href="cannascope-admin.html" class="btn-submit" style="display:block;text-align:center;text-decoration:none;padding:11px;">Go to Dashboard →</a>
+            <button onclick="signOut()" style="width:100%;margin-top:10px;padding:10px;background:none;border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--text-3);cursor:pointer;font-family:inherit;transition:all 0.12s;" onmouseover="this.style.borderColor='var(--border-2)';this.style.color='var(--text-2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-3)'">Sign out of this account</button>
+        </div>
+
+        <!-- Sign in form -->
         <div id="formSignin">
             <div class="form-group">
                 <label class="form-label" for="siEmail">Email</label>
@@ -197,25 +206,16 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// If already logged in, go straight to admin
+// Check for existing session — show "already signed in" state instead of auto-redirecting
 (async () => {
-    let { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-        try {
-            const raw = localStorage.getItem('sb-nrcvpwyvxmplwvjrdoua-auth-token');
-            if (raw) {
-                const stored = JSON.parse(raw);
-                if (stored?.access_token && stored?.refresh_token) {
-                    const { data: refreshed } = await sb.auth.setSession({
-                        access_token: stored.access_token,
-                        refresh_token: stored.refresh_token
-                    });
-                    session = refreshed?.session;
-                }
-            }
-        } catch(e) {}
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+        // Show already-signed-in banner, don't redirect automatically
+        const email = session.user?.email || '';
+        document.getElementById('alreadyEmail').textContent = email;
+        document.getElementById('alreadyIn').style.display = 'block';
+        document.getElementById('formSignin').style.display = 'none';
     }
-    if (session) window.location.href = 'cannascope-admin.html';
 })();
 
 function showErr(msg) {
@@ -246,6 +246,13 @@ async function signIn() {
         return;
     }
     window.location.href = 'cannascope-admin.html';
+}
+
+async function signOut() {
+    await sb.auth.signOut();
+    document.getElementById('alreadyIn').style.display = 'none';
+    document.getElementById('formSignin').style.display = 'block';
+    document.getElementById('siEmail').focus();
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Enter') signIn(); });
