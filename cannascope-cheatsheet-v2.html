@@ -32,6 +32,7 @@
 
         html, body {
             height: 100%;
+            overflow: hidden; /* app-shell: inner screens handle their own scroll */
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
@@ -91,9 +92,11 @@
         /* -- SCREEN 1: INTENT ------------------------ */
         #screenEffect {
             align-items: center;
-            justify-content: center;
-            padding: 28px 20px 28px;
-            overflow-y: auto;
+            /* justify-content: center removed — causes flex overflow-scroll bug
+               where content above viewport is unreachable. Use padding instead. */
+            padding: 28px 20px;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
         }
         .screen-eyebrow {
             font-size: 11px;
@@ -217,7 +220,8 @@
             max-width: 860px;
             margin: 0 auto;
             flex: 1;
-            overflow-y: auto;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
             width: 100%;
             box-sizing: border-box;
         }
@@ -323,7 +327,8 @@
             flex-direction: column;
             gap: 8px;
             flex: 1;
-            overflow-y: auto;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
             width: 100%;
         }
 
