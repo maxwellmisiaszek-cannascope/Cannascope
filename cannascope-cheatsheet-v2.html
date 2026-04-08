@@ -166,8 +166,9 @@
             align-items: center;
             gap: 10px;
             position: sticky;
-            top: 52px;
+            top: 0; /* screen already starts below the 52px main header — don't double-offset */
             z-index: 50;
+            flex-shrink: 0; /* prevent sub-header from squishing in flex column */
         }
         .btn-back {
             font-size: 12px;
