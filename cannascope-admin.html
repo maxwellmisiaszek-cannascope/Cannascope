@@ -923,93 +923,153 @@ function renderAnalytics(){
     document.getElementById('anlContent').innerHTML='<div style="text-align:center;padding:80px 20px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:16px">&#128202;</div><div style="font-size:16px;color:var(--txt2);font-weight:600;margin-bottom:8px">No data yet</div><div style="font-size:13px">Add products to see analytics.</div><button class="hbtn primary" style="margin-top:16px" onclick="switchTab(\'inv\');openAdd()">Add First Product</button></div>';
     return;
   }
-  const ins=products.filter(p=>p.in_stock).length;
-  const scr=products.filter(p=>!!(p.talking_points?.trim())).length;
-  const miss=t-scr;
-  const push=products.filter(p=>p.push);
-  const rate=Math.round(ins/t*100),cov=Math.round(scr/t*100);
-  const ready=Math.round(rate*.4+cov*.6);
-  const rc=ready>=70?'#22c55e':ready>=50?'#f59e0b':'#ef4444';
+
+  // ── CORE NUMBERS ──────────────────────────────────────────────────────────
+  const inStockProds = products.filter(p=>p.in_stock);
+  const outProds     = products.filter(p=>!p.in_stock);
+  const ins = inStockProds.length;
+  const stockRate = Math.round(ins/t*100);
+  const push = products.filter(p=>p.push);
+
+  // Catalog value (in-stock only) — sum of price * 1 unit as a floor signal
+  const prices = products.map(p=>parseFloat(p.price)||0).filter(x=>x>0);
+  const inPrices = inStockProds.map(p=>parseFloat(p.price)||0).filter(x=>x>0);
+  const avgPrice = prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : 0;
+  const avgInPrice = inPrices.length ? Math.round(inPrices.reduce((a,b)=>a+b,0)/inPrices.length) : 0;
+  const catalogValue = inPrices.reduce((a,b)=>a+b,0);
+
+  // Price tiers: budget <$30, mid $30-$50, premium >$50
+  const budget  = products.filter(p=>(parseFloat(p.price)||0)>0&&(parseFloat(p.price)||0)<30).length;
+  const mid     = products.filter(p=>(parseFloat(p.price)||0)>=30&&(parseFloat(p.price)||0)<=50).length;
+  const premium = products.filter(p=>(parseFloat(p.price)||0)>50).length;
+  const maxTier = Math.max(budget,mid,premium,1);
+
+  // THC tiers: low <15%, mid 15-25%, high >25%
+  const lowThc  = products.filter(p=>p.in_stock&&(parseFloat(p.thc)||0)<15).length;
+  const midThc  = products.filter(p=>p.in_stock&&(parseFloat(p.thc)||0)>=15&&(parseFloat(p.thc)||0)<=25).length;
+  const hiThc   = products.filter(p=>p.in_stock&&(parseFloat(p.thc)||0)>25).length;
+  const cbdProds= products.filter(p=>p.in_stock&&(parseFloat(p.cbd)||0)>=5).length;
+
+  // ── GOAL COVERAGE ─────────────────────────────────────────────────────────
   const effs=['sleep','relax','focus','social','relief','beginner'];
   const ecol={sleep:'#a78bfa',relax:'#4ade80',focus:'#60a5fa',social:'#fbbf24',relief:'#f87171',beginner:'#2dd4bf'};
+  const effTot={},effIn={};
+  effs.forEach(e=>{effTot[e]=products.filter(p=>p.effect===e).length;effIn[e]=products.filter(p=>p.effect===e&&p.in_stock).length;});
+  const maxEff=Math.max(...effs.map(e=>effTot[e]),1);
+  // gaps: goals with zero in-stock options
+  const gaps=effs.filter(e=>effIn[e]===0&&effTot[e]>0);
+  const blindGaps=effs.filter(e=>effTot[e]===0); // no products at all for this goal
+
+  // ── CATEGORY BREAKDOWN ────────────────────────────────────────────────────
   const cats=['flower','vape','edible','concentrate','tincture','topical','preroll'];
-  const effCnt={};effs.forEach(e=>effCnt[e]=0);products.forEach(p=>{if(p.effect&&effCnt[p.effect]!==undefined)effCnt[p.effect]++;});
-  const maxE=Math.max(...Object.values(effCnt),1);
-  const effScr={};effs.forEach(e=>{const tot=products.filter(p=>p.effect===e).length;const s=products.filter(p=>p.effect===e&&p.talking_points?.trim()).length;effScr[e]=tot?Math.round(s/tot*100):null;});
-  const catScr={};cats.forEach(c=>{const tot=products.filter(p=>p.category===c).length;const s=products.filter(p=>p.category===c&&p.talking_points?.trim()).length;catScr[c]=tot?Math.round(s/tot*100):null;});
-  const scored=products.map(p=>({...p,sc:(p.in_stock?2:0)+(p.talking_points?.trim()?1:0)})).sort((a,b)=>b.sc-a.sc);
-  const top5=scored.slice(0,5);
-  const out=products.filter(p=>!p.in_stock);
-  const R=44,C=2*Math.PI*R,dash=(cov/100)*C;
-  const dc=cov>=70?'#22c55e':cov>=40?'#f59e0b':'#ef4444';
-  const outNoAlt=out.filter(p=>!products.some(x=>x.in_stock&&x.effect===p.effect&&x.id!==p.id));
-  const opp=outNoAlt[0]||out[0];
+  const ccol={flower:'#4ade80',vape:'#60a5fa',edible:'#fbbf24',concentrate:'#f87171',tincture:'#a78bfa',topical:'#2dd4bf',preroll:'#fb923c'};
+  const catData=cats.map(c=>({
+    c,
+    tot:products.filter(p=>p.category===c).length,
+    ins:products.filter(p=>p.category===c&&p.in_stock).length,
+    avg:Math.round((products.filter(p=>p.category===c&&(parseFloat(p.price)||0)>0).map(p=>parseFloat(p.price)).reduce((a,b)=>a+b,0)||0)/Math.max(products.filter(p=>p.category===c&&(parseFloat(p.price)||0)>0).length,1))
+  })).filter(d=>d.tot>0).sort((a,b)=>b.tot-a.tot);
+  const maxCat=Math.max(...catData.map(d=>d.tot),1);
+
+  // ── TOP VALUE PRODUCTS (in-stock, highest price) ──────────────────────────
+  const topValue=[...inStockProds].filter(p=>parseFloat(p.price)>0).sort((a,b)=>(parseFloat(b.price)||0)-(parseFloat(a.price)||0)).slice(0,5);
+
+  // ── OUT OF STOCK — no in-stock alternative for same goal ──────────────────
+  const criticalOut=outProds.filter(p=>p.effect&&!products.some(x=>x.in_stock&&x.effect===p.effect&&x.id!==p.id));
+  const worstGap=criticalOut[0]||outProds[0];
+
+  // ── ACTION ITEMS ──────────────────────────────────────────────────────────
   const acts=[];
-  if(miss>0)acts.push({c:'a',ico:'&#9889;',title:'Generate scripts for '+miss+' product'+(miss!==1?'s':''),desc:"Budtenders can't recommend what they can't explain",fn:"autoScripts()"});
-  if(out.length>0)acts.push({c:'r',ico:'&#128230;',title:out.length+' product'+(out.length!==1?' items are':' is')+' out of stock',desc:'Review reorder priorities in inventory',fn:"document.getElementById('fxStock').value='out';switchTab('inv');renderTable()"});
-  const hiMiss=products.filter(p=>p.in_stock&&!p.talking_points?.trim());
-  if(hiMiss.length>0)acts.push({c:'b',ico:'&#128221;',title:hiMiss.length+' in-stock product'+(hiMiss.length!==1?'s need':' needs')+' a script',desc:'In-stock products without scripts = missed revenue',fn:"document.getElementById('fxScript').value='miss';document.getElementById('fxStock').value='in';switchTab('inv');renderTable()"});
-  if(!push.length&&t>0)acts.push({c:'g',ico:'&#127919;',title:'Set push products for this week',desc:'Use the push toggle in Inventory to feature specific SKUs',fn:"switchTab('inv')"});
+  if(criticalOut.length>0)acts.push({c:'r',ico:'&#9888;',title:criticalOut.length+' goal'+(criticalOut.length!==1?'s have':'has')+' zero in-stock coverage',desc:'Customers asking for '+criticalOut.map(p=>p.effect).filter((v,i,a)=>a.indexOf(v)===i).join(', ')+' will get no recommendations',fn:"document.getElementById('fxStock').value='out';switchTab('inv');renderTable()"});
+  if(outProds.length>0)acts.push({c:'a',ico:'&#128230;',title:outProds.length+' SKU'+(outProds.length!==1?'s are':' is')+' out of stock',desc:'Review reorder priorities — '+Math.round(outProds.length/t*100)+'% of catalog unavailable',fn:"document.getElementById('fxStock').value='out';switchTab('inv');renderTable()"});
+  if(!push.length&&t>0)acts.push({c:'b',ico:'&#127919;',title:'No push products set for this week',desc:'Flag high-margin or overstock SKUs to prioritize in recommendations',fn:"switchTab('inv')"});
+  if(blindGaps.length>0)acts.push({c:'g',ico:'&#43;',title:'Missing products for: '+blindGaps.join(', '),desc:'Add inventory to cover these customer goals',fn:"switchTab('inv');openAdd()"});
+
+  const R=44,C=2*Math.PI*R,stockDash=(stockRate/100)*C;
+  const sc=stockRate>=70?'#22c55e':stockRate>=50?'#f59e0b':'#ef4444';
 
   document.getElementById('anlContent').innerHTML=`
   <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
-    <div><div style="font-size:18px;font-weight:700">Store Analytics</div><div style="font-size:12px;color:var(--txt3);margin-top:2px">Live intelligence from your catalog of ${t} products</div></div>
+    <div><div style="font-size:18px;font-weight:700">Inventory Analytics</div><div style="font-size:12px;color:var(--txt3);margin-top:2px">${t} products · ${ins} in stock · live data</div></div>
   </div>
+
+  <!-- ROW 1: 4 KPI tiles -->
   <div class="a-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-bottom:16px">
     <div class="a-card">
-      <div class="a-head"><div><div class="a-title">Readiness Score</div><div class="a-sub">Composite health metric</div></div></div>
-      <div class="read-wrap">
-        <div class="read-score" style="color:${rc}">${ready}</div>
-        <div class="read-lbl">out of 100</div>
-        <div class="read-bar"><div class="read-fill" style="width:${ready}%;background:${rc}"></div></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--txt3);margin-top:10px"><span>Stock: 40%</span><span>Scripts: 60%</span></div>
-    </div>
-    <div class="a-card">
-      <div class="a-head"><div><div class="a-title">Script Coverage</div><div class="a-sub">Products with talking points</div></div><span class="a-badge" style="background:${cov>=70?'var(--green-d)':cov>=40?'var(--amber-d)':'var(--red-d)'};color:${cov>=70?'var(--green)':cov>=40?'var(--amber)':'var(--red)'}">${cov>=70?'Healthy':cov>=40?'Fair':'Low'}</span></div>
-      <div class="donut-wrap">
-        <svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="${R}" fill="none" stroke="var(--surface-el)" stroke-width="12"/><circle cx="50" cy="50" r="${R}" fill="none" stroke="${dc}" stroke-width="12" stroke-dasharray="${dash.toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${(C*.25).toFixed(1)}" stroke-linecap="round"/><text x="50" y="54" text-anchor="middle" fill="var(--txt)" font-size="16" font-weight="700" font-family="-apple-system,sans-serif">${cov}%</text></svg>
-        <div class="donut-leg"><div class="leg-item"><span class="leg-dot" style="background:${dc}"></span><span class="leg-lbl">Scripted</span><span class="leg-val">${scr}</span></div><div class="leg-item"><span class="leg-dot" style="background:var(--surface-el)"></span><span class="leg-lbl">Missing</span><span class="leg-val">${miss}</span></div></div>
-      </div>
-    </div>
-    <div class="a-card">
       <div class="a-head"><div><div class="a-title">In-Stock Rate</div><div class="a-sub">Catalog availability</div></div></div>
-      <div class="big-n" style="color:${rate>=70?'var(--green)':rate>=50?'var(--amber)':'var(--red)'}">${rate}<span style="font-size:20px;letter-spacing:0;color:var(--txt3)">%</span></div>
-      <div class="big-meta">${ins} of ${t} products available</div>
-      <div class="seg-bar"><div class="seg" style="flex:${rate};background:var(--green)"></div><div class="seg" style="flex:${100-rate};background:var(--surface-el)"></div></div>
+      <div class="donut-wrap">
+        <svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="${R}" fill="none" stroke="var(--surface-el)" stroke-width="12"/><circle cx="50" cy="50" r="${R}" fill="none" stroke="${sc}" stroke-width="12" stroke-dasharray="${stockDash.toFixed(1)} ${C.toFixed(1)}" stroke-dashoffset="${(C*.25).toFixed(1)}" stroke-linecap="round"/><text x="50" y="54" text-anchor="middle" fill="var(--txt)" font-size="16" font-weight="700" font-family="-apple-system,sans-serif">${stockRate}%</text></svg>
+        <div class="donut-leg"><div class="leg-item"><span class="leg-dot" style="background:${sc}"></span><span class="leg-lbl">In Stock</span><span class="leg-val">${ins}</span></div><div class="leg-item"><span class="leg-dot" style="background:var(--surface-el)"></span><span class="leg-lbl">Out</span><span class="leg-val">${outProds.length}</span></div></div>
+      </div>
     </div>
-    <div class="a-card" style="${opp?'border-color:rgba(239,68,68,.15)':''}">
-      ${opp?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px">&#9888; Biggest Gap</div><div style="font-size:15px;font-weight:700;margin-bottom:6px">${xe(opp.name)}</div><div style="font-size:12px;color:var(--txt2);line-height:1.6;margin-bottom:10px">No in-stock alternative for <strong>${opp.effect}</strong> effect.</div><div style="display:flex;gap:6px;flex-wrap:wrap">${opp.category?`<span class="badge cat-${opp.category}">${opp.category}</span>`:''}<span class="badge eff-${opp.effect||''}">${opp.effect||''}</span><span class="badge br">Out of Stock</span></div>`:`<div class="a-head"><div><div class="a-title">Coverage Gap</div><div class="a-sub">Inventory blind spots</div></div></div><div style="color:var(--green);font-size:13px;margin-top:8px">&#10003; No critical gaps</div><div style="font-size:12px;color:var(--txt3);margin-top:4px">All effects have in-stock coverage.</div>`}
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Avg Retail Price</div><div class="a-sub">Across in-stock products</div></div></div>
+      <div class="big-n" style="color:var(--acc)">$${avgInPrice}</div>
+      <div class="big-meta">Full catalog avg: $${avgPrice}</div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:10px;line-height:1.6">Budget &lt;$30: <b>${budget}</b> &nbsp;·&nbsp; Mid $30–50: <b>${mid}</b> &nbsp;·&nbsp; Premium $50+: <b>${premium}</b></div>
+    </div>
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Catalog Value</div><div class="a-sub">Sum of in-stock retail prices</div></div></div>
+      <div class="big-n" style="color:var(--acc);font-size:28px">$${catalogValue.toLocaleString()}</div>
+      <div class="big-meta">${inPrices.length} priced SKUs in stock</div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:10px">Push products: <b>${push.length}</b> featured this week</div>
+    </div>
+    <div class="a-card" style="${worstGap?'border-color:rgba(239,68,68,.15)':''}">
+      ${worstGap?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px">&#9888; Coverage Gap</div><div style="font-size:15px;font-weight:700;margin-bottom:4px">${xe(worstGap.name)}</div><div style="font-size:12px;color:var(--txt2);line-height:1.6;margin-bottom:8px">${criticalOut.length>0?'No in-stock alternative for <strong>'+worstGap.effect+'</strong> — customers get zero results':'Out of stock with no active replacement'}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${worstGap.category?`<span class="badge cat-${worstGap.category}">${worstGap.category}</span>`:''}<span class="badge eff-${worstGap.effect||''}">${worstGap.effect||''}</span><span class="badge br">Out</span></div>`:`<div class="a-head"><div><div class="a-title">Coverage</div><div class="a-sub">Goal inventory gaps</div></div></div><div style="color:var(--green);font-size:13px;margin-top:8px">&#10003; All goals covered</div><div style="font-size:12px;color:var(--txt3);margin-top:4px">Every customer goal has at least one in-stock product.</div>`}
     </div>
   </div>
+
+  <!-- ROW 2: Goal coverage + Category breakdown -->
   <div class="a-grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
     <div class="a-card">
-      <div class="a-head"><div><div class="a-title">Effect Distribution</div><div class="a-sub">Products by recommended effect</div></div></div>
-      <div class="bar-chart">${effs.map(e=>`<div class="bar-row"><span class="bar-lbl" style="color:${ecol[e]}">${e}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(effCnt[e]/maxE*100)}%;background:${ecol[e]};opacity:.8"></div></div><span class="bar-val">${effCnt[e]}</span></div>`).join('')}</div>
+      <div class="a-head"><div><div class="a-title">In-Stock Coverage by Goal</div><div class="a-sub">How many products can be recommended per goal</div></div></div>
+      <div class="bar-chart">${effs.map(e=>{
+        const tot=effTot[e],inS=effIn[e],pct=tot?Math.round(inS/tot*100):0;
+        const col=inS===0&&tot>0?'#ef4444':ecol[e];
+        const outCnt=tot-inS;
+        return`<div class="bar-row"><span class="bar-lbl" style="color:${col}">${e}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(inS/maxEff*100)}%;background:${col};opacity:.85"></div></div><span class="bar-val" style="color:${inS===0&&tot>0?'#ef4444':'var(--txt2)'}">${inS}${tot>0?'<span style="color:var(--txt3);font-size:10px"> /'+tot+'</span>':''}</span></div>`;
+      }).join('')}</div>
     </div>
     <div class="a-card">
-      <div class="a-head"><div><div class="a-title">Recommendation-Ready Products</div><div class="a-sub">In stock + script = push-ready</div></div></div>
-      <div class="rank-list">${top5.map((p,i)=>`<div class="rank-item"><span class="rank-num">${i+1}</span><div class="rank-info"><div class="rank-name">${xe(p.name)}</div><div class="rank-sub">${p.brand||''} &middot; ${p.category||''}</div></div><div style="display:flex;gap:5px;align-items:center">${p.in_stock?'<span class="badge bg" style="font-size:10px">&#10003; Stock</span>':'<span class="badge br" style="font-size:10px">Out</span>'}${p.talking_points?.trim()?'<span class="badge bg" style="font-size:10px">&#10003; Script</span>':'<span class="badge ba" style="font-size:10px">No Script</span>'}</div></div>`).join('')}</div>
+      <div class="a-head"><div><div class="a-title">Category Breakdown</div><div class="a-sub">Products by type · avg price · stock</div></div></div>
+      <div class="bar-chart">${catData.map(d=>`<div class="bar-row"><span class="bar-lbl" style="color:${ccol[d.c]||'var(--txt2)'}">${d.c}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(d.ins/maxCat*100)}%;background:${ccol[d.c]||'var(--acc)'};opacity:.8"></div>${d.tot-d.ins>0?`<div class="bar-fill" style="width:${Math.round((d.tot-d.ins)/maxCat*100)}%;background:var(--surface-el)"></div>`:''}</div><span class="bar-val">${d.ins}${d.tot-d.ins>0?'<span style="color:var(--txt3);font-size:10px">/'+d.tot+'</span>':''}${d.avg>0?'<span style="color:var(--txt3);font-size:10px"> $'+d.avg+'</span>':''}</span></div>`).join('') || '<div style="color:var(--txt3);font-size:13px">No category data</div>'}</div>
     </div>
   </div>
+
+  <!-- ROW 3: Price tiers + Potency split -->
   <div class="a-grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
     <div class="a-card">
-      <div class="a-head"><div><div class="a-title">Script Coverage by Effect</div><div class="a-sub">Where budtenders are most prepared</div></div></div>
-      <div class="bar-chart">${effs.map(e=>{const pct=effScr[e];if(pct===null)return'';const col=pct>=70?'#22c55e':pct>=40?'#f59e0b':'#ef4444';return`<div class="bar-row"><span class="bar-lbl" style="color:${ecol[e]}">${e}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div><span class="bar-val" style="color:${col}">${pct}%</span></div>`;}).filter(Boolean).join('')||'<div style="color:var(--txt3);font-size:13px">No data yet</div>'}</div>
+      <div class="a-head"><div><div class="a-title">Price Tier Distribution</div><div class="a-sub">Budget vs. mid vs. premium</div></div></div>
+      <div class="bar-chart">
+        <div class="bar-row"><span class="bar-lbl" style="color:#4ade80">Budget</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(budget/maxTier*100)}%;background:#4ade80;opacity:.8"></div></div><span class="bar-val">${budget}<span style="color:var(--txt3);font-size:10px"> under $30</span></span></div>
+        <div class="bar-row"><span class="bar-lbl" style="color:#60a5fa">Mid</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(mid/maxTier*100)}%;background:#60a5fa;opacity:.8"></div></div><span class="bar-val">${mid}<span style="color:var(--txt3);font-size:10px"> $30–$50</span></span></div>
+        <div class="bar-row"><span class="bar-lbl" style="color:#f87171">Premium</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(premium/maxTier*100)}%;background:#f87171;opacity:.8"></div></div><span class="bar-val">${premium}<span style="color:var(--txt3);font-size:10px"> over $50</span></span></div>
+      </div>
     </div>
     <div class="a-card">
-      <div class="a-head"><div><div class="a-title">Script Coverage by Category</div><div class="a-sub">Training readiness per product type</div></div></div>
-      <div class="cov-grid">${cats.map(c=>{const pct=catScr[c];if(pct===null)return'';const col=pct>=70?'#22c55e':pct>=40?'#f59e0b':'#ef4444';return`<div class="cov-cell"><div class="cov-pct" style="color:${col}">${pct}%</div><div class="cov-lbl">${c}</div></div>`;}).filter(Boolean).join('')||'<div style="grid-column:span 4;color:var(--txt3);font-size:13px;text-align:center;padding:20px">No data yet</div>'}</div>
+      <div class="a-head"><div><div class="a-title">Potency Split (In-Stock)</div><div class="a-sub">THC distribution · CBD-rich products</div></div></div>
+      <div class="bar-chart">
+        <div class="bar-row"><span class="bar-lbl" style="color:#2dd4bf">Low THC</span><div class="bar-track"><div class="bar-fill" style="width:${ins?Math.round(lowThc/ins*100):0}%;background:#2dd4bf;opacity:.8"></div></div><span class="bar-val">${lowThc}<span style="color:var(--txt3);font-size:10px"> under 15%</span></span></div>
+        <div class="bar-row"><span class="bar-lbl" style="color:#60a5fa">Mid THC</span><div class="bar-track"><div class="bar-fill" style="width:${ins?Math.round(midThc/ins*100):0}%;background:#60a5fa;opacity:.8"></div></div><span class="bar-val">${midThc}<span style="color:var(--txt3);font-size:10px"> 15–25%</span></span></div>
+        <div class="bar-row"><span class="bar-lbl" style="color:#a78bfa">High THC</span><div class="bar-track"><div class="bar-fill" style="width:${ins?Math.round(hiThc/ins*100):0}%;background:#a78bfa;opacity:.8"></div></div><span class="bar-val">${hiThc}<span style="color:var(--txt3);font-size:10px"> over 25%</span></span></div>
+        <div class="bar-row"><span class="bar-lbl" style="color:#fbbf24">CBD-Rich</span><div class="bar-track"><div class="bar-fill" style="width:${ins?Math.round(cbdProds/ins*100):0}%;background:#fbbf24;opacity:.8"></div></div><span class="bar-val">${cbdProds}<span style="color:var(--txt3);font-size:10px"> ≥5% CBD</span></span></div>
+      </div>
     </div>
   </div>
-  <div class="a-grid" style="grid-template-columns:1fr 1fr">
+
+  <!-- ROW 4: Top value + Actions + Push -->
+  <div class="a-grid" style="grid-template-columns:1fr 1fr 1fr">
     <div class="a-card">
-      <div class="a-head"><div><div class="a-title">Manager Action Center</div><div class="a-sub">Highest-priority improvements</div></div>${acts.length===0?'<span class="a-badge" style="background:var(--green-d);color:var(--green)">All Clear</span>':''}</div>
-      ${acts.length===0?'<div style="text-align:center;padding:20px;color:var(--txt2);font-size:13px">&#10003; Your store is in great shape.</div>':'<div class="act-list">'+acts.slice(0,4).map(a=>`<div class="act-item" onclick="${a.fn||''}"><div class="act-ico ai-${a.c}">${a.ico}</div><div class="act-text"><div class="act-title">${a.title}</div><div class="act-desc">${a.desc}</div></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>`).join('')+'</div>'}
+      <div class="a-head"><div><div class="a-title">Highest-Price In-Stock</div><div class="a-sub">Premium products available now</div></div></div>
+      <div class="rank-list">${topValue.map((p,i)=>`<div class="rank-item"><span class="rank-num">${i+1}</span><div class="rank-info"><div class="rank-name">${xe(p.name)}</div><div class="rank-sub">${p.brand||''} · ${p.category||''}</div></div><div style="font-size:14px;font-weight:700;color:var(--acc)">$${parseFloat(p.price).toFixed(0)}</div></div>`).join('') || '<div style="color:var(--txt3);font-size:13px;padding:12px 0">No priced products</div>'}</div>
     </div>
     <div class="a-card">
-      <div class="a-head"><div><div class="a-title">Push This Week</div><div class="a-sub">Products prioritized for recommendation</div></div><button class="hbtn" style="font-size:11px;padding:4px 10px" onclick="switchTab('inv')">Manage</button></div>
-      ${push.length===0?`<div style="text-align:center;padding:24px;color:var(--txt3);font-size:13px"><div style="font-size:32px;margin-bottom:8px">&#127919;</div>No push products set.<br><span style="color:var(--txt2)">Use the toggle in Inventory to feature SKUs.</span></div>`:`<div class="push-grid">${push.slice(0,4).map(p=>`<div class="push-card" onclick="switchTab('inv');setTimeout(()=>openEdit('${p.id}'),100)"><div class="push-card-name">${xe(p.name)}</div><div class="push-card-brand">${p.brand||''}</div><div class="push-card-meta">${p.category?`<span class="badge cat-${p.category}" style="font-size:10px">${p.category}</span>`:''}<span class="badge eff-${p.effect||''}" style="font-size:10px">${p.effect||''}</span></div></div>`).join('')}</div>`}
+      <div class="a-head"><div><div class="a-title">Action Items</div><div class="a-sub">What needs attention now</div></div>${acts.length===0?'<span class="a-badge" style="background:var(--green-d);color:var(--green)">All Clear</span>':''}</div>
+      ${acts.length===0?'<div style="text-align:center;padding:20px;color:var(--txt2);font-size:13px">&#10003; Inventory is in great shape.</div>':'<div class="act-list">'+acts.slice(0,4).map(a=>`<div class="act-item" onclick="${a.fn||''}"><div class="act-ico ai-${a.c}">${a.ico}</div><div class="act-text"><div class="act-title">${a.title}</div><div class="act-desc">${a.desc}</div></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--txt3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>`).join('')+'</div>'}
+    </div>
+    <div class="a-card">
+      <div class="a-head"><div><div class="a-title">Push This Week</div><div class="a-sub">Products being pushed to budtenders</div></div><button class="hbtn" style="font-size:11px;padding:4px 10px" onclick="switchTab('inv')">Manage</button></div>
+      ${push.length===0?`<div style="text-align:center;padding:24px;color:var(--txt3);font-size:13px"><div style="font-size:32px;margin-bottom:8px">&#127919;</div>No push products set.<br><span style="color:var(--txt2)">Flag overstock or high-margin SKUs in Inventory.</span></div>`:`<div class="push-grid">${push.slice(0,4).map(p=>`<div class="push-card" onclick="switchTab('inv');setTimeout(()=>openEdit('${p.id}'),100)"><div class="push-card-name">${xe(p.name)}</div><div class="push-card-brand">${p.brand||''}</div><div class="push-card-meta">${p.category?`<span class="badge cat-${p.category}" style="font-size:10px">${p.category}</span>`:''}<span class="badge eff-${p.effect||''}" style="font-size:10px">${p.effect||''}</span>${parseFloat(p.price)>0?`<span style="font-size:11px;font-weight:700;color:var(--acc)">$${parseFloat(p.price).toFixed(0)}</span>`:''}</div></div>`).join('')}</div>`}
     </div>
   </div>`;
 }

@@ -92,11 +92,10 @@
         /* -- SCREEN 1: INTENT ------------------------ */
         #screenEffect {
             align-items: center;
-            /* justify-content: center removed — causes flex overflow-scroll bug
-               where content above viewport is unreachable. Use padding instead. */
             padding: 28px 20px;
             overflow-y: scroll;
             -webkit-overflow-scrolling: touch;
+            min-height: 0; /* required: flex children don't scroll without this */
         }
         .screen-eyebrow {
             font-size: 11px;
@@ -220,6 +219,7 @@
             max-width: 860px;
             margin: 0 auto;
             flex: 1;
+            min-height: 0; /* required: flex children don't scroll without this */
             overflow-y: scroll;
             -webkit-overflow-scrolling: touch;
             width: 100%;
@@ -327,6 +327,7 @@
             flex-direction: column;
             gap: 8px;
             flex: 1;
+            min-height: 0; /* required: flex children don't scroll without this */
             overflow-y: scroll;
             -webkit-overflow-scrolling: touch;
             width: 100%;
