@@ -31,8 +31,6 @@
         }
 
         html, body {
-            height: 100%;
-            overflow: hidden; /* app-shell: inner screens handle their own scroll */
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
@@ -87,15 +85,15 @@
 
         /* -- SCREENS --------------------------------- */
         .screen { display: none; }
-        .screen.active { display: flex; flex-direction: column; height: calc(100vh - 52px); }
+        .screen.active { display: block; min-height: calc(100vh - 52px); }
 
         /* -- SCREEN 1: INTENT ------------------------ */
         #screenEffect {
+            display: flex;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             padding: 28px 20px;
-            overflow-y: scroll;
-            -webkit-overflow-scrolling: touch;
-            min-height: 0; /* required: flex children don't scroll without this */
         }
         .screen-eyebrow {
             font-size: 11px;
@@ -166,9 +164,8 @@
             align-items: center;
             gap: 10px;
             position: sticky;
-            top: 0; /* screen already starts below the 52px main header — don't double-offset */
+            top: 52px; /* stick just below the 52px main header */
             z-index: 50;
-            flex-shrink: 0; /* prevent sub-header from squishing in flex column */
         }
         .btn-back {
             font-size: 12px;
@@ -214,15 +211,10 @@
         .btn-primary:active { transform: scale(0.97); }
 
         /* -- SCREEN 2: FILTERS ----------------------- */
-        #screenFilters { overflow: hidden; }
         .filter-body {
             padding: 14px 20px 20px;
             max-width: 860px;
             margin: 0 auto;
-            flex: 1;
-            min-height: 0; /* required: flex children don't scroll without this */
-            overflow-y: scroll;
-            -webkit-overflow-scrolling: touch;
             width: 100%;
             box-sizing: border-box;
         }
@@ -289,7 +281,6 @@
         .btn-find-bottom:hover { background: var(--accent-mid); }
 
         /* -- SCREEN 3: RESULTS ----------------------- */
-        #screenResults { overflow: hidden; }
         .results-header-info {
             display: flex;
             flex-direction: column;
@@ -321,16 +312,12 @@
         .btn-ghost:hover { border-color: var(--border-2); color: var(--text); }
 
         .results-list {
-            padding: 12px 14px 16px;
+            padding: 12px 14px 24px;
             max-width: 900px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            flex: 1;
-            min-height: 0; /* required: flex children don't scroll without this */
-            overflow-y: scroll;
-            -webkit-overflow-scrolling: touch;
             width: 100%;
         }
 
