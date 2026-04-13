@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cannascope — Demo</title>
+  <title>Cannascope — South Shore Buds</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -32,7 +32,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── HEADER ──────────────────────────────────── */
     .header {
       display: flex;
       align-items: center;
@@ -40,22 +39,26 @@
       padding: 20px 32px;
       border-bottom: 1px solid var(--border);
     }
-    .wordmark {
-      font-size: 15px; font-weight: 700;
-      letter-spacing: -0.01em;
-    }
+    .wordmark { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
     .wordmark-accent { color: var(--accent-t); }
-    .demo-badge {
-      font-size: 11px; font-weight: 600;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--text3);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      padding: 4px 12px;
+    .live-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 12px; font-weight: 600;
+      color: var(--accent-t);
+      background: rgba(76,175,128,0.08);
+      border: 1px solid rgba(76,175,128,0.2);
+      padding: 5px 14px;
       border-radius: 100px;
     }
+    .live-pill::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent-t);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
 
-    /* ── STORE HERO ──────────────────────────────── */
     .store-hero {
       padding: 48px 32px 40px;
       border-bottom: 1px solid var(--border);
@@ -65,51 +68,28 @@
     .store-eyebrow {
       font-size: 11px; font-weight: 600;
       letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--accent-t);
-      margin-bottom: 10px;
+      color: var(--text3); margin-bottom: 10px;
     }
     .store-name {
       font-size: 36px; font-weight: 700;
       letter-spacing: -0.03em;
-      color: var(--text);
-      margin-bottom: 6px;
+      color: var(--text); margin-bottom: 6px;
     }
     .store-meta {
-      font-size: 15px;
-      color: var(--text2);
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      flex-wrap: wrap;
+      font-size: 15px; color: var(--text2);
+      display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
     }
-    .store-meta-sep { color: var(--text3); }
-    .live-dot {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 12px; font-weight: 600;
-      color: var(--accent-t);
-    }
-    .live-dot::before {
-      content: '';
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--accent-t);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.4; }
-    }
+    .sep { color: var(--text3); }
 
-    /* ── CARDS GRID ──────────────────────────────── */
     .cards {
       max-width: 960px;
       margin: 0 auto;
       padding: 32px 32px 64px;
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
-    @media (max-width: 760px) {
+    @media (max-width: 640px) {
       .cards { grid-template-columns: 1fr; padding: 24px 20px 48px; }
       .store-hero { padding: 32px 20px 28px; }
       .store-name { font-size: 26px; }
@@ -123,251 +103,123 @@
       padding: 28px;
       display: flex;
       flex-direction: column;
-      gap: 0;
-      transition: border-color 0.15s;
     }
-    .card:hover { border-color: var(--border2); }
     .card.primary { border-color: var(--accent); }
-
-    .card-icon {
-      font-size: 28px;
-      margin-bottom: 16px;
-    }
+    .card-icon { font-size: 26px; margin-bottom: 16px; }
     .card-label {
       font-size: 11px; font-weight: 600;
       letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--text3);
-      margin-bottom: 6px;
+      color: var(--text3); margin-bottom: 6px;
     }
     .primary .card-label { color: var(--accent-t); }
     .card-title {
       font-size: 20px; font-weight: 700;
       letter-spacing: -0.02em;
-      color: var(--text);
-      margin-bottom: 8px;
+      color: var(--text); margin-bottom: 8px;
     }
     .card-desc {
-      font-size: 14px;
-      color: var(--text2);
-      line-height: 1.6;
-      margin-bottom: 24px;
-      flex: 1;
+      font-size: 14px; color: var(--text2);
+      line-height: 1.65; margin-bottom: 24px; flex: 1;
     }
 
-    /* QR block */
     .qr-wrap {
       background: #fff;
       border-radius: 12px;
       padding: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
-      width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
     }
     .qr-wrap canvas { display: block; width: 100% !important; height: auto !important; max-width: 200px; }
     .qr-url {
-      font-size: 11px;
-      color: var(--text3);
-      word-break: break-all;
-      line-height: 1.5;
-      text-align: center;
+      font-size: 11px; color: var(--text3);
+      word-break: break-all; line-height: 1.5; text-align: center;
+      margin-bottom: 16px;
     }
 
-    /* Buttons */
     .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      display: flex; align-items: center; justify-content: center;
       padding: 14px 20px;
       border-radius: 10px;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 600;
+      font-family: inherit; font-size: 14px; font-weight: 600;
       letter-spacing: -0.01em;
-      cursor: pointer;
-      border: none;
+      cursor: pointer; border: none;
       text-decoration: none;
       transition: background 0.15s, transform 0.1s;
     }
     .btn:active { transform: scale(0.97); }
-    .btn-accent {
-      background: var(--accent);
-      color: var(--text);
-    }
+    .btn-accent { background: var(--accent); color: var(--text); }
     .btn-accent:hover { background: var(--accent-b); }
     .btn-ghost {
-      background: var(--surface2);
-      color: var(--text);
+      background: var(--surface2); color: var(--text);
       border: 1px solid var(--border);
     }
     .btn-ghost:hover { border-color: var(--border2); }
-
-    /* Inventory stats strip */
-    .stats-strip {
-      display: flex;
-      gap: 0;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-    .stat-item {
-      flex: 1;
-      padding: 14px 12px;
-      text-align: center;
-      border-right: 1px solid var(--border);
-    }
-    .stat-item:last-child { border-right: none; }
-    .stat-val {
-      font-size: 22px; font-weight: 700;
-      letter-spacing: -0.03em;
-      color: var(--text);
-    }
-    .stat-lbl {
-      font-size: 11px;
-      color: var(--text3);
-      margin-top: 2px;
-    }
-
-    /* Staff list */
-    .staff-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-    .staff-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
-      background: var(--surface2);
-      border-radius: 8px;
-    }
-    .staff-name { font-size: 14px; font-weight: 600; color: var(--text); }
-    .staff-role { font-size: 12px; color: var(--text2); }
-    .staff-status {
-      font-size: 11px; font-weight: 600;
-      color: var(--accent-t);
-      background: rgba(76,175,128,0.1);
-      padding: 3px 9px;
-      border-radius: 100px;
-    }
   </style>
 </head>
 <body>
 
 <div class="header">
   <div class="wordmark">Canna<span class="wordmark-accent">scope</span></div>
-  <div class="demo-badge">Live Demo</div>
+  <div class="live-pill">Live</div>
 </div>
 
 <div class="store-hero">
-  <div class="store-eyebrow">Demo Dispensary</div>
-  <div class="store-name" id="storeName">Peak State Collective</div>
+  <div class="store-eyebrow">Active Store</div>
+  <div class="store-name">South Shore Buds</div>
   <div class="store-meta">
-    <span>Brooklyn, NY</span>
-    <span class="store-meta-sep">·</span>
+    <span>Marshfield, MA</span>
+    <span class="sep">·</span>
     <span>Medical &amp; Recreational</span>
-    <span class="store-meta-sep">·</span>
-    <span class="live-dot">Cannascope Active</span>
+    <span class="sep">·</span>
+    <span>Powered by Cannascope</span>
   </div>
 </div>
 
 <div class="cards">
 
-  <!-- ── CARD 1: BUDTENDER ──────────────────────── -->
   <div class="card primary">
     <div class="card-icon">🎯</div>
     <div class="card-label">Staff View</div>
     <div class="card-title">Budtender Tool</div>
     <div class="card-desc">
-      The main product. Staff opens this on a tablet or phone. Customer tells them their goal — budtender gets the top 3 matches in seconds with talking points and shelf location.
+      Staff opens this on a tablet or phone. Customer states their goal — budtender gets the top 3 matches from South Shore Buds' live inventory in seconds, with talking points and shelf location.
     </div>
-    <div class="stats-strip">
-      <div class="stat-item">
-        <div class="stat-val">19</div>
-        <div class="stat-lbl">Products</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val">6</div>
-        <div class="stat-lbl">Goals</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val">&lt;5s</div>
-        <div class="stat-lbl">To match</div>
-      </div>
-    </div>
-    <a class="btn btn-accent" href="cannascope-v2.html" target="_blank">Open Budtender View →</a>
+    <a class="btn btn-accent" href="cannascope-v2.html?key=3f36a9e4-7cc6-47b3-9e17-5c9f2530bebb" target="_blank">Open Budtender View →</a>
   </div>
 
-  <!-- ── CARD 2: CUSTOMER QR ─────────────────────── -->
   <div class="card">
     <div class="card-icon">📲</div>
     <div class="card-label">Customer View</div>
-    <div class="card-title">Self-Serve QR Flow</div>
+    <div class="card-title">Customer QR Flow</div>
     <div class="card-desc">
-      Customer scans this QR with their phone. 3 questions, 30 seconds. Gets their top 3 product matches — clean, no staff required. Print this and put it on the counter.
+      Customer scans this QR with their phone. 3 questions, 30 seconds. Gets their top 3 matches from South Shore Buds' live inventory — no staff required.
     </div>
     <div class="qr-wrap">
       <canvas id="qrCanvas"></canvas>
     </div>
     <div class="qr-url" id="qrUrlText"></div>
-    <br>
-    <a class="btn btn-ghost" id="btnOpenQR" href="cannascope-qr.html" target="_blank">Preview Customer Flow →</a>
-  </div>
-
-  <!-- ── CARD 3: STAFF ACCESS ───────────────────── -->
-  <div class="card">
-    <div class="card-icon">🔑</div>
-    <div class="card-label">Access</div>
-    <div class="card-title">Staff Login</div>
-    <div class="card-desc">
-      Staff log in here to access the budtender tool for their specific store. Each store gets its own private link tied to live inventory.
-    </div>
-    <div class="staff-list">
-      <div class="staff-row">
-        <div>
-          <div class="staff-name">Demo Budtender</div>
-          <div class="staff-role">Floor Staff</div>
-        </div>
-        <div class="staff-status">Active</div>
-      </div>
-      <div class="staff-row">
-        <div>
-          <div class="staff-name">Demo Manager</div>
-          <div class="staff-role">Store Manager</div>
-        </div>
-        <div class="staff-status">Active</div>
-      </div>
-    </div>
-    <a class="btn btn-ghost" href="cannascope-login.html" target="_blank">Open Login Page →</a>
+    <a class="btn btn-ghost" id="btnOpenQR" href="#" target="_blank">Preview Customer Flow →</a>
   </div>
 
 </div>
 
 <script>
-  // Build QR URL relative to current page location
+  const SHARE_KEY = '3f36a9e4-7cc6-47b3-9e17-5c9f2530bebb';
   const base = window.location.href.replace(/[^/]*$/, '');
-  const qrTarget = base + 'cannascope-qr.html';
+  const qrUrl = base + 'cannascope-qr.html?key=' + SHARE_KEY;
 
-  // Display URL
-  document.getElementById('qrUrlText').textContent = qrTarget;
-  document.getElementById('btnOpenQR').href = qrTarget;
+  document.getElementById('qrUrlText').textContent = qrUrl;
+  document.getElementById('btnOpenQR').href = qrUrl;
 
-  // Generate QR code
-  const canvas = document.getElementById('qrCanvas');
-  QRCode.toCanvas(canvas, qrTarget, {
+  QRCode.toCanvas(document.getElementById('qrCanvas'), qrUrl, {
     width: 220,
     margin: 1,
     color: { dark: '#0D0D0A', light: '#FFFFFF' },
     errorCorrectionLevel: 'M'
   }, function(err) {
     if (err) {
-      canvas.parentElement.innerHTML =
-        '<div style="font-size:12px;color:#8A8A72;text-align:center;padding:20px;">QR code will render when served from a URL</div>';
+      document.getElementById('qrCanvas').parentElement.innerHTML =
+        '<div style="font-size:12px;color:#8A8A72;text-align:center;padding:20px;">QR available when served from cannascope.us</div>';
     }
   });
 </script>
