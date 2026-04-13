@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cannascope — Find Your Match</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg:       #0D0D0A;
+      --surface:  #161610;
+      --surface2: #1E1E18;
+      --border:   #2A2A20;
+      --border2:  #3A3A2E;
+      --accent:   #2D6A4F;
+      --accent-b: #38876A;
+      --accent-t: #4CAF80;
+      --text:     #EDE9DF;
+      --text2:    #8A8A72;
+      --text3:    #4A4A3A;
+      --amber:    #92400E;
+      --amber-bg: #1C120A;
+    }
+
+    html, body {
+      min-height: 100%; height: 100%;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── WRAPPER ─────────────────────────────────── */
+    .app {
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── SCREENS ─────────────────────────────────── */
+    .screen { display: none; flex-direction: column; min-height: 100vh; }
+    .screen.active { display: flex; }
+
+    /* ── WORDMARK ─────────────────────────────────── */
+    .wm {
+      font-size: 13px; font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text2);
+      padding: 20px 24px 0;
+    }
+    .wm-accent { color: var(--accent-t); }
+
+    /* ── PROGRESS BAR ─────────────────────────────── */
+    .progress {
+      display: flex; gap: 5px;
+      padding: 16px 24px 0;
+    }
+    .progress-dot {
+      height: 3px; flex: 1;
+      border-radius: 2px;
+      background: var(--border);
+      transition: background 0.25s;
+    }
+    .progress-dot.done  { background: var(--accent); }
+    .progress-dot.active { background: var(--accent-t); }
+
+    /* ── SCREEN: LANDING ─────────────────────────── */
+    #sLanding {
+      align-items: center;
+      justify-content: center;
+      padding: 48px 32px 64px;
+      text-align: center;
+    }
+    .landing-mark {
+      font-size: 15px; font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--accent-t);
+      margin-bottom: 40px;
+    }
+    .landing-headline {
+      font-size: 32px; font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+    .landing-sub {
+      font-size: 15px;
+      color: var(--text2);
+      line-height: 1.55;
+      max-width: 300px;
+      margin: 0 auto 44px;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      background: var(--accent);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      padding: 16px 44px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 280px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-primary:hover  { background: var(--accent-b); }
+    .btn-primary:active { transform: scale(0.97); }
+    .landing-note {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 18px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── SCREEN: QUESTION ─────────────────────────── */
+    .q-body {
+      flex: 1;
+      padding: 28px 24px 40px;
+      display: flex;
+      flex-direction: column;
+    }
+    .q-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 12px;
+    }
+    .q-headline {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+    .q-sub {
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    /* Effect grid (Q1) */
+    .effect-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      flex: 1;
+    }
+    .effect-btn {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 16px;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      transition: border-color 0.12s, background 0.12s;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .effect-btn:hover  { border-color: var(--border2); background: var(--surface2); }
+    .effect-btn:active { transform: scale(0.97); }
+    .effect-btn.selected {
+      border-color: var(--accent);
+      background: rgba(45, 106, 79, 0.12);
+    }
+    .effect-icon  { font-size: 20px; margin-bottom: 2px; }
+    .effect-name  { font-size: 14px; font-weight: 600; color: var(--text); }
+    .effect-desc  { font-size: 12px; color: var(--text2); }
+
+    /* Format pills (Q2) */
+    .format-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .format-btn {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .format-btn:hover  { border-color: var(--border2); }
+    .format-btn:active { transform: scale(0.98); }
+    .format-btn.selected {
+      border-color: var(--accent);
+      background: rgba(45, 106, 79, 0.12);
+    }
+    .format-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+    .format-label { font-size: 14px; font-weight: 600; color: var(--text); }
+    .format-hint  { font-size: 12px; color: var(--text2); margin-left: auto; }
+    .format-check {
+      margin-left: auto;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .format-btn.selected .format-check {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .format-check-inner {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text);
+      opacity: 0;
+      transition: opacity 0.12s;
+    }
+    .format-btn.selected .format-check-inner { opacity: 1; }
+
+    /* Experience cards (Q3) */
+    .exp-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .exp-btn {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 20px;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .exp-btn:hover  { border-color: var(--border2); }
+    .exp-btn:active { transform: scale(0.98); }
+    .exp-btn.selected {
+      border-color: var(--accent);
+      background: rgba(45, 106, 79, 0.12);
+    }
+    .exp-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .exp-desc { font-size: 13px; color: var(--text2); }
+
+    /* ── NEXT BUTTON ─────────────────────────────── */
+    .q-footer {
+      padding: 16px 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-next {
+      background: var(--accent);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+      letter-spacing: -0.01em;
+      transition: background 0.15s, opacity 0.15s;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .btn-next.ready {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .btn-next.ready:hover  { background: var(--accent-b); }
+    .btn-next.ready:active { transform: scale(0.98); }
+    .btn-skip {
+      background: none;
+      color: var(--text3);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: -0.01em;
+      transition: color 0.12s;
+    }
+    .btn-skip:hover { color: var(--text2); }
+
+    /* ── SCREEN: LOADING ─────────────────────────── */
+    #sLoading {
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 48px 32px;
+    }
+    .loading-ring {
+      width: 48px; height: 48px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent-t);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 28px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .loading-sub {
+      font-size: 14px;
+      color: var(--text2);
+    }
+
+    /* ── SCREEN: RESULTS ─────────────────────────── */
+    #sResults {
+      padding: 0 0 80px;
+    }
+    .results-header {
+      padding: 24px 24px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .results-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent-t);
+      margin-bottom: 6px;
+    }
+    .results-headline {
+      font-size: 22px; font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .results-meta {
+      font-size: 13px;
+      color: var(--text2);
+    }
+    .results-body {
+      padding: 20px 24px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Product card */
+    .prod-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      transition: border-color 0.15s;
+    }
+    .prod-card.top-pick {
+      border-color: var(--accent);
+    }
+    .card-rank {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 10px;
+    }
+    .top-pick .card-rank {
+      color: var(--accent-t);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .card-name {
+      font-size: 17px; font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .card-price {
+      font-size: 17px; font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+    }
+    .card-pct {
+      font-size: 11px; font-weight: 600;
+      color: var(--accent-t);
+      text-align: right;
+      margin-top: 2px;
+    }
+    .card-meta {
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .meta-sep { color: var(--text3); }
+    .card-why-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 5px;
+    }
+    .card-why {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+
+    /* Restart */
+    .results-restart {
+      padding: 28px 24px 0;
+      text-align: center;
+    }
+    .btn-restart {
+      background: none;
+      color: var(--text3);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: -0.01em;
+      transition: border-color 0.12s, color 0.12s;
+    }
+    .btn-restart:hover { border-color: var(--border2); color: var(--text2); }
+
+    /* Empty / error state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text2);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ═══════════════ LANDING ═══════════════ -->
+  <div class="screen active" id="sLanding">
+    <div class="landing-mark">Canna<span style="color:var(--text2)">scope</span></div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 0 32px 48px;">
+      <div class="landing-headline">Find your perfect product.</div>
+      <div class="landing-sub">Three quick questions. No guessing. Just better matches.</div>
+      <button class="btn-primary" onclick="startFlow()">Get Started</button>
+      <div class="landing-note">Takes under 30 seconds</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Q1: EFFECT ═══════════════ -->
+  <div class="screen" id="sQ1">
+    <div class="wm">Canna<span class="wm-accent">scope</span></div>
+    <div class="progress">
+      <div class="progress-dot active" id="p1"></div>
+      <div class="progress-dot" id="p2"></div>
+      <div class="progress-dot" id="p3"></div>
+    </div>
+    <div class="q-body">
+      <div class="q-label">Step 1 of 3</div>
+      <div class="q-headline">What are you looking for?</div>
+      <div class="q-sub">Pick the one that feels closest.</div>
+      <div class="effect-grid">
+        <button class="effect-btn" data-val="sleep"    onclick="selectEffect(this)">
+          <span class="effect-icon">🌙</span>
+          <span class="effect-name">Sleep</span>
+          <span class="effect-desc">Rest &amp; recovery</span>
+        </button>
+        <button class="effect-btn" data-val="relax"    onclick="selectEffect(this)">
+          <span class="effect-icon">☁️</span>
+          <span class="effect-name">Relax</span>
+          <span class="effect-desc">Unwind &amp; decompress</span>
+        </button>
+        <button class="effect-btn" data-val="social"   onclick="selectEffect(this)">
+          <span class="effect-icon">⚡</span>
+          <span class="effect-name">Social</span>
+          <span class="effect-desc">Energy &amp; mood lift</span>
+        </button>
+        <button class="effect-btn" data-val="focus"    onclick="selectEffect(this)">
+          <span class="effect-icon">🎯</span>
+          <span class="effect-name">Focus</span>
+          <span class="effect-desc">Clarity &amp; creativity</span>
+        </button>
+        <button class="effect-btn" data-val="relief"   onclick="selectEffect(this)">
+          <span class="effect-icon">💚</span>
+          <span class="effect-name">Relief</span>
+          <span class="effect-desc">Pain &amp; inflammation</span>
+        </button>
+        <button class="effect-btn" data-val="beginner" onclick="selectEffect(this)">
+          <span class="effect-icon">✦</span>
+          <span class="effect-name">Not Sure</span>
+          <span class="effect-desc">Show me the best picks</span>
+        </button>
+      </div>
+    </div>
+    <div class="q-footer">
+      <button class="btn-next" id="btnQ1Next" onclick="goToQ2()">Next →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Q2: FORMAT ═══════════════ -->
+  <div class="screen" id="sQ2">
+    <div class="wm">Canna<span class="wm-accent">scope</span></div>
+    <div class="progress">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot active"></div>
+      <div class="progress-dot"></div>
+    </div>
+    <div class="q-body">
+      <div class="q-label">Step 2 of 3</div>
+      <div class="q-headline">Any format preference?</div>
+      <div class="q-sub">We'll prioritize this, but still show you what fits best.</div>
+      <div class="format-grid">
+        <button class="format-btn" data-val="flower"  onclick="selectFormat(this)">
+          <span class="format-icon">🌿</span>
+          <span class="format-label">Flower</span>
+          <span class="format-check"><span class="format-check-inner"></span></span>
+        </button>
+        <button class="format-btn" data-val="vape"    onclick="selectFormat(this)">
+          <span class="format-icon">💨</span>
+          <span class="format-label">Vape</span>
+          <span class="format-check"><span class="format-check-inner"></span></span>
+        </button>
+        <button class="format-btn" data-val="edible"  onclick="selectFormat(this)">
+          <span class="format-icon">🍬</span>
+          <span class="format-label">Edible</span>
+          <span class="format-check"><span class="format-check-inner"></span></span>
+        </button>
+        <button class="format-btn" data-val="preroll" onclick="selectFormat(this)">
+          <span class="format-icon">🔥</span>
+          <span class="format-label">Pre-roll</span>
+          <span class="format-check"><span class="format-check-inner"></span></span>
+        </button>
+        <button class="format-btn" data-val="tincture" onclick="selectFormat(this)">
+          <span class="format-icon">💧</span>
+          <span class="format-label">Tincture</span>
+          <span class="format-check"><span class="format-check-inner"></span></span>
+        </button>
+      </div>
+    </div>
+    <div class="q-footer">
+      <button class="btn-next ready" id="btnQ2Next" onclick="goToQ3()">Next →</button>
+      <button class="btn-skip" onclick="skipFormat()">No preference — skip</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Q3: EXPERIENCE ═══════════════ -->
+  <div class="screen" id="sQ3">
+    <div class="wm">Canna<span class="wm-accent">scope</span></div>
+    <div class="progress">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot active"></div>
+    </div>
+    <div class="q-body">
+      <div class="q-label">Step 3 of 3</div>
+      <div class="q-headline">Your experience level?</div>
+      <div class="q-sub">This helps us match strength and onset to what works for you.</div>
+      <div class="exp-grid">
+        <button class="exp-btn" data-val="new"         onclick="selectExp(this)">
+          <div class="exp-name">New to cannabis</div>
+          <div class="exp-desc">First time or trying again — I want something approachable.</div>
+        </button>
+        <button class="exp-btn" data-val="casual"      onclick="selectExp(this)">
+          <div class="exp-name">Casual</div>
+          <div class="exp-desc">I use it sometimes and know what I generally like.</div>
+        </button>
+        <button class="exp-btn" data-val="experienced" onclick="selectExp(this)">
+          <div class="exp-name">Experienced</div>
+          <div class="exp-desc">Regular use — I can handle higher potency.</div>
+        </button>
+      </div>
+    </div>
+    <div class="q-footer">
+      <button class="btn-next" id="btnQ3Next" onclick="runMatch()">Find My Match →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ LOADING ═══════════════ -->
+  <div class="screen" id="sLoading">
+    <div class="loading-ring"></div>
+    <div class="loading-text">Matching you with the best options…</div>
+    <div class="loading-sub">This only takes a second.</div>
+  </div>
+
+  <!-- ═══════════════ RESULTS ═══════════════ -->
+  <div class="screen" id="sResults">
+    <div class="results-header">
+      <div class="results-label">Your Match</div>
+      <div class="results-headline" id="resHeadline">Top Picks</div>
+      <div class="results-meta" id="resMeta"></div>
+    </div>
+    <div class="results-body" id="resCards"></div>
+    <div class="results-restart">
+      <button class="btn-restart" onclick="restart()">Start over</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────
+// Same Supabase project as the budtender tool — shared infrastructure.
+const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
+
+// CRITICAL: these are the ONLY columns fetched from `products` in this file.
+// Internal fields (talking_points, manager_note, shelf, push_priority, margin_note)
+// are never selected here and never reach the customer.
+//
+// Phase 2: replace this string with a Supabase view `customer_products`
+// that has RLS enabled and only exposes these columns by design.
+const SAFE_COLS = [
+  'id','name','brand','category','price','thc','cbd','in_stock',
+  'score_sleep','score_relax','score_focus','score_social','score_relief','score_beginner'
+].join(',');
+
+const EFFECT_LABELS = {
+  sleep:'Sleep', relax:'Relax', focus:'Focus',
+  social:'Social', relief:'Relief', beginner:'Balanced'
+};
+
+const FORMAT_LABELS = {
+  flower:'Flower', vape:'Vape', edible:'Edible',
+  preroll:'Pre-roll', tincture:'Tincture', concentrate:'Concentrate',
+  topical:'Topical', capsule:'Capsule'
+};
+
+const ONSET = {
+  flower:'quick', vape:'quick', concentrate:'quick', preroll:'quick',
+  tincture:'moderate', sublingual:'moderate',
+  edible:'slow', capsule:'slow', patch:'slow'
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let orgId = null, orgName = '', allProducts = [];
+let selectedEffect = null, selectedFormat = null, selectedExp = null;
+
+// ── INIT ──────────────────────────────────────────────────────────────
+(async () => {
+  const params = new URLSearchParams(location.search);
+  const key = params.get('key');
+
+  if (key) {
+    const { data: org } = await sb
+      .from('organizations')
+      .select('id,name')
+      .eq('share_key', key)
+      .single();
+
+    if (org) {
+      orgId   = org.id;
+      orgName = org.name;
+      // Fetch ONLY safe columns — internal fields never leave the server
+      const { data: prods } = await sb
+        .from('products')
+        .select(SAFE_COLS)
+        .eq('organization_id', orgId)
+        .eq('in_stock', true);
+      allProducts = prods || [];
+    } else {
+      useDemoMode();
+    }
+  } else {
+    useDemoMode();
+  }
+})();
+
+function useDemoMode() {
+  orgName = 'Demo Store';
+  allProducts = DEMO_PRODUCTS;
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startFlow() { showScreen('sQ1'); }
+function restart()   {
+  selectedEffect = null; selectedFormat = null; selectedExp = null;
+  document.querySelectorAll('.effect-btn, .format-btn, .exp-btn')
+    .forEach(b => b.classList.remove('selected'));
+  document.getElementById('btnQ1Next').classList.remove('ready');
+  document.getElementById('btnQ3Next').classList.remove('ready');
+  showScreen('sLanding');
+}
+
+// ── Q1: EFFECT ────────────────────────────────────────────────────────
+function selectEffect(btn) {
+  document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedEffect = btn.dataset.val;
+  document.getElementById('btnQ1Next').classList.add('ready');
+}
+
+function goToQ2() {
+  if (!selectedEffect) return;
+  showScreen('sQ2');
+}
+
+// ── Q2: FORMAT ────────────────────────────────────────────────────────
+function selectFormat(btn) {
+  const wasSelected = btn.classList.contains('selected');
+  document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('selected'));
+  if (!wasSelected) {
+    btn.classList.add('selected');
+    selectedFormat = btn.dataset.val;
+  } else {
+    selectedFormat = null;
+  }
+}
+
+function skipFormat() {
+  selectedFormat = null;
+  document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('selected'));
+  showScreen('sQ3');
+}
+
+function goToQ3() { showScreen('sQ3'); }
+
+// ── Q3: EXPERIENCE ────────────────────────────────────────────────────
+function selectExp(btn) {
+  document.querySelectorAll('.exp-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedExp = btn.dataset.val;
+  document.getElementById('btnQ3Next').classList.add('ready');
+}
+
+// ── SCORING ENGINE (shared logic from budtender tool) ─────────────────
+// Mirrors the core scoring in the budtender experience — same weights,
+// same logic. Only the output presentation layer differs.
+function scoreProduct(p, eff) {
+  const base = (p['score_' + eff] || 0) * 40;
+  let bonus = 0, maxBonus = 0;
+
+  // Format match
+  if (selectedFormat) {
+    maxBonus += 20;
+    if ((p.category || '').toLowerCase() === selectedFormat) bonus += 20;
+  }
+
+  // Experience → THC intensity preference
+  if (selectedExp) {
+    maxBonus += 20;
+    const thc = parseFloat(p.thc) || 0;
+    const hit = (selectedExp === 'new'         && thc < 15)             ||
+                (selectedExp === 'casual'       && thc >= 12 && thc <= 22) ||
+                (selectedExp === 'experienced'  && thc > 18);
+    if (hit) bonus += 20;
+  }
+
+  const total    = base + bonus;
+  const maxTotal = 40 + maxBonus;
+  const pct      = maxTotal > 0
+    ? Math.round((total / maxTotal) * 100)
+    : Math.round((base / 40) * 100);
+  return { total, pct };
+}
+
+// ── CUSTOMER COPY GENERATOR ───────────────────────────────────────────
+// Deterministic, customer-safe copy built from public product fields only.
+// Never references talking_points, manager_note, shelf, or internal data.
+// This is the customer presentation layer — separate from budtender output.
+function buildWhyCopy(p, eff) {
+  const thc = parseFloat(p.thc) || 0;
+  const cbd = parseFloat(p.cbd) || 0;
+  const cat = (p.category || 'flower').toLowerCase();
+
+  // High-CBD / low-THC products
+  if (cbd > thc && cbd > 3) {
+    const copy = {
+      sleep:    'A CBD-dominant option that gently eases you toward rest without heavy sedation.',
+      relax:    'High CBD keeps the experience calm, clear, and easy to manage throughout.',
+      relief:   'Strong CBD profile makes this one of the more effective options for physical comfort.',
+      focus:    'The CBD tempers any psychoactive edge — you stay clear-headed and functional.',
+      social:   'A light, approachable option that keeps you comfortable and present.',
+      beginner: 'Very forgiving — high CBD softens the experience and makes overconsumption unlikely.'
+    };
+    return copy[eff] || 'A well-balanced option that\'s easy to approach and reliable.';
+  }
+
+  // By effect × format × intensity
+  const intensity = thc < 15 ? 'light' : thc <= 22 ? 'moderate' : 'strong';
+
+  const matrix = {
+    sleep: {
+      edible:    'A slow-building edible — takes about 90 minutes to settle in, then carries you through the night.',
+      tincture:  'Absorbed under the tongue in 20–30 minutes. A gentler way to ease toward sleep.',
+      flower:    intensity === 'strong'
+                   ? 'A higher-potency option — best if you need something with real weight to it at night.'
+                   : 'A calming flower that relaxes the body and quiets the mind before bed.',
+      vape:      'Fast-acting format — a few draws is usually all it takes for the wind-down to begin.',
+      preroll:   'Ready to go, no setup needed. A clean way to end the day.',
+      tincture2: 'Moderate onset with a reliable, calming effect through the night.',
+    },
+    relax: {
+      edible:   'Long-lasting and smooth. Effects build gradually and stay balanced for hours.',
+      tincture: 'Easy to dial in — start small and find what works for your evening.',
+      flower:   'A reliable everyday unwind. Consistent, smooth, and hard to overthink.',
+      vape:     'Fast onset and easy to control — a puff or two and you\'ll feel the tension lift.',
+      preroll:  'Convenient and consistent. Unwind without overthinking it.',
+    },
+    focus: {
+      edible:   'Slow onset but long-lasting clarity — good for extended creative sessions.',
+      tincture: 'Moderate onset with a steady, functional effect. Good for staying productive.',
+      flower:   intensity === 'strong'
+                  ? 'Higher potency sativa — better suited if you handle THC well and want sharp energy.'
+                  : 'Clear-headed and alert without the anxious edge of high-THC options.',
+      vape:     'Instant clarity, easy to dose one puff at a time. Gets you into the zone quickly.',
+      preroll:  'Quick and clean. A focused session without any setup.',
+    },
+    social: {
+      edible:   'Start low — edibles are slow but the mood lift lasts for hours once it kicks in.',
+      tincture: 'Relaxed, social effect with a moderate onset. Easy to gauge and manage.',
+      flower:   'Uplifting and mood-forward. Keeps energy up and conversation easy.',
+      vape:     'Quick and discreet. A puff is all you need to feel elevated and present.',
+      preroll:  'No prep, no fuss. A good pick for social settings where you want to keep it simple.',
+    },
+    relief: {
+      edible:   'Long-lasting body relief — effects can run 6–8 hours once they settle in.',
+      tincture: 'Versatile and easy to dose. Good for managing ongoing discomfort through the day.',
+      flower:   'One of the more direct delivery formats for physical relief.',
+      vape:     'Fast-acting when you need it. Precise and controlled.',
+      topical:  'Applied directly to the area — no psychoactive effect, just targeted physical relief.',
+      preroll:  'Relatively fast onset for pain and tension relief. Straightforward and reliable.',
+    },
+    beginner: {
+      edible:   'Low-dose and forgiving. Take half, wait 90 minutes, see how you feel before taking more.',
+      tincture: 'The most approachable format — easy to start very small and build gradually.',
+      flower:   thc < 15
+                  ? 'A lighter potency option — more forgiving for first-timers than high-THC products.'
+                  : 'Take it slow — a small amount goes a long way if you\'re just getting started.',
+      vape:     'One puff at a time, easy to control. Start slow and you can always take more.',
+      preroll:  'Classic intro format. Take a small puff, wait 10 minutes, and gauge from there.',
+    },
+  };
+
+  const effMap = matrix[eff] || matrix.relax;
+  return effMap[cat] || effMap['flower'] || 'A solid match for what you\'re looking for.';
+}
+
+// ── RUN MATCH ─────────────────────────────────────────────────────────
+async function runMatch() {
+  if (!selectedExp) return;
+  showScreen('sLoading');
+
+  // Slight delay so the loading state is visible
+  await new Promise(r => setTimeout(r, 900));
+
+  const eff = selectedEffect || 'relax';
+
+  const ranked = allProducts
+    .filter(p => p.in_stock !== false)
+    .map(p => ({ ...p, _score: scoreProduct(p, eff) }))
+    .sort((a, b) => b._score.total - a._score.total)
+    .slice(0, 3);
+
+  // Build results header
+  const effLabel = EFFECT_LABELS[eff] || 'Top Picks';
+  document.getElementById('resHeadline').textContent =
+    `Top picks for ${effLabel.toLowerCase()}`;
+
+  const metaParts = [];
+  if (selectedFormat) metaParts.push(FORMAT_LABELS[selectedFormat] || selectedFormat);
+  if (selectedExp === 'new')         metaParts.push('Approachable potency');
+  if (selectedExp === 'experienced') metaParts.push('Higher potency');
+  document.getElementById('resMeta').textContent =
+    metaParts.length ? metaParts.join(' · ') : 'Best overall matches';
+
+  // Render cards
+  if (!ranked.length) {
+    document.getElementById('resCards').innerHTML =
+      '<div class="empty-state">No products found for this selection.<br>Ask a staff member for personalized help.</div>';
+    showScreen('sResults');
+    return;
+  }
+
+  const rankLabels = ['Best Match', 'Runner Up', 'Third Pick'];
+
+  document.getElementById('resCards').innerHTML = ranked.map((p, i) => {
+    const cat   = cap(FORMAT_LABELS[(p.category||'').toLowerCase()] || p.category || 'Flower');
+    const price = p.price ? `$${Number(p.price).toFixed(0)}` : null;
+    const thcTxt = p.thc  != null ? `THC ${p.thc}%`  : null;
+    const cbdTxt = (p.cbd && p.cbd > 0.5) ? `CBD ${p.cbd}%` : null;
+    const why   = buildWhyCopy(p, eff);
+
+    const metaItems = [p.brand, cat, thcTxt, cbdTxt].filter(Boolean);
+
+    return `
+    <div class="prod-card${i === 0 ? ' top-pick' : ''}">
+      <div class="card-rank">${rankLabels[i]}</div>
+      <div class="card-top">
+        <div class="card-name">${xe(p.name)}</div>
+        <div>
+          ${price ? `<div class="card-price">${price}</div>` : ''}
+          <div class="card-pct">${p._score.pct}% match</div>
+        </div>
+      </div>
+      <div class="card-meta">
+        ${metaItems.map((m, j) => j === 0 ? xe(m) : `<span class="meta-sep">·</span>${xe(m)}`).join('')}
+      </div>
+      <div class="card-why-label">Why it works</div>
+      <div class="card-why">${xe(why)}</div>
+    </div>`;
+  }).join('');
+
+  showScreen('sResults');
+
+  // Log session (non-blocking, fails silently)
+  if (orgId) {
+    sb.from('customer_sessions').insert({
+      organization_id: orgId,
+      effect: eff,
+      format_pref: selectedFormat || null,
+      experience: selectedExp,
+      matched_product_ids: ranked.map(p => p.id)
+    }).catch(() => {});
+  }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+function xe(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── DEMO PRODUCTS (customer-safe subset only) ─────────────────────────
+// No talking_points, manager_note, shelf, or internal fields.
+// This mirrors what Supabase returns via SAFE_COLS in production.
+const DEMO_PRODUCTS = [
+  { id:'d1',  name:'Granddaddy Purple',   brand:'Royal Gardens',  category:'flower',   price:45, thc:23, cbd:0,  in_stock:true, score_sleep:0.82, score_relax:0.42, score_focus:0.10, score_social:0.12, score_relief:0.38, score_beginner:0.22 },
+  { id:'d2',  name:'Northern Lights',     brand:'Emerald Fields', category:'flower',   price:40, thc:18, cbd:0,  in_stock:true, score_sleep:0.74, score_relax:0.50, score_focus:0.12, score_social:0.14, score_relief:0.32, score_beginner:0.35 },
+  { id:'d3',  name:'Purple Punch Gummies',brand:'Green Peak',     category:'edible',   price:25, thc:10, cbd:0,  in_stock:true, score_sleep:0.68, score_relax:0.46, score_focus:0.08, score_social:0.10, score_relief:0.28, score_beginner:0.55 },
+  { id:'d4',  name:'Dream Tincture',      brand:'Bloom Select',   category:'tincture', price:38, thc:5,  cbd:10, in_stock:true, score_sleep:0.71, score_relax:0.55, score_focus:0.10, score_social:0.08, score_relief:0.44, score_beginner:0.62 },
+  { id:'d5',  name:'Blue Dream',          brand:'Canopy Co',      category:'flower',   price:42, thc:22, cbd:0,  in_stock:true, score_sleep:0.38, score_relax:0.78, score_focus:0.40, score_social:0.44, score_relief:0.30, score_beginner:0.28 },
+  { id:'d6',  name:'OG Kush',             brand:'Canopy Co',      category:'flower',   price:48, thc:21, cbd:0,  in_stock:true, score_sleep:0.44, score_relax:0.72, score_focus:0.22, score_social:0.28, score_relief:0.38, score_beginner:0.24 },
+  { id:'d7',  name:'Wedding Cake Vape',   brand:'Summit Select',  category:'vape',     price:55, thc:25, cbd:0,  in_stock:true, score_sleep:0.30, score_relax:0.65, score_focus:0.38, score_social:0.50, score_relief:0.22, score_beginner:0.15 },
+  { id:'d8',  name:'Sour Diesel',         brand:'Green Peak',     category:'flower',   price:46, thc:24, cbd:0,  in_stock:true, score_sleep:0.10, score_relax:0.38, score_focus:0.80, score_social:0.55, score_relief:0.18, score_beginner:0.20 },
+  { id:'d9',  name:'Jack Herer',          brand:'Harvest Gold',   category:'flower',   price:44, thc:19, cbd:1,  in_stock:true, score_sleep:0.12, score_relax:0.42, score_focus:0.74, score_social:0.52, score_relief:0.20, score_beginner:0.32 },
+  { id:'d10', name:'Green Crack Vape',    brand:'Summit Select',  category:'vape',     price:50, thc:21, cbd:0,  in_stock:true, score_sleep:0.08, score_relax:0.30, score_focus:0.70, score_social:0.60, score_relief:0.15, score_beginner:0.18 },
+  { id:'d11', name:'Pineapple Express',   brand:'Coastal Farms',  category:'flower',   price:43, thc:20, cbd:0,  in_stock:true, score_sleep:0.15, score_relax:0.48, score_focus:0.46, score_social:0.78, score_relief:0.20, score_beginner:0.30 },
+  { id:'d12', name:'Tangie Vape',         brand:'Summit Select',  category:'vape',     price:52, thc:22, cbd:0,  in_stock:true, score_sleep:0.08, score_relax:0.35, score_focus:0.48, score_social:0.75, score_relief:0.14, score_beginner:0.22 },
+  { id:'d13', name:'Mimosa',              brand:'Canopy Co',      category:'flower',   price:48, thc:22, cbd:0,  in_stock:true, score_sleep:0.10, score_relax:0.42, score_focus:0.50, score_social:0.72, score_relief:0.16, score_beginner:0.28 },
+  { id:'d14', name:'ACDC',               brand:'Remedy Farms',   category:'flower',   price:50, thc:2,  cbd:14, in_stock:true, score_sleep:0.38, score_relax:0.60, score_focus:0.30, score_social:0.20, score_relief:0.88, score_beginner:0.72 },
+  { id:'d15', name:'Harlequin',           brand:'Remedy Farms',   category:'flower',   price:46, thc:6,  cbd:10, in_stock:true, score_sleep:0.42, score_relax:0.62, score_focus:0.35, score_social:0.22, score_relief:0.82, score_beginner:0.68 },
+  { id:'d16', name:'Relief Topical',      brand:'Bloom Select',   category:'topical',  price:35, thc:0,  cbd:500,in_stock:true, score_sleep:0.10, score_relax:0.30, score_focus:0.10, score_social:0.05, score_relief:0.76, score_beginner:0.80 },
+  { id:'d17', name:'Harlequin 1:1',       brand:'Remedy Farms',   category:'tincture', price:40, thc:5,  cbd:5,  in_stock:true, score_sleep:0.42, score_relax:0.62, score_focus:0.38, score_social:0.30, score_relief:0.58, score_beginner:0.84 },
+  { id:'d18', name:"Charlotte's Web",     brand:'Green Gate',     category:'edible',   price:28, thc:5,  cbd:5,  in_stock:true, score_sleep:0.48, score_relax:0.58, score_focus:0.32, score_social:0.28, score_relief:0.52, score_beginner:0.78 },
+  { id:'d19', name:'Northern Lights Low', brand:'Emerald Fields', category:'preroll',  price:22, thc:12, cbd:2,  in_stock:true, score_sleep:0.55, score_relax:0.50, score_focus:0.28, score_social:0.32, score_relief:0.35, score_beginner:0.75 },
+];
+
+/* ── SUPABASE SCHEMA REFERENCE ────────────────────────────────────────
+   Run these once in Supabase SQL editor.
+
+   1. CUSTOMER SESSIONS TABLE (analytics, no PII):
+   ─────────────────────────────────────────────
+   create table if not exists customer_sessions (
+     id                  uuid primary key default gen_random_uuid(),
+     created_at          timestamptz default now(),
+     organization_id     uuid references organizations(id) on delete cascade,
+     effect              text,
+     format_pref         text,
+     experience          text,
+     matched_product_ids uuid[]
+   );
+
+   -- Allow anon inserts (QR scans), block reads from anon
+   alter table customer_sessions enable row level security;
+   create policy "customer_sessions_insert" on customer_sessions
+     for insert to anon with check (true);
+
+   2. OPTIONAL: CUSTOMER-SAFE VIEW (for Phase 2 RLS-based data layer):
+   ─────────────────────────────────────────────────────────────────────
+   create or replace view customer_products as
+   select
+     id, organization_id, name, brand, category,
+     price, thc, cbd, in_stock,
+     score_sleep, score_relax, score_focus,
+     score_social, score_relief, score_beginner
+   from products;
+
+   -- When using this view, the QR flow queries `customer_products` instead
+   -- of `products`. Internal columns are structurally excluded at the DB level.
+   ──────────────────────────────────────────────────────────────────────── */
+</script>
+</body>
+</html>
