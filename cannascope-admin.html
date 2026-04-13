@@ -353,6 +353,10 @@ th.row-cb .cb{margin-top:1px}
     Analytics
     <span class="t-badge" id="anlBadge"></span>
   </button>
+  <button class="tab-btn" onclick="switchTab('ins')" id="tb-ins">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Demand
+  </button>
 </div>
 
 <!-- INVENTORY TAB -->
@@ -396,6 +400,9 @@ th.row-cb .cb{margin-top:1px}
 
 <!-- ANALYTICS TAB -->
 <div class="tab-pane pad" id="tp-anl"><div id="anlContent"></div></div>
+
+<!-- DEMAND INSIGHTS TAB -->
+<div class="tab-pane pad" id="tp-ins"><div id="insContent"><div style="text-align:center;padding:80px 20px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:16px">📊</div><div style="font-size:16px;color:var(--txt2);font-weight:600;margin-bottom:8px">Loading demand data…</div></div></div></div>
 
 <!-- ADD MODAL -->
 <div class="modal-ov" id="addModal">
@@ -918,6 +925,41 @@ function switchTab(tab){
   document.getElementById('tb-'+tab).classList.add('active');
   document.getElementById('tp-'+tab).classList.add('active');
   if(tab==='anl'&&!anlDone){renderAnalytics();anlDone=true;}
+  if(tab==='ins'){loadDemandInsights();}
+}
+
+async function loadDemandInsights(){
+  const el=document.getElementById('insContent');
+  if(!userOrgId){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--txt3);font-size:14px">Sign in with your store credentials to see demand data.</div>';return;}
+  el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--txt3);font-size:14px">Loading…</div>';
+  try{
+    const since=new Date(Date.now()-7*24*60*60*1000).toISOString();
+    const {data:rows,error}=await sb.from('demand_events').select('event_type,goal,recommendations,product_id,product_rank,source,created_at').eq('organization_id',userOrgId).gte('created_at',since).order('created_at',{ascending:false});
+    if(error||!rows){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--txt3)">Could not load demand data.<br><small>Make sure the demand_events table has been created in Supabase.</small></div>';return;}
+    renderDemandInsights(rows);
+  }catch(e){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--txt3)">Error loading demand data.</div>';}
+}
+
+function renderDemandInsights(rows){
+  const el=document.getElementById('insContent');
+  const shown=rows.filter(r=>r.event_type==='results_shown');
+  const tapped=rows.filter(r=>r.event_type==='product_tapped');
+  const sales=rows.filter(r=>r.event_type==='sale_confirmed');
+  const bdtRows=shown.filter(r=>r.source==='budtender');
+  const qrRows=shown.filter(r=>r.source==='customer_qr');
+  const goalCounts={};
+  shown.forEach(r=>{if(r.goal)goalCounts[r.goal]=(goalCounts[r.goal]||0)+1;});
+  const goalOrder=['sleep','relax','focus','social','relief','beginner'];
+  const goalMax=Math.max(...Object.values(goalCounts),1);
+  const goalLabels={sleep:'Sleep',relax:'Relax',focus:'Focus',social:'Social',relief:'Relief',beginner:'Beginner'};
+  const goalColors={sleep:'#6366F1',relax:'#10B981',focus:'#F59E0B',social:'#EC4899',relief:'#EF4444',beginner:'#8B5CF6'};
+  const prodCounts={};
+  shown.forEach(r=>{if(r.recommendations&&r.recommendations[0])prodCounts[r.recommendations[0]]=(prodCounts[r.recommendations[0]]||0)+1;});
+  const topProds=Object.entries(prodCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const prodNames={};
+  products.forEach(p=>{prodNames[p.id]=p.name;});
+  const convRate=shown.length?Math.round(sales.length/shown.length*100):0;
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-bottom:24px">${[['Sessions this week',shown.length,'recommendations shown'],['Budtender',bdtRows.length,'staff-assisted'],['Customer QR',qrRows.length,'self-serve scans'],['Confirmed Sales',sales.length,convRate+'% conversion']].map(([lbl,val,sub])=>`<div style="padding:18px 20px;border-right:1px solid var(--border)"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px">${lbl}</div><div style="font-size:28px;font-weight:700;color:var(--txt);letter-spacing:-.03em">${val}</div><div style="font-size:11px;color:var(--txt3);margin-top:2px">${sub}</div></div>`).join('')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px"><div class="a-card"><div class="a-head"><div><div class="a-title">What customers want</div><div class="a-sub">Goals this week</div></div></div>${goalOrder.filter(g=>goalCounts[g]).length===0?'<div style="text-align:center;padding:32px;color:var(--txt3);font-size:13px">No sessions yet</div>':goalOrder.filter(g=>goalCounts[g]).map(g=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:72px;font-size:12px;font-weight:600;color:var(--txt2)">${goalLabels[g]||g}</div><div style="flex:1;height:8px;background:var(--surface-el);border-radius:4px;overflow:hidden"><div style="height:100%;width:${Math.round(goalCounts[g]/goalMax*100)}%;background:${goalColors[g]||'var(--green)'};border-radius:4px"></div></div><div style="width:28px;font-size:12px;font-weight:700;color:var(--txt);text-align:right">${goalCounts[g]}</div></div>`).join('')}</div><div class="a-card"><div class="a-head"><div><div class="a-title">Top recommended</div><div class="a-sub">#1 match most often</div></div></div>${topProds.length===0?'<div style="text-align:center;padding:32px;color:var(--txt3);font-size:13px">No sessions yet</div>':topProds.map(([id,count],i)=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:var(--surface-el);border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--txt3);display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div><div style="flex:1;font-size:12px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${prodNames[id]||'Unknown'}</div><div style="font-size:12px;font-weight:700;color:var(--acc)">${count}×</div></div>`).join('')}</div><div class="a-card" style="grid-column:1/-1"><div class="a-head"><div><div class="a-title">Recent sessions</div><div class="a-sub">Last 20 interactions</div></div><button class="hbtn" style="font-size:11px;padding:4px 10px" onclick="loadDemandInsights()">↻ Refresh</button></div><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:1px solid var(--border)">${['Time','Source','Goal','Products shown','Event'].map(h=>`<th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--txt3)">${h}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,20).map(r=>{const t=new Date(r.created_at);const timeStr=t.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+t.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});const src=r.source==='budtender'?'<span style="font-size:10px;background:#1B3A2A;color:#4CAF80;padding:2px 7px;border-radius:4px;font-weight:600">Staff</span>':'<span style="font-size:10px;background:#1A1A2E;color:#818CF8;padding:2px 7px;border-radius:4px;font-weight:600">QR</span>';const evtColor=r.event_type==='sale_confirmed'?'#4CAF80':r.event_type==='product_tapped'?'#F59E0B':'var(--txt3)';const evtLabel={'results_shown':'Results shown','product_tapped':'Card tapped','sale_confirmed':'✓ Sale confirmed'}[r.event_type]||r.event_type;const prods=(r.recommendations||[]).slice(0,2).map(id=>prodNames[id]||'…').join(', ')+(r.recommendations?.length>2?'…':'');return`<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px;color:var(--txt3)">${timeStr}</td><td style="padding:8px 12px">${src}</td><td style="padding:8px 12px;font-weight:600;color:var(--txt2);text-transform:capitalize">${r.goal||'—'}</td><td style="padding:8px 12px;color:var(--txt3);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${prods||'—'}</td><td style="padding:8px 12px;font-weight:600;color:${evtColor}">${evtLabel}</td></tr>`;}).join('')}</tbody></table></div></div>`;
 }
 
 // -- ANALYTICS -------------------------------------

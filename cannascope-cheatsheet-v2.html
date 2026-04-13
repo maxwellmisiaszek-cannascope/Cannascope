@@ -890,6 +890,9 @@
     <div class="results-list" id="productCards">
         <div class="loading-state">Finding best matches…</div>
     </div>
+    <div id="saleConfirmWrap" style="display:none;padding:16px 20px 20px;">
+        <button id="saleConfirmBtn" onclick="confirmSale()" style="width:100%;padding:14px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;letter-spacing:-0.01em;background:#1B4332;color:#4CAF80;transition:all 0.2s;">✓ &nbsp;Recommended — Sale Made</button>
+    </div>
 </div>
 
 <script>
@@ -946,6 +949,36 @@ let orgId = null, orgName = '', allProducts = [];
 let selectedEffect = null;
 let filters = {};
 let debugMode = false; // kept for score engine compatibility, not exposed in UI
+
+const SESSION_ID = crypto.randomUUID();
+let _lastRecommendedIds = [];
+
+function logDemandEvent(event_type, options = {}) {
+    if (!orgId) return;
+    sb.from('demand_events').insert({
+        session_id:      SESSION_ID,
+        organization_id: orgId,
+        source:          'budtender',
+        goal:            selectedEffect      || null,
+        format_pref:     filters.format      || null,
+        experience:      filters.experience  || null,
+        event_type,
+        recommendations: options.recommendations || [],
+        product_id:      options.product_id      || null,
+        product_rank:    options.product_rank    || null
+    }).catch(() => {});
+}
+
+function confirmSale() {
+    const btn = document.getElementById('saleConfirmBtn');
+    if (btn.dataset.confirmed) return;
+    btn.dataset.confirmed = '1';
+    btn.textContent = '\u2713  Sale confirmed';
+    btn.style.background = '#2D6A4F';
+    btn.style.color = '#fff';
+    btn.style.cursor = 'default';
+    logDemandEvent('sale_confirmed', { recommendations: _lastRecommendedIds });
+}
 
 // ── DEMO PRODUCTS ─────────────────────────────────────────────────────────────
 // Must be declared BEFORE the init IIFE so useDemoMode() can reference it.
@@ -1495,18 +1528,18 @@ async function findProducts() {
 
     document.getElementById('productCards').innerHTML = cardsHtml;
 
-    // Log to Supabase (best-effort, non-blocking)
-    if (orgId) {
-        await sb.from('recommendation_events').insert({
-            organization_id: orgId,
-            effect:          eff,
-            filters:         JSON.stringify(filters),
-            product_id:      top3[0]?.id || null,
-            top_score:       top3[0]?._result.score || 0,
-            top_confidence:  top3[0]?._result.confidence || 'LOW',
-            results_count:   eligible.length
-        }).catch(() => {});
+    _lastRecommendedIds = top3.map(p => p.id);
+    const wrap = document.getElementById('saleConfirmWrap');
+    const btn  = document.getElementById('saleConfirmBtn');
+    if (wrap) {
+        btn.dataset.confirmed = '';
+        btn.textContent = '\u2713 \u00a0Recommended \u2014 Sale Made';
+        btn.style.background = '#1B4332';
+        btn.style.color = '#4CAF80';
+        btn.style.cursor = 'pointer';
+        wrap.style.display = 'block';
     }
+    logDemandEvent('results_shown', { recommendations: _lastRecommendedIds });
 }
 
 // ── PITCH LINE GENERATOR ──────────────────────────────────────────────────────
