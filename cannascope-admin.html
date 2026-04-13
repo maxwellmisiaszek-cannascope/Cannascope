@@ -255,8 +255,7 @@ tr:hover .row-acts{opacity:1}
 #toast.show{opacity:1;transform:translateY(0)}
 
 /* DEMO MODE BANNER */
-.demo-banner{background:var(--blue-d);border-bottom:1px solid var(--blue-border);padding:7px 28px;font-size:12px;color:var(--blue);display:none;align-items:center;gap:8px}
-.demo-banner.visible{display:flex}
+
 
 @media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:768px){.kpi-strip{grid-template-columns:repeat(2,1fr)};.pad{padding:16px 20px};.header{padding:0 16px};.pg-head{padding:20px 20px 0};.tabs-bar{padding:20px 20px 0}}
@@ -542,32 +541,18 @@ let importRows=[]; // parsed CSV rows pending confirmation
 
 // -- INIT ------------------------------------------
 async function init(){
-  // Try Supabase auth
   try{
     const {data:{session}}=await sb.auth.getSession();
-    if(session){
-      useDB=true;
-      // Get org name
-      try{
-        const {data:prof}=await sb.from('user_profiles').select('org_name,organization_id').eq('id',session.user.id).single();
-        if(prof?.organization_id) userOrgId=prof.organization_id; // store for scoped inserts
-        if(prof?.org_name){
-          document.getElementById('orgName').textContent=prof.org_name;
-          localStorage.setItem(LS_ORG,prof.org_name);
-        } else if(prof?.organization_id){
-          const {data:org}=await sb.from('organizations').select('name').eq('id',prof.organization_id).single();
-          if(org?.name){document.getElementById('orgName').textContent=org.name;localStorage.setItem(LS_ORG,org.name);}
-        }
-      }catch(e){}
-      await loadFromDB();
-      return;
-    }
-  }catch(e){}
-  // No session  -  demo / local mode
-  const orgName=localStorage.getItem(LS_ORG)||'Demo Store';
-  document.getElementById('orgName').textContent=orgName;
-  showDemoBanner();
-  loadLocalProducts();
+    if(!session){window.location.href='cannascope-login.html';return;}
+    try{
+      const {data:prof}=await sb.from('user_profiles').select('org_name,organization_id').eq('id',session.user.id).single();
+      if(prof?.organization_id){userOrgId=prof.organization_id;}
+      else{const {data:sm}=await sb.from('staff_members').select('organization_id').eq('user_id',session.user.id).single();if(sm?.organization_id)userOrgId=sm.organization_id;}
+      if(prof?.org_name){document.getElementById('orgName').textContent=prof.org_name;}
+      else if(userOrgId){const {data:org}=await sb.from('organizations').select('name,share_key').eq('id',userOrgId).single();if(org?.name)document.getElementById('orgName').textContent=org.name;if(org?.share_key){const base=window.location.href.replace(/[^\/]*$/,'');const qrBtn=document.getElementById('qrDeployBtn');if(qrBtn)qrBtn.href=base+'cannascope-qr-deploy.html?key='+encodeURIComponent(org.share_key);}}
+    }catch(e){}
+    await loadFromDB();
+  }catch(e){window.location.href='cannascope-login.html';}
 }
 
 async function loadFromDB(){
@@ -585,12 +570,6 @@ async function loadFromDB(){
   renderAll();
 }
 
-function loadLocalProducts(){
-  const stored=lsLoad();
-  products=stored?stored:JSON.parse(JSON.stringify(SEED));
-  if(!stored)
-  renderAll();
-}
 
 function renderAll(){
   renderKPIs();
@@ -600,12 +579,6 @@ function renderAll(){
 }
 
 
-function resetDemo(){
-  if(!confirm('Reset to demo data? All local changes will be lost.'))return;
-  localStorage.removeItem(LS_KEY);
-  products=JSON.parse(JSON.stringify(SEED));
-  renderAll();showToast('Demo data restored');
-}
 
 // -- KPIs ------------------------------------------
 function renderKPIs(){
@@ -715,7 +688,7 @@ function sortBy(col){
 async function toggleStock(id){
   const p=products.find(x=>x.id===id);if(!p)return;
   p.in_stock=!p.in_stock;
-  if(useDB){try{await sb.from('products').update({in_stock:p.in_stock}).eq('id',id);}catch(e){}}
+  try{await sb.from('products').update({in_stock:p.in_stock}).eq('id',id);}catch(e){}
   renderAll();
   showToast(p.in_stock?'Marked in stock':'Marked out of stock');
 }
@@ -723,7 +696,7 @@ async function toggleStock(id){
 async function togglePush(id){
   const p=products.find(x=>x.id===id);if(!p)return;
   p.push=!p.push;
-  if(useDB){try{await sb.from('products').update({push:p.push}).eq('id',id);}catch(e){}}
+  try{await sb.from('products').update({push:p.push}).eq('id',id);}catch(e){}
   renderKPIs();renderTable();anlDone=false;
   showToast(p.push?'Added to Push This Week':'Removed from push list');
 }
@@ -731,7 +704,7 @@ async function togglePush(id){
 function saveNote(id,txt){
   const p=products.find(x=>x.id===id);if(!p||p.manager_note===txt)return;
   p.manager_note=txt;
-  if(useDB){try{sb.from('products').update({manager_note:txt}).eq('id',id);}catch(e){}}
+  try{sb.from('products').update({manager_note:txt}).eq('id',id);}catch(e){}
   
 }
 
@@ -859,7 +832,7 @@ async function autoScripts(){
   showToast('Generating '+miss.length+' script'+(miss.length!==1?'s':'')+'...');
   for(const p of miss){
     p.talking_points=buildScript(p);
-    if(useDB){try{await sb.from('products').update({talking_points:p.talking_points}).eq('id',p.id);}catch(e){}}
+    try{await sb.from('products').update({talking_points:p.talking_points}).eq('id',p.id);}catch(e){}
   }
   renderAll();anlDone=false;
   setTimeout(()=>showToast('Scripts generated for '+miss.length+' product'+(miss.length!==1?'s':'')),600);
@@ -1098,7 +1071,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelect
 
 // -- SIGN OUT --------------------------------------
 async function signOut(){
-  if(useDB){try{await sb.auth.signOut();}catch(e){}}
+  try{await sb.auth.signOut();}catch(e){}
   window.location.href='cannascope-login.html';
 }
 
@@ -1166,7 +1139,7 @@ function bulkDelete(){
 
 async function confirmBulkDelete(){
   const ids=Array.from(selectedIds);
-  if(useDB){try{await Promise.all(ids.map(id=>sb.from('products').delete().eq('id',id)));}catch(e){showToast('Error deleting');return;}}
+  try{await Promise.all(ids.map(id=>sb.from('products').delete().eq('id',id)));}catch(e){showToast('Error deleting');return;}
   products=products.filter(p=>!ids.includes(p.id));
   selectedIds.clear();
   closeM('bulkDelModal');renderAll();anlDone=false;
@@ -1295,7 +1268,7 @@ async function confirmImport(){
     't_myrcene','t_linalool','t_caryophyllene','t_limonene','t_pinene','t_terpinolene'];
 
   // If userOrgId wasn't set at login, try to pull it from the active session now
-  if(useDB&&!userOrgId){
+  if(!userOrgId){
     try{
       const {data:{session}}=await sb.auth.getSession();
       if(session){
@@ -1309,7 +1282,7 @@ async function confirmImport(){
   const tryCols=new Set(DB_COLS);
 
   for(const row of importRows){
-    if(useDB){
+    {
       let attempts=0;
       while(attempts<8){
         attempts++;
