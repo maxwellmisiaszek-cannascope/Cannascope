@@ -988,6 +988,7 @@ function logDemandEvent(event_type, options = {}) {
     }).catch(() => {});
 }
 
+// Per-card recommend toggle — logs which product was actually recommended
 function toggleRecommend(btn, productId, rank) {
     const on = btn.classList.toggle('recommended');
     btn.textContent = on ? '\u2713 Recommended' : 'Recommend';
@@ -1674,7 +1675,11 @@ function renderCard(p, idx, eff, rankLabel) {
             <span>THC ${thc > 0 ? thc + '%' : '—'}${cbdNote}</span>
         </div>
         ${chipsHtml}${whyHtml}${penHtml}${talkHtml}${mgrHtml}${debugHtml}
-        <button class="rec-btn" id="rec-${xe(p.id)}" onclick="toggleRecommend(this,'${xe(p.id)}',${idx + 1})">Recommend</button>
+        <button
+            class="rec-btn"
+            id="rec-${xe(p.id)}"
+            onclick="toggleRecommend(this,'${xe(p.id)}',${idx + 1})"
+        >Recommend</button>
     </div>`;
 }
 

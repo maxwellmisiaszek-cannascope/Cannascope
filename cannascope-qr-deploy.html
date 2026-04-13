@@ -296,7 +296,7 @@
     <div class="section-eyebrow">In-Store Setup</div>
     <div class="section-title">Generate Your QR Code</div>
     <div class="section-desc">
-      Enter your store's share key below to generate a print-ready QR card.
+      Enter your store's public key below to generate a print-ready QR card.
       Print it and place it on the counter — customers scan to get product
       recommendations in under 30 seconds, no staff required.
     </div>
@@ -306,13 +306,13 @@
         class="key-input"
         id="keyInput"
         type="text"
-        placeholder="Paste your share key…"
+        placeholder="Paste your public key…"
         spellcheck="false"
         autocomplete="off"
       />
       <button class="btn btn-accent" onclick="loadStore()">Generate QR →</button>
     </div>
-    <div class="error-msg" id="errMsg">Store not found. Double-check your share key.</div>
+    <div class="error-msg" id="errMsg">Store not found. Double-check your public key.</div>
   </div>
 
   <!-- ── QR OUTPUT ─────────────────────────────────────── -->
@@ -403,7 +403,7 @@ document.getElementById('keyInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') loadStore();
 });
 
-// Pre-fill if share key is in the URL (e.g., bookmarked or linked directly)
+// Pre-fill if public key is in the URL (e.g., bookmarked or linked directly)
 (function() {
   const params = new URLSearchParams(location.search);
   const key = params.get('key');
