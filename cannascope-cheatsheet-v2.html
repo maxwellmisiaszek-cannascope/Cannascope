@@ -1132,29 +1132,75 @@ const DEMO_PRODUCTS = [
 ];
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+async function loadOrg(key) {
+    const { data: org } = await sb.from('organizations').select('id,name').eq('public_key', key).single();
+    if (org) {
+        localStorage.setItem('cs_public_key', key);
+        orgId   = org.id;
+        orgName = org.name;
+        document.getElementById('orgLabel').textContent = org.name;
+        const { data: prods } = await sb.from('products')
+            .select('*').eq('organization_id', orgId).eq('in_stock', true);
+        allProducts = (prods || []).map(normalizeProduct);
+        const el = document.getElementById('productCount');
+        el.textContent = allProducts.length + ' products';
+        el.classList.add('loaded');
+        return true;
+    }
+    return false;
+}
+
 (async () => {
     const params = new URLSearchParams(location.search);
-    const key    = params.get('key');
+    const urlKey = params.get('key');
+    const savedKey = localStorage.getItem('cs_public_key');
+    const key = urlKey || savedKey;
 
     if (key) {
-        const { data: org } = await sb.from('organizations').select('id,name').eq('public_key', key).single();
-        if (org) {
-            orgId   = org.id;
-            orgName = org.name;
-            document.getElementById('orgLabel').textContent = org.name;
-            const { data: prods } = await sb.from('products')
-                .select('*').eq('organization_id', orgId).eq('in_stock', true);
-            allProducts = (prods || []).map(normalizeProduct);
-            const el = document.getElementById('productCount');
-            el.textContent = allProducts.length + ' products';
-            el.classList.add('loaded');
-        } else {
-            useDemoMode();
+        const ok = await loadOrg(key);
+        if (!ok) {
+            localStorage.removeItem('cs_public_key');
+            promptForKey();
         }
     } else {
-        useDemoMode();
+        promptForKey();
     }
 })();
+
+function promptForKey() {
+    // Show a one-time key prompt overlay instead of silently going demo
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `position:fixed;inset:0;background:rgba(13,13,10,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:24px;`;
+    overlay.innerHTML = `
+        <div style="max-width:420px;width:100%;text-align:center;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent-t);margin-bottom:12px;">Budtender Setup</div>
+            <div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px;">Enter your store's public key</div>
+            <div style="font-size:14px;color:var(--text2);margin-bottom:24px;">Find this in your Cannascope admin dashboard. You only need to enter it once.</div>
+            <input id="keyPromptInput" type="text" placeholder="Paste public key…" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;font-family:inherit;font-size:14px;color:var(--text);outline:none;margin-bottom:12px;">
+            <button onclick="submitKeyPrompt()" style="width:100%;background:var(--accent);color:var(--text);border:none;border-radius:10px;padding:14px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;">Connect Store →</button>
+            <div id="keyPromptErr" style="margin-top:10px;font-size:13px;color:#EF8370;display:none;">Key not found — double-check and try again.</div>
+            <button onclick="skipToDemo()" style="margin-top:16px;background:none;border:none;color:var(--text3);font-family:inherit;font-size:12px;cursor:pointer;text-decoration:underline;">Continue in demo mode</button>
+        </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('keyPromptInput').focus();
+    window._keyOverlay = overlay;
+}
+
+async function submitKeyPrompt() {
+    const key = document.getElementById('keyPromptInput').value.trim();
+    if (!key) return;
+    const ok = await loadOrg(key);
+    if (ok) {
+        window._keyOverlay && window._keyOverlay.remove();
+    } else {
+        document.getElementById('keyPromptErr').style.display = 'block';
+    }
+}
+
+function skipToDemo() {
+    window._keyOverlay && window._keyOverlay.remove();
+    useDemoMode();
+}
 
 // Fix DB naming inconsistency: score_pain→score_relief, score_balanced→score_beginner
 function normalizeProduct(p) {
