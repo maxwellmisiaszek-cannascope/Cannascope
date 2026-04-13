@@ -332,6 +332,28 @@
             border-color: var(--border-2);
             border-left: 3px solid var(--accent);
         }
+        .rec-btn {
+            display: block;
+            width: calc(100% - 32px);
+            margin: 0 16px 14px;
+            padding: 9px;
+            border-radius: 8px;
+            border: 1px solid var(--border-2);
+            background: transparent;
+            color: var(--text-3);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .rec-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .rec-btn.recommended {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
 
         .card-top {
             padding: 14px 16px 10px;
@@ -890,9 +912,6 @@
     <div class="results-list" id="productCards">
         <div class="loading-state">Finding best matches…</div>
     </div>
-    <div id="saleConfirmWrap" style="display:none;padding:16px 20px 20px;">
-        <button id="saleConfirmBtn" onclick="confirmSale()" style="width:100%;padding:14px;border-radius:12px;border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;letter-spacing:-0.01em;background:#1B4332;color:#4CAF80;transition:all 0.2s;">✓ &nbsp;Recommended — Sale Made</button>
-    </div>
 </div>
 
 <script>
@@ -969,15 +988,16 @@ function logDemandEvent(event_type, options = {}) {
     }).catch(() => {});
 }
 
-function confirmSale() {
-    const btn = document.getElementById('saleConfirmBtn');
-    if (btn.dataset.confirmed) return;
-    btn.dataset.confirmed = '1';
-    btn.textContent = '\u2713  Sale confirmed';
-    btn.style.background = '#2D6A4F';
-    btn.style.color = '#fff';
-    btn.style.cursor = 'default';
-    logDemandEvent('sale_confirmed', { recommendations: _lastRecommendedIds });
+function toggleRecommend(btn, productId, rank) {
+    const on = btn.classList.toggle('recommended');
+    btn.textContent = on ? '\u2713 Recommended' : 'Recommend';
+    if (on) {
+        logDemandEvent('sale_confirmed', {
+            product_id:      productId,
+            product_rank:    rank,
+            recommendations: _lastRecommendedIds
+        });
+    }
 }
 
 // ── DEMO PRODUCTS ─────────────────────────────────────────────────────────────
@@ -1529,16 +1549,6 @@ async function findProducts() {
     document.getElementById('productCards').innerHTML = cardsHtml;
 
     _lastRecommendedIds = top3.map(p => p.id);
-    const wrap = document.getElementById('saleConfirmWrap');
-    const btn  = document.getElementById('saleConfirmBtn');
-    if (wrap) {
-        btn.dataset.confirmed = '';
-        btn.textContent = '\u2713 \u00a0Recommended \u2014 Sale Made';
-        btn.style.background = '#1B4332';
-        btn.style.color = '#4CAF80';
-        btn.style.cursor = 'pointer';
-        wrap.style.display = 'block';
-    }
     logDemandEvent('results_shown', { recommendations: _lastRecommendedIds });
 }
 
@@ -1664,6 +1674,7 @@ function renderCard(p, idx, eff, rankLabel) {
             <span>THC ${thc > 0 ? thc + '%' : '—'}${cbdNote}</span>
         </div>
         ${chipsHtml}${whyHtml}${penHtml}${talkHtml}${mgrHtml}${debugHtml}
+        <button class="rec-btn" id="rec-${xe(p.id)}" onclick="toggleRecommend(this,'${xe(p.id)}',${idx + 1})">Recommend</button>
     </div>`;
 }
 
