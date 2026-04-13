@@ -663,8 +663,32 @@ const ONSET = {
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Unique token that links all events from this single flow.
+// Generated once at page load — no PII, no persistence.
+const SESSION_ID = crypto.randomUUID();
+
 let orgId = null, orgName = '', allProducts = [];
 let selectedEffect = null, selectedFormat = null, selectedExp = null;
+
+// ── DEMAND EVENT LOGGER ───────────────────────────────────────────────
+// Non-blocking, fails silently. Only fires when a real org key is present.
+// event_type: 'results_shown' | 'product_tapped'
+// options: { recommendations, product_id, product_rank }
+function logDemandEvent(event_type, options = {}) {
+  if (!orgId) return; // never log demo sessions
+  sb.from('demand_events').insert({
+    session_id:      SESSION_ID,
+    organization_id: orgId,
+    source:          'customer_qr',
+    goal:            selectedEffect  || null,
+    format_pref:     selectedFormat  || null,
+    experience:      selectedExp     || null,
+    event_type,
+    recommendations: options.recommendations || [],
+    product_id:      options.product_id      || null,
+    product_rank:    options.product_rank    || null
+  }).catch(() => {});
+}
 
 // ── INIT ──────────────────────────────────────────────────────────────
 (async () => {
@@ -920,7 +944,7 @@ async function runMatch() {
     const metaItems = [p.brand, cat, thcTxt, cbdTxt].filter(Boolean);
 
     return `
-    <div class="prod-card${i === 0 ? ' top-pick' : ''}">
+    <div class="prod-card${i === 0 ? ' top-pick' : ''}" data-pid="${xe(p.id)}" data-rank="${i + 1}" onclick="trackProductTap(this)">
       <div class="card-rank">${rankLabels[i]}</div>
       <div class="card-top">
         <div class="card-name">${xe(p.name)}</div>
@@ -939,16 +963,22 @@ async function runMatch() {
 
   showScreen('sResults');
 
-  // Log session (non-blocking, fails silently)
-  if (orgId) {
-    sb.from('customer_sessions').insert({
-      organization_id: orgId,
-      effect: eff,
-      format_pref: selectedFormat || null,
-      experience: selectedExp,
-      matched_product_ids: ranked.map(p => p.id)
-    }).catch(() => {});
-  }
+  // Log demand event: results shown (intent + ordered recommendations)
+  const recommendationIds = ranked.map(p => p.id);
+  logDemandEvent('results_shown', { recommendations: recommendationIds });
+}
+
+// ── PRODUCT TAP TRACKING ─────────────────────────────────────────────
+// Called when a customer taps any product card in the results screen.
+// product_rank matches the card's position (1 = best match).
+function trackProductTap(el) {
+  const pid  = el.dataset.pid;
+  const rank = parseInt(el.dataset.rank, 10);
+  if (!pid) return;
+  logDemandEvent('product_tapped', {
+    product_id:   pid,
+    product_rank: rank
+  });
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────

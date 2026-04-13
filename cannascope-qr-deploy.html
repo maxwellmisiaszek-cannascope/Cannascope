@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cannascope — In-Store QR Deploy</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:       #0D0D0A;
+      --surface:  #161610;
+      --surface2: #1E1E18;
+      --border:   #2A2A20;
+      --border2:  #3A3A2E;
+      --accent:   #2D6A4F;
+      --accent-b: #38876A;
+      --accent-t: #4CAF80;
+      --text:     #EDE9DF;
+      --text2:    #8A8A72;
+      --text3:    #4A4A3A;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ──────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .wordmark { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+    .wm-accent { color: var(--accent-t); }
+    .header-tag {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text3);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 4px 12px; border-radius: 100px;
+    }
+
+    /* ── MAIN ────────────────────────────────────────── */
+    .main {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 48px 32px 80px;
+    }
+
+    /* ── LOOKUP SECTION ──────────────────────────────── */
+    .lookup-section {
+      margin-bottom: 48px;
+    }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent-t);
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 28px; font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+    .section-desc {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .key-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .key-input::placeholder { color: var(--text3); }
+    .key-input:focus { border-color: var(--border2); }
+    .btn {
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-accent { background: var(--accent); color: var(--text); }
+    .btn-accent:hover { background: var(--accent-b); }
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--border2); }
+
+    .error-msg {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #EF8370;
+      display: none;
+    }
+
+    /* ── QR OUTPUT SECTION ───────────────────────────── */
+    #qrOutput {
+      display: none;
+      border-top: 1px solid var(--border);
+      padding-top: 40px;
+    }
+
+    .store-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .store-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent-t);
+      animation: pulse 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+    .store-name-label {
+      font-size: 20px; font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    /* ── PRINT CARD ──────────────────────────────────── */
+    .print-preview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .qr-block {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-block canvas {
+      display: block;
+      width: 180px !important;
+      height: auto !important;
+    }
+    .print-copy {
+      flex: 1;
+    }
+    .print-eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent-t);
+      margin-bottom: 8px;
+    }
+    .print-headline {
+      font-size: 24px; font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+    .print-steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .print-steps li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.4;
+    }
+    .step-num {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      font-size: 11px; font-weight: 700;
+      color: var(--text3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .print-tagline {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    /* Action row */
+    .action-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .url-chip {
+      flex: 1;
+      font-size: 11px;
+      color: var(--text3);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    /* ── PRINT STYLES ────────────────────────────────── */
+    @media print {
+      body {
+        background: #fff;
+        color: #111;
+      }
+      .header, .lookup-section, .action-row { display: none !important; }
+      #qrOutput { display: block !important; border-top: none; padding-top: 0; }
+      .store-bar { margin-bottom: 20px; }
+      .store-dot { background: #111; animation: none; }
+      .store-name-label { color: #111; }
+      .print-preview {
+        background: #fff;
+        border: 2px solid #eee;
+        border-radius: 16px;
+        gap: 32px;
+      }
+      .qr-block { background: #fff; border: 2px solid #eee; }
+      .print-eyebrow { color: #2D6A4F; }
+      .print-headline { color: #111; }
+      .print-steps li { color: #555; }
+      .step-num { background: #f5f5f5; border-color: #ddd; color: #777; }
+      .print-tagline { color: #999; }
+      .url-chip { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      .main { padding: 32px 20px 64px; }
+      .print-preview { flex-direction: column; align-items: flex-start; }
+      .qr-block canvas { width: 160px !important; }
+      .input-row { flex-direction: column; }
+      .action-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="wordmark">Canna<span class="wm-accent">scope</span></div>
+  <div class="header-tag">QR Deploy</div>
+</div>
+
+<div class="main">
+
+  <!-- ── LOOKUP ────────────────────────────────────────── -->
+  <div class="lookup-section">
+    <div class="section-eyebrow">In-Store Setup</div>
+    <div class="section-title">Generate Your QR Code</div>
+    <div class="section-desc">
+      Enter your store's share key below to generate a print-ready QR card.
+      Print it and place it on the counter — customers scan to get product
+      recommendations in under 30 seconds, no staff required.
+    </div>
+
+    <div class="input-row">
+      <input
+        class="key-input"
+        id="keyInput"
+        type="text"
+        placeholder="Paste your share key…"
+        spellcheck="false"
+        autocomplete="off"
+      />
+      <button class="btn btn-accent" onclick="loadStore()">Generate QR →</button>
+    </div>
+    <div class="error-msg" id="errMsg">Store not found. Double-check your share key.</div>
+  </div>
+
+  <!-- ── QR OUTPUT ─────────────────────────────────────── -->
+  <div id="qrOutput">
+
+    <div class="store-bar">
+      <div class="store-dot"></div>
+      <div class="store-name-label" id="storeNameLabel">Your Store</div>
+    </div>
+
+    <div class="print-preview">
+      <div class="qr-block">
+        <canvas id="qrCanvas"></canvas>
+      </div>
+      <div class="print-copy">
+        <div class="print-eyebrow">Find your perfect match</div>
+        <div class="print-headline">Scan for a<br>personalized<br>recommendation</div>
+        <ul class="print-steps">
+          <li><span class="step-num">1</span>Scan the QR code with your phone</li>
+          <li><span class="step-num">2</span>Answer 3 quick questions</li>
+          <li><span class="step-num">3</span>Get your top 3 product matches</li>
+        </ul>
+        <div class="print-tagline">Powered by Cannascope™</div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <div class="url-chip" id="qrUrlChip"></div>
+      <button class="btn btn-ghost" onclick="window.print()">🖨 Print This Card</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── LOAD STORE AND GENERATE QR ──────────────────────────────────────
+async function loadStore() {
+  const key = document.getElementById('keyInput').value.trim();
+  const errEl = document.getElementById('errMsg');
+  errEl.style.display = 'none';
+
+  if (!key) return;
+
+  const { data: org } = await sb
+    .from('organizations')
+    .select('id,name')
+    .eq('share_key', key)
+    .single();
+
+  if (!org) {
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Build the QR target URL
+  const base = window.location.href.replace(/[^/]*$/, '');
+  const qrUrl = base + 'cannascope-qr.html?key=' + encodeURIComponent(key);
+
+  // Update UI
+  document.getElementById('storeNameLabel').textContent = org.name;
+  document.getElementById('qrUrlChip').textContent = qrUrl;
+  document.getElementById('qrOutput').style.display = 'block';
+
+  // Render QR code
+  const canvas = document.getElementById('qrCanvas');
+  QRCode.toCanvas(canvas, qrUrl, {
+    width: 220,
+    margin: 1,
+    color: { dark: '#0D0D0A', light: '#FFFFFF' },
+    errorCorrectionLevel: 'M'
+  }, function(err) {
+    if (err) console.error('QR error:', err);
+  });
+
+  // Scroll into view
+  document.getElementById('qrOutput').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Allow pressing Enter in input to trigger
+document.getElementById('keyInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') loadStore();
+});
+
+// Pre-fill if share key is in the URL (e.g., bookmarked or linked directly)
+(function() {
+  const params = new URLSearchParams(location.search);
+  const key = params.get('key');
+  if (key) {
+    document.getElementById('keyInput').value = key;
+    loadStore();
+  }
+})();
+</script>
+
+</body>
+</html>
