@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cannascope — In-Store QR Deploy</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -176,7 +176,7 @@
       align-items: center;
       justify-content: center;
     }
-    .qr-block canvas {
+    .qr-block canvas, .qr-block img {
       display: block;
       width: 180px !important;
       height: auto !important;
@@ -276,7 +276,7 @@
     @media (max-width: 600px) {
       .main { padding: 32px 20px 64px; }
       .print-preview { flex-direction: column; align-items: flex-start; }
-      .qr-block canvas { width: 160px !important; }
+      .qr-block canvas, .qr-block img { width: 160px !important; }
       .input-row { flex-direction: column; }
       .action-row { flex-direction: column; }
     }
@@ -325,7 +325,7 @@
 
     <div class="print-preview">
       <div class="qr-block">
-        <canvas id="qrCanvas"></canvas>
+        <div id="qrCanvas"></div>
       </div>
       <div class="print-copy">
         <div class="print-eyebrow">Find your perfect match</div>
@@ -384,14 +384,14 @@ async function loadStore() {
   document.getElementById('qrOutput').style.display = 'block';
 
   // Render QR code
-  const canvas = document.getElementById('qrCanvas');
-  QRCode.toCanvas(canvas, qrUrl, {
+  document.getElementById('qrCanvas').innerHTML = '';
+  new QRCode(document.getElementById('qrCanvas'), {
+    text: qrUrl,
     width: 220,
-    margin: 1,
-    color: { dark: '#0D0D0A', light: '#FFFFFF' },
-    errorCorrectionLevel: 'M'
-  }, function(err) {
-    if (err) console.error('QR error:', err);
+    height: 220,
+    colorDark: '#0D0D0A',
+    colorLight: '#FFFFFF',
+    correctLevel: QRCode.CorrectLevel.M
   });
 
   // Scroll into view
