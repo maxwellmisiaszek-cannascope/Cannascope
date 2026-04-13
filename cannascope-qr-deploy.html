@@ -366,7 +366,7 @@ async function loadStore() {
   const { data: org } = await sb
     .from('organizations')
     .select('id,name')
-    .eq('share_key', key)
+    .eq('public_key', key)
     .single();
 
   if (!org) {

@@ -1136,7 +1136,7 @@ const DEMO_PRODUCTS = [
     const key    = params.get('key');
 
     if (key) {
-        const { data: org } = await sb.from('organizations').select('id,name').eq('share_key', key).single();
+        const { data: org } = await sb.from('organizations').select('id,name').eq('public_key', key).single();
         if (org) {
             orgId   = org.id;
             orgName = org.name;
