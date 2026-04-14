@@ -549,7 +549,7 @@ async function init(){
       if(prof?.organization_id){userOrgId=prof.organization_id;}
       else{const {data:sm}=await sb.from('staff_members').select('organization_id').eq('user_id',session.user.id).single();if(sm?.organization_id)userOrgId=sm.organization_id;}
       if(prof?.org_name){document.getElementById('orgName').textContent=prof.org_name;}
-      else if(userOrgId){const {data:org}=await sb.from('organizations').select('name,public_key').eq('id',userOrgId).single();if(org?.name)document.getElementById('orgName').textContent=org.name;if(org?.public_key){const base=window.location.origin+'/';const qrBtn=document.getElementById('qrDeployBtn');if(qrBtn)qrBtn.href=base+'qr-deploy?key='+encodeURIComponent(org.public_key);const btBtn=document.getElementById('budtenderViewBtn');if(btBtn)btBtn.href=base+'budtender?key='+encodeURIComponent(org.public_key);}}
+      if(userOrgId){const {data:org}=await sb.from('organizations').select('name,public_key').eq('id',userOrgId).single();if(org?.name&&!prof?.org_name)document.getElementById('orgName').textContent=org.name;if(org?.public_key){const base=window.location.origin+'/';const qrBtn=document.getElementById('qrDeployBtn');if(qrBtn)qrBtn.href=base+'qr-deploy?key='+encodeURIComponent(org.public_key);const btBtn=document.getElementById('budtenderViewBtn');if(btBtn)btBtn.href=base+'budtender?key='+encodeURIComponent(org.public_key);}}
     }catch(e){}
     await loadFromDB();
   }catch(e){window.location.href='cannascope-login.html';}
