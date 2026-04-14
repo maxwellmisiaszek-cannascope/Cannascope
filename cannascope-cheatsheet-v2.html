@@ -972,9 +972,9 @@ let debugMode = false; // kept for score engine compatibility, not exposed in UI
 const SESSION_ID = crypto.randomUUID();
 let _lastRecommendedIds = [];
 
-function logDemandEvent(event_type, options = {}) {
+async function logDemandEvent(event_type, options = {}) {
     if (!orgId) return;
-    sb.from('demand_events').insert({
+    const { error } = await sb.from('demand_events').insert({
         session_id:      SESSION_ID,
         organization_id: orgId,
         source:          'budtender',
@@ -985,7 +985,9 @@ function logDemandEvent(event_type, options = {}) {
         recommendations: options.recommendations || [],
         product_id:      options.product_id      || null,
         product_rank:    options.product_rank    || null
-    }).catch(() => {});
+    });
+    if (error) console.error('[Cannascope] demand_events insert error:', error);
+    else console.log('[Cannascope] demand_events logged:', event_type);
 }
 
 // Per-card recommend toggle — logs which product was actually recommended
