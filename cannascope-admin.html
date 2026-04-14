@@ -1282,13 +1282,13 @@ async function confirmImport(){
   const tryCols=new Set(DB_COLS);
 
   for(const row of importRows){
-    {
+    if(userOrgId){
       let attempts=0;
       while(attempts<8){
         attempts++;
         const prod={};
         tryCols.forEach(k=>{if(row[k]!==undefined&&row[k]!==null&&row[k]!=='')prod[k]=row[k];});
-        if(userOrgId)prod.organization_id=userOrgId;
+        prod.organization_id=userOrgId;
         const {data,error}=await sb.from('products').insert([prod]).select().single();
         if(!error&&data){products.push(data);added++;break;}
         if(error){
@@ -1300,6 +1300,7 @@ async function confirmImport(){
         }
       }
     } else {
+      // No org yet — demo mode, keep locally
       const prod={...row};
       prod.id='import_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
       products.push(prod);added++;
