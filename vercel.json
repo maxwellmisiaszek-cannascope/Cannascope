@@ -5,8 +5,6 @@
     { "source": "/login",     "destination": "/cannascope-login.html" },
     { "source": "/qr-deploy", "destination": "/cannascope-qr-deploy.html" },
     { "source": "/qr",        "destination": "/cannascope-qr.html" },
-    { "source": "/onboarding","destination": "/cannascope-onboarding.html" },
-    { "source": "/subscribe", "destination": "/cannascope-subscribe.html" },
-    { "source": "/success",   "destination": "/cannascope-success.html" }
+    { "source": "/onboarding","destination": "/cannascope-onboarding.html" }
   ]
 }

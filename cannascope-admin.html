@@ -532,6 +532,7 @@ const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI
 const sb=supabase.createClient(SURL,SKEY);
 // -- STATE -----------------------------------------
 let products=[],sortCol='name',sortDir='asc',delTarget=null,anlDone=false;
+let useDB=false; // set to true once a successful Supabase connection is confirmed
 let userOrgId=null; // set at login — used to scope all DB writes to this org
 let selectedIds=new Set(); // tracks checked rows for bulk actions
 let importRows=[]; // parsed CSV rows pending confirmation
@@ -558,12 +559,13 @@ async function init(){
 async function loadFromDB(){
   const {data,error}=await sb.from('products').select('*').order('name');
   if(error||!data){
-    showToast('Using local data');
+    showToast('Could not load products — check Supabase connection');
     useDB=false;
-    showDemoBanner();
-    loadLocalProducts();
+    products=[];
+    renderAll();
     return;
   }
+  useDB=true;
   // Map DB field `push` (was `push_this_week` in old code)
   products=(data||[]).map(p=>({...p,push:p.push??p.push_this_week??false}));
   
