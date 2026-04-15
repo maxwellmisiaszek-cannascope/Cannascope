@@ -269,7 +269,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function showErr(msg) {
     const el = document.getElementById('msgErr');
-    el.textContent = msg;
+    el.innerHTML = msg;
     el.style.display = 'block';
     document.getElementById('msgOk').style.display = 'none';
 }
@@ -298,7 +298,7 @@ async function signUp() {
     if (authErr) {
         const msg = authErr.message || '';
         if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already been registered')) {
-            showErr('An account with this email already exists. Try signing in instead.');
+            showErr('An account with this email already exists. <a href="/login" style="color:inherit;font-weight:700;text-decoration:underline;">Sign in instead →</a>');
         } else if (msg.toLowerCase().includes('invalid email')) {
             showErr('Please enter a valid email address.');
         } else {
@@ -331,6 +331,11 @@ async function signUp() {
 
 async function createOrgAndProfile(userId, dispName, session) {
     const btn = document.getElementById('btnSignup');
+
+    // Ensure the client is using the authenticated session
+    if (session?.access_token) {
+        await sb.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
+    }
 
     // 3. Insert organization
     const { data: org, error: orgErr } = await sb
