@@ -337,31 +337,16 @@ async function createOrgAndProfile(userId, dispName, session) {
         await sb.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
     }
 
-    // 3. Insert organization
+    // 3 & 4. Create org + profile via SECURITY DEFINER function (bypasses RLS)
     const { data: org, error: orgErr } = await sb
-        .from('organizations')
-        .insert({ name: dispName })
-        .select('id, public_key')
-        .single();
+        .rpc('create_org_and_profile', { p_name: dispName });
 
     if (orgErr) {
         showErr('Account created but org setup failed: ' + orgErr.message +
-            '. Please contact maxwell@cannascope.us with your email.');
+            '. Please try again or contact hello@cannascope.us.');
         btn.disabled = false;
         btn.textContent = 'Create Account →';
         return;
-    }
-
-    // 4. Insert user_profile linking user → org
-    const { error: profErr } = await sb
-        .from('user_profiles')
-        .insert({ id: userId, organization_id: org.id, org_name: dispName });
-
-    if (profErr) {
-        // Profile may already exist — try update instead
-        await sb.from('user_profiles')
-            .update({ organization_id: org.id, org_name: dispName })
-            .eq('id', userId);
     }
 
     // 5. Success — redirect to admin
@@ -369,7 +354,7 @@ async function createOrgAndProfile(userId, dispName, session) {
     document.getElementById('successView').style.display = 'block';
     document.getElementById('successMsg').textContent =
         'Your dispensary is ready. Taking you to your dashboard…';
-    setTimeout(() => { window.location.href = 'cannascope-admin.html'; }, 1800);
+    setTimeout(() => { window.location.href = '/admin'; }, 1800);
 }
 
 // If user lands here after confirming email with a pending org name
@@ -384,7 +369,7 @@ async function createOrgAndProfile(userId, dispName, session) {
         if (!prof?.organization_id) {
             await createOrgAndProfile(session.user.id, pendingName, session);
         } else {
-            window.location.href = 'cannascope-admin.html';
+            window.location.href = '/admin';
         }
     }
 })();
