@@ -1729,7 +1729,7 @@ function mapDutchieProduct(dp, orgId) {
     (dp.recPrices && dp.recPrices[0]) || (dp.Prices && dp.Prices[0]) ||
     dp.price || dp.basePrice || 0
   ) || null;
-  const inStock  = dp.Status === 'Active' || dp.inStock ?? dp.isActive ?? true;
+  const inStock  = dp.Status === 'Active' || (dp.inStock ?? dp.isActive ?? true);
   const dutchieId= String(dp._id || dp.id || dp.productId || '');
   const terpenes = dp.terpenes || dp.terpeneData || null;
 
