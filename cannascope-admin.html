@@ -1074,9 +1074,9 @@ async function testDemandInsert(){
   const {error}=await sb.from('demand_events').insert({
     session_id:testId,
     organization_id:userOrgId,
-    source:'admin_test',
+    source:'budtender',
     goal:'test',
-    event_type:'test_insert'
+    event_type:'results_shown'
   });
   if(error){
     el.style.color='#f87171';
