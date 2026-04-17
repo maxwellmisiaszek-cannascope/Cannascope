@@ -412,6 +412,56 @@
         .conf-medium { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
         .conf-low    { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
 
+        /* ── Tier section labels ─────────────────────────────────────────── */
+        .tier-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin: 20px 0 10px;
+        }
+        .tier-label-also {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin: 28px 0 10px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        /* ── Compact "Also Available" card ──────────────────────────────── */
+        .prod-card-compact {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 6px;
+            gap: 10px;
+        }
+        .compact-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.3;
+        }
+        .compact-meta {
+            font-size: 11px;
+            color: var(--text-3);
+            margin-top: 2px;
+        }
+        .compact-pct {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-2);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
         .card-meta {
             padding: 0 16px 10px;
             font-size: 12px;
@@ -1296,6 +1346,25 @@ function priceMatches(price, pf) {
            (pf === '60+'   && price >  60);
 }
 
+// ── NAME KEYWORD SCORING ─────────────────────────────────────────────────────
+// Scans product name + brand for manufacturer-declared effect signals.
+// "Night", "Sleep", "CBN", "Recovery", "Uplift" etc. are explicit design intent
+// and should strongly boost that effect's score.
+function computeNameScore(name, brand, eff) {
+    const n = ((name || '') + ' ' + (brand || '')).toLowerCase();
+    const keywordMap = {
+        sleep:    ['sleep', 'night', 'cbn', 'dream', 'rest ', 'slumber', 'bedtime', ' pm', 'knockout', 'zz', 'snooze', 'dusk', 'nite'],
+        relax:    ['relax', 'calm', 'chill', 'unwind', 'ease', 'mellow', 'serene', 'tranquil', 'stress', 'soothe', 'gentle'],
+        focus:    ['focus', 'day', 'daytime', 'clarity', 'clear', 'uplift', 'energy', 'morning', 'alert', 'productive', 'wake', 'bright', 'rise', 'elevate', 'sativa'],
+        social:   ['social', 'party', 'euphori', 'happy', 'uplift', 'laugh', 'joy', 'creative', 'festival', 'outdoor', 'vibe', 'bliss'],
+        relief:   ['relief', 'pain', 'recover', 'inflammation', 'ache', 'sore', 'cramp', 'therapy', 'medicinal', 'cbg', 'ratio', 'muscle'],
+        beginner: ['micro', 'microdose', 'light', 'gentle', 'easy', 'mild', '1:1', ':1', '1mg', '2.5mg', '5mg', 'low dose', 'intro', 'starter'],
+    };
+    const hits = (keywordMap[eff] || []).filter(kw => n.includes(kw)).length;
+    // Each hit = +0.35 bonus, capped at 0.90
+    return Math.min(0.90, hits * 0.35);
+}
+
 // ── SCORING ENGINE ────────────────────────────────────────────────────────────
 // Deterministic: same inputs always produce identical outputs.
 // No randomness. Every point is traceable to a specific data field.
@@ -1357,12 +1426,22 @@ function scoreProduct(p, eff) {
             reasons.push(`Terpene profile has moderate ${EFFECT_LABELS[eff].toLowerCase()} affinity`);
         }
     } else {
-        // Fallback: use pre-labeled score_X field from database
-        const rawScore = parseFloat(p['score_' + eff]) || 0;
-        terpeneEarned = Math.round(rawScore * 26); // slightly capped (no terpene verification)
+        // Fallback: no lab terpene data. Combine DB score_X + product name keywords.
+        // score_X = strain-bias score from import (baseline ~0.35, range ~0.18–0.65).
+        // We normalize it so 0.35 (average) → 0.50 and 0.65 (top) → 1.0.
+        // Then add keyword bonus from product name/brand (e.g. "Sleep", "Night", "CBN").
+        const rawScore  = parseFloat(p['score_' + eff]) || 0.35;
+        const nameBonus = computeNameScore(p.name, p.brand, eff);
+        // Normalize: shift so 0.20→0, 0.65→1 (covers realistic range)
+        const normalizedBase = Math.max(0, Math.min(1.0, (rawScore - 0.20) / 0.45));
+        const combined = Math.min(1.0, normalizedBase + nameBonus * 0.40);
+        terpeneEarned = Math.round(combined * 26); // capped at 26 (no lab verification)
         earned += terpeneEarned;
-        if (rawScore >= 0.5) {
-            reasons.push(`Profile rated ${Math.round(rawScore * 100)}% for ${EFFECT_LABELS[eff].toLowerCase()}`);
+        if (combined >= 0.55) {
+            const reason = nameBonus > 0
+                ? `Product name and profile suggest ${EFFECT_LABELS[eff].toLowerCase()} use`
+                : `Strain profile rated for ${EFFECT_LABELS[eff].toLowerCase()}`;
+            reasons.push(reason);
         }
     }
     dbg.terpene = `${terpeneEarned}/30`;
@@ -1529,7 +1608,7 @@ async function findProducts() {
     const eff   = selectedEffect;
     const label = EFFECT_LABELS[eff];
 
-    document.getElementById('resultsTitle').textContent = `Top 3 for ${label}`;
+    document.getElementById('resultsTitle').textContent = `Best for ${label}`;
     document.getElementById('productCards').innerHTML = '<div class="loading-state">Scoring products…</div>';
 
     // Build human-readable filter summary
@@ -1561,21 +1640,33 @@ async function findProducts() {
         return;
     }
 
-    // Step 2: Score all products — terpene fit + rotation bonus for diversity
+    // Step 2: Score all eligible products + add rotation bonus for variety
     const seed = getRotationSeed();
     const scored = eligible
         .map((p, i) => {
             const result = scoreProduct(p, eff);
-            // Add a small rotation bonus so the same 3 don't always appear
             result.score = Math.min(100, result.score + rotationBonus(i, seed));
             return { ...p, _result: result };
         })
         .sort((a, b) => b._result.score - a._result.score);
 
-    // Layer 2: from Top 10 pool, pick Top 3 with variety (no 2 of same brand if avoidable)
-    const top10   = scored.slice(0, 10);
-    const top3    = pickDiverseTop3(top10);
-    const allLow  = top3.every(p => p._result.confidence === 'LOW');
+    // Step 3: Normalize display percentages so top product = 100%, floor = 65%.
+    // This means no product ever shows "4% match" — every eligible product
+    // is at least 65% relevant (it passed the hard filters), ranked within that band.
+    const maxRawScore = scored[0]?._result.score || 1;
+    scored.forEach(p => {
+        const raw = p._result.score;
+        p._result.displayPct = maxRawScore > 0
+            ? Math.max(65, Math.round(65 + (raw / maxRawScore) * 35))
+            : 65;
+    });
+
+    // Step 4: Top Picks = diverse selection from top 10
+    const top10    = scored.slice(0, 10);
+    const topPicks = pickDiverseTop3(top10);
+    const alsoAvail = scored.filter(p => !topPicks.includes(p));
+
+    const allLow   = topPicks.every(p => p._result.confidence === 'LOW');
     const rankLbls = ['Top Pick', '2nd Pick', '3rd Pick'];
 
     let cardsHtml = '';
@@ -1590,7 +1681,9 @@ async function findProducts() {
         </div>`;
     }
 
-    cardsHtml += top3.map((p, i) => renderCard(p, i, eff, rankLbls[i])).join('');
+    // Top Picks header + full cards
+    cardsHtml += `<div class="tier-label">Top Picks</div>`;
+    cardsHtml += topPicks.map((p, i) => renderCard(p, i, eff, rankLbls[i])).join('');
 
     // Upsell block
     cardsHtml += `
@@ -1599,9 +1692,15 @@ async function findProducts() {
         <div class="upsell-text">${xe(UPSELL[eff])}</div>
     </div>`;
 
+    // Also Available: all remaining products in compact list, none left behind
+    if (alsoAvail.length > 0) {
+        cardsHtml += `<div class="tier-label-also">Also Available (${alsoAvail.length})</div>`;
+        cardsHtml += alsoAvail.map(p => renderCompactCard(p)).join('');
+    }
+
     document.getElementById('productCards').innerHTML = cardsHtml;
 
-    _lastRecommendedIds = top3.map(p => p.id);
+    _lastRecommendedIds = topPicks.map(p => p.id);
     logDemandEvent('results_shown', { recommendations: _lastRecommendedIds });
 }
 
@@ -1714,7 +1813,7 @@ function renderCard(p, idx, eff, rankLabel) {
             <div class="card-price-block">
                 <div class="card-price">$${Number(p.price || 0).toFixed(0)}</div>
                 <div class="card-match-pct">
-                    ${result.score}% match
+                    ${result.displayPct || result.score}% match
                     <span class="conf-badge conf-${result.confidence.toLowerCase()}">${confLabels[result.confidence]}</span>
                 </div>
             </div>
@@ -1732,6 +1831,23 @@ function renderCard(p, idx, eff, rankLabel) {
             id="rec-${xe(p.id)}"
             onclick="toggleRecommend(this,'${xe(p.id)}',${idx + 1})"
         >Recommend</button>
+    </div>`;
+}
+
+// ── COMPACT CARD (for "Also Available" secondary tier) ───────────────────────
+function renderCompactCard(p) {
+    const thc    = parseFloat(p.thc) || 0;
+    const cbd    = parseFloat(p.cbd) || 0;
+    const cat    = (p.category || 'flower').toLowerCase();
+    const cbdBit = cbd > 0 ? ` · CBD ${cbd}%` : '';
+    const pct    = p._result.displayPct || p._result.score;
+    return `
+    <div class="prod-card-compact">
+        <div>
+            <div class="compact-name">${xe(p.name)}</div>
+            <div class="compact-meta">${xe(cap(cat))} · THC ${thc > 0 ? thc + '%' : '—'}${cbdBit} · $${Number(p.price || 0).toFixed(0)}</div>
+        </div>
+        <div class="compact-pct">${pct}%</div>
     </div>`;
 }
 

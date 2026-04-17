@@ -1666,6 +1666,39 @@ const CAT_MODS = {
 
 const EFFECTS = ['sleep','relax','focus','social','relief','beginner'];
 
+// ── DUTCHIE NATIVE EFFECT → CANNASCOPE GOAL MAPPING ──────────────────────────
+// Dutchie provides crowdsourced/manufacturer effect tags (e.g. Relaxed:9, Sleepy:8).
+// Each tag maps to one or more of our 6 goals with a weight 0-1.
+const DUTCHIE_EFFECT_MAP = {
+  'Relaxed':             { relax: 1.0, sleep: 0.40 },
+  'Sleepy':              { sleep: 1.0, relax: 0.50 },
+  'Happy':               { social: 0.80, relax: 0.40 },
+  'Uplifted':            { social: 0.70, focus: 0.60 },
+  'Euphoric':            { social: 1.00, relax: 0.30 },
+  'Creative':            { focus: 0.80, social: 0.50 },
+  'Energetic':           { focus: 0.90, social: 0.40 },
+  'Focused':             { focus: 1.00 },
+  'Talkative':           { social: 0.90 },
+  'Giggly':              { social: 0.70, relax: 0.30 },
+  'Tingly':              { relax: 0.50, relief: 0.40 },
+  'Hungry':              { relax: 0.20 },
+  'Pain Relief':         { relief: 1.00 },
+  'Pain-Relief':         { relief: 1.00 },
+  'Anti-Anxiety':        { relax: 0.80, beginner: 0.50 },
+  'Anti-Inflammation':   { relief: 0.90 },
+  'Headaches':           { relief: 0.80 },
+  'Stress':              { relax: 0.80 },
+  'Depression':          { social: 0.60, relax: 0.50 },
+  'Insomnia':            { sleep: 1.00 },
+  'Cramps':              { relief: 0.90 },
+  'Muscle Spasms':       { relief: 0.90 },
+  'Fatigue':             { focus: 0.70 },
+  'Nausea':              { relief: 0.60 },
+  'Lack of Appetite':    { relax: 0.30 },
+  'Spasticity':          { relief: 0.80 },
+  'Eye Pressure':        { relief: 0.60 },
+};
+
 // ── FUZZY STRAIN MATCH ────────────────────────────────────────────────────────
 // Returns the best matching strain profile or null.
 function strainMatch(name) {
@@ -1795,6 +1828,32 @@ function mapDutchieProduct(dp, orgId) {
   const catMod = CAT_MODS[category] || {};
   for (const [fx,delta] of Object.entries(catMod)) {
     scores[fx] = Math.min(1, Math.max(0, (scores[fx]||0) + delta));
+  }
+
+  // Layer 6: Dutchie native effect tags (crowdsourced / manufacturer-declared)
+  // Dutchie stores these as e.g. { Relaxed:9, Sleepy:8, Euphoric:7 } — values 0-10.
+  // Very reliable signal when present: blend in with weight 0.30.
+  const dutchieEffects = dp.effects || dp.Effects || dp.phenotypes || null;
+  if (dutchieEffects && typeof dutchieEffects === 'object' && !Array.isArray(dutchieEffects)) {
+    const vals = Object.values(dutchieEffects).map(v => parseFloat(v) || 0);
+    const maxVal = Math.max(...vals, 1);
+    const effBoosts = Object.fromEntries(EFFECTS.map(fx => [fx, 0]));
+    for (const [dtcFx, rawVal] of Object.entries(dutchieEffects)) {
+      const normalized = (parseFloat(rawVal) || 0) / maxVal; // 0–1
+      const mapping = DUTCHIE_EFFECT_MAP[dtcFx];
+      if (!mapping) continue;
+      for (const [goalFx, weight] of Object.entries(mapping)) {
+        effBoosts[goalFx] = Math.max(effBoosts[goalFx], normalized * weight);
+      }
+    }
+    const anyBoost = EFFECTS.some(fx => effBoosts[fx] > 0);
+    if (anyBoost) {
+      const w = 0.30;
+      for (const fx of EFFECTS) {
+        scores[fx] = Math.min(1, scores[fx] * (1 - w) + effBoosts[fx] * w);
+      }
+      sources.push('dutchie-effects');
+    }
   }
 
   // Pick dominant effect
