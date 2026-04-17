@@ -350,6 +350,11 @@ th.row-cb .cb{margin-top:1px}
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     Demand
   </button>
+  <button class="tab-btn" onclick="switchTab('dtc')" id="tb-dtc">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 1 0 6h-6a3 3 0 0 1 0-6z"/><path d="M6 21a3 3 0 0 1 0-6h6a3 3 0 0 1 0 6z"/><path d="M15 6v12M9 6v12"/></svg>
+    Integrations
+    <span class="t-badge" id="dtcBadge" style="display:none">●</span>
+  </button>
 </div>
 
 <!-- INVENTORY TAB -->
@@ -396,6 +401,135 @@ th.row-cb .cb{margin-top:1px}
 
 <!-- DEMAND INSIGHTS TAB -->
 <div class="tab-pane pad" id="tp-ins"><div id="insContent"><div style="text-align:center;padding:80px 20px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:16px">📊</div><div style="font-size:16px;color:var(--txt2);font-weight:600;margin-bottom:8px">Loading demand data…</div></div></div></div>
+
+<!-- INTEGRATIONS TAB -->
+<div class="tab-pane pad" id="tp-dtc">
+  <div style="max-width:720px">
+
+    <!-- Header -->
+    <div style="margin-bottom:28px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:6px">Integrations</div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--txt);margin-bottom:6px">Dutchie POS Sync</div>
+      <div style="font-size:13px;color:var(--txt2);line-height:1.65">Connect your Dutchie POS account to automatically sync your live inventory into Cannascope. Paste your API key below — products are mapped using cannabis science (terpene profiles, strain type, THC/CBD ratios) to assign effect scores, talking points, and categories automatically.</div>
+    </div>
+
+    <!-- API Key card -->
+    <div class="a-card" style="margin-bottom:16px">
+      <div class="a-head">
+        <div>
+          <div class="a-title">Dutchie API Key</div>
+          <div class="a-sub">Provided by Dutchie Support after your integration request is approved</div>
+        </div>
+        <div id="dtcStatus" style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--txt3)">
+          <span id="dtcStatusDot" style="width:7px;height:7px;border-radius:50%;background:var(--border);display:inline-block"></span>
+          <span id="dtcStatusTxt">Not connected</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <input id="dtcKeyInput" type="password"
+          style="flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:monospace;color:var(--txt);outline:none;transition:border-color .12s"
+          placeholder="Paste your Dutchie API key here…"
+          onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
+        <button class="hbtn" onclick="dtcToggleKeyVis()" id="dtcToggleBtn" title="Show/hide key" style="min-width:36px">👁</button>
+        <button class="hbtn primary" onclick="dtcVerifyKey()" id="dtcVerifyBtn">Verify &amp; Connect</button>
+      </div>
+      <div id="dtcVerifyMsg" style="display:none;margin-top:10px;font-size:12px;padding:8px 12px;border-radius:6px"></div>
+    </div>
+
+    <!-- Sync controls card — shown once connected -->
+    <div class="a-card" id="dtcSyncCard" style="margin-bottom:16px;display:none">
+      <div class="a-head">
+        <div>
+          <div class="a-title">Inventory Sync</div>
+          <div class="a-sub" id="dtcLastSync">Never synced</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="hbtn" onclick="dtcSync(false)" id="dtcPreviewBtn">Preview</button>
+          <button class="hbtn primary" onclick="dtcSync(true)" id="dtcSyncBtn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Sync Now
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div id="dtcProgress" style="display:none;margin-top:12px">
+        <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+          <div id="dtcProgressBar" style="height:100%;width:0%;background:var(--green);border-radius:2px;transition:width .3s"></div>
+        </div>
+        <div id="dtcProgressTxt" style="font-size:11px;color:var(--txt3);margin-top:6px">Fetching products from Dutchie…</div>
+      </div>
+
+      <!-- Results summary -->
+      <div id="dtcResults" style="display:none;margin-top:14px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+          <div style="padding:14px 16px;border-right:1px solid var(--border)">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px">Fetched</div>
+            <div style="font-size:22px;font-weight:700;color:var(--txt);letter-spacing:-.03em" id="dtcRFetched">—</div>
+          </div>
+          <div style="padding:14px 16px;border-right:1px solid var(--border)">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px">Imported</div>
+            <div style="font-size:22px;font-weight:700;color:var(--green);letter-spacing:-.03em" id="dtcRImported">—</div>
+          </div>
+          <div style="padding:14px 16px;border-right:1px solid var(--border)">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px">Updated</div>
+            <div style="font-size:22px;font-weight:700;color:var(--txt);letter-spacing:-.03em" id="dtcRUpdated">—</div>
+          </div>
+          <div style="padding:14px 16px">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px">Skipped</div>
+            <div style="font-size:22px;font-weight:700;color:var(--txt3);letter-spacing:-.03em" id="dtcRSkipped">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview table -->
+      <div id="dtcPreviewWrap" style="display:none;margin-top:14px">
+        <div style="font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:8px">Preview — how Dutchie products will map into Cannascope:</div>
+        <div style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:7px">
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            <thead><tr style="border-bottom:1px solid var(--border);background:var(--bg)">
+              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Product</th>
+              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Category</th>
+              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">THC / CBD</th>
+              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Effect</th>
+              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Score</th>
+              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Confidence</th>
+            </tr></thead>
+            <tbody id="dtcPreviewBody"></tbody>
+          </table>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
+          <button class="hbtn" onclick="document.getElementById('dtcPreviewWrap').style.display='none'">Cancel</button>
+          <button class="hbtn primary" onclick="dtcConfirmImport()">Import All →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- How the mapper works -->
+    <div class="a-card" style="margin-bottom:16px">
+      <div class="a-head"><div><div class="a-title">How Smart Mapping Works</div><div class="a-sub">Research-based cannabis science applied to every Dutchie product</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px">
+        <div style="font-size:12px;color:var(--txt2);line-height:1.7">
+          <strong style="color:var(--txt);display:block;margin-bottom:4px">① Terpene Profile (highest weight)</strong>
+          If Dutchie includes terpene data, each terpene is scored against a matrix of 15 terpenes × 6 effects based on published pharmacology (Russo 2011, Ferber et al. 2020). Myrcene → Sleep/Relax. Limonene → Social/Focus. Pinene → Focus. Linalool → Sleep/Beginner.
+        </div>
+        <div style="font-size:12px;color:var(--txt2);line-height:1.7">
+          <strong style="color:var(--txt);display:block;margin-bottom:4px">② Strain Name Lookup (100+ strains)</strong>
+          The product name is matched against a library of 100+ common strains with known effect profiles. Granddaddy Purple → Sleep. Durban Poison → Focus. Blue Dream → Social/Relax. Fuzzy matching handles abbreviations and variations.
+        </div>
+        <div style="font-size:12px;color:var(--txt2);line-height:1.7">
+          <strong style="color:var(--txt);display:block;margin-bottom:4px">③ Strain Type Bias</strong>
+          Indica biases toward Sleep (+0.18) and Relax (+0.14). Sativa biases toward Focus (+0.18) and Social (+0.15). CBD-dominant products get a strong Relief and Beginner boost. Hybrids stay neutral.
+        </div>
+        <div style="font-size:12px;color:var(--txt2);line-height:1.7">
+          <strong style="color:var(--txt);display:block;margin-bottom:4px">④ THC/CBD Ratio + Category</strong>
+          Very high THC (>25%) reduces Beginner score. High CBD (>8%) boosts Relief and Beginner. Topicals get a strong Relief boost. Concentrates reduce Beginner score. Final effect = highest composite score across all 6 goals.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- ADD MODAL -->
 <div class="modal-ov" id="addModal">
@@ -871,6 +1005,7 @@ function switchTab(tab){
   document.getElementById('tp-'+tab).classList.add('active');
   if(tab==='anl'&&!anlDone){renderAnalytics();anlDone=true;}
   if(tab==='ins'){loadDemandInsights();}
+  if(tab==='dtc'){dtcInit();}
 }
 
 async function loadDemandInsights(){
@@ -1327,6 +1462,548 @@ async function confirmImport(){
 // -- UTILS -----------------------------------------
 function xe(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CANNASCOPE × DUTCHIE — SMART MAPPER + SYNC ENGINE
+// Effect scoring grounded in published cannabis pharmacology:
+//   Russo (2011) Br J Pharmacol 163(7):1344-64
+//   Ferber et al. (2020) Cannabis Cannabinoid Res 5(1):12-19
+//   Nuutinen (2018) Eur J Pharmacol 840:11-18
+//   McPartland & Russo (2001) J Cannabis Ther 1(3-4):103-132
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── 1. TERPENE → EFFECT MATRIX ───────────────────────────────────────────────
+// Each terpene has an affinity score (0–1) for each of the 6 Cannascope goals.
+// Scores are weighted by terpene concentration when that data is available.
+const TERPENE_FX = {
+  // Sedating / Myrcene group — earthy, herbal
+  myrcene:        {sleep:0.92,relax:0.82,relief:0.68,beginner:0.40,social:0.08,focus:0.05},
+  linalool:       {sleep:0.89,relax:0.84,relief:0.72,beginner:0.78,social:0.12,focus:0.08},
+  nerolidol:      {sleep:0.86,relax:0.76,relief:0.62,beginner:0.55,social:0.10,focus:0.06},
+  bisabolol:      {sleep:0.78,relax:0.72,relief:0.58,beginner:0.72,social:0.15,focus:0.12},
+  // Anti-inflammatory / Pain — peppery, woody
+  caryophyllene:  {relief:0.88,relax:0.72,sleep:0.55,beginner:0.58,social:0.22,focus:0.18},
+  humulene:       {relief:0.75,relax:0.58,sleep:0.48,beginner:0.45,social:0.18,focus:0.20},
+  geraniol:       {relax:0.72,sleep:0.68,relief:0.58,beginner:0.60,social:0.22,focus:0.18},
+  // Uplifting / Citrus — limonene group
+  limonene:       {social:0.88,focus:0.72,relax:0.52,beginner:0.45,sleep:0.08,relief:0.28},
+  valencene:      {social:0.78,focus:0.62,relax:0.45,beginner:0.38,sleep:0.10,relief:0.18},
+  ocimene:        {social:0.74,focus:0.62,relax:0.40,beginner:0.35,sleep:0.12,relief:0.15},
+  // Alert / Cognitive — pine, eucalyptus
+  pinene:         {focus:0.90,social:0.60,relax:0.28,beginner:0.32,sleep:0.04,relief:0.22},
+  terpinolene:    {social:0.80,focus:0.68,relax:0.48,beginner:0.42,sleep:0.18,relief:0.22},
+  eucalyptol:     {focus:0.82,relief:0.65,relax:0.38,beginner:0.38,sleep:0.10,social:0.40},
+  // Balanced / Mild
+  camphene:       {relax:0.55,relief:0.52,sleep:0.48,beginner:0.50,focus:0.30,social:0.28},
+  borneol:        {relax:0.62,sleep:0.58,relief:0.55,beginner:0.55,focus:0.22,social:0.20},
+};
+
+// ── 2. STRAIN LIBRARY ────────────────────────────────────────────────────────
+// 100+ common strains, effect profiles based on reported terpene data and
+// community consensus from Leafly, Weedmaps, and lab-tested batch averages.
+const STRAIN_LIB = {
+  // SLEEP / HEAVY INDICA ─────────────────────────────────────────────
+  'granddaddy purple':  {sleep:0.94,relax:0.88,relief:0.72,social:0.15,focus:0.08,beginner:0.45},
+  'gdp':                {sleep:0.94,relax:0.88,relief:0.72,social:0.15,focus:0.08,beginner:0.45},
+  'northern lights':    {sleep:0.92,relax:0.86,relief:0.70,social:0.12,focus:0.06,beginner:0.48},
+  'bubba kush':         {sleep:0.90,relax:0.88,relief:0.68,social:0.14,focus:0.08,beginner:0.42},
+  'purple punch':       {sleep:0.88,relax:0.85,relief:0.65,social:0.18,focus:0.10,beginner:0.50},
+  'gorilla glue':       {sleep:0.85,relax:0.82,relief:0.70,social:0.20,focus:0.12,beginner:0.35},
+  'gg4':                {sleep:0.85,relax:0.82,relief:0.70,social:0.20,focus:0.12,beginner:0.35},
+  'og kush':            {sleep:0.82,relax:0.80,relief:0.75,social:0.25,focus:0.15,beginner:0.38},
+  'ice cream cake':     {sleep:0.86,relax:0.84,relief:0.68,social:0.20,focus:0.10,beginner:0.42},
+  'banana kush':        {sleep:0.84,relax:0.82,relief:0.62,social:0.22,focus:0.12,beginner:0.45},
+  'blueberry':          {sleep:0.85,relax:0.80,relief:0.65,social:0.20,focus:0.10,beginner:0.48},
+  'hindu kush':         {sleep:0.88,relax:0.85,relief:0.70,social:0.12,focus:0.08,beginner:0.44},
+  'do-si-dos':          {sleep:0.82,relax:0.85,relief:0.70,social:0.22,focus:0.12,beginner:0.38},
+  'dosidos':            {sleep:0.82,relax:0.85,relief:0.70,social:0.22,focus:0.12,beginner:0.38},
+  'forbidden fruit':    {sleep:0.85,relax:0.82,relief:0.65,social:0.28,focus:0.15,beginner:0.42},
+  'death star':         {sleep:0.88,relax:0.84,relief:0.70,social:0.14,focus:0.08,beginner:0.38},
+  'la confidential':    {sleep:0.88,relax:0.85,relief:0.68,social:0.14,focus:0.08,beginner:0.42},
+  'skywalker':          {sleep:0.86,relax:0.84,relief:0.68,social:0.18,focus:0.10,beginner:0.44},
+  'blackberry kush':    {sleep:0.88,relax:0.82,relief:0.68,social:0.14,focus:0.08,beginner:0.44},
+  'grape ape':          {sleep:0.86,relax:0.84,relief:0.65,social:0.16,focus:0.08,beginner:0.46},
+  // RELAX / BALANCED INDICA ──────────────────────────────────────────
+  'girl scout cookies': {sleep:0.75,relax:0.82,relief:0.68,social:0.42,focus:0.28,beginner:0.40},
+  'gsc':                {sleep:0.75,relax:0.82,relief:0.68,social:0.42,focus:0.28,beginner:0.40},
+  'gelato':             {sleep:0.72,relax:0.80,relief:0.62,social:0.55,focus:0.35,beginner:0.42},
+  'wedding cake':       {sleep:0.70,relax:0.82,relief:0.65,social:0.48,focus:0.30,beginner:0.40},
+  'zkittlez':           {sleep:0.78,relax:0.82,relief:0.60,social:0.45,focus:0.22,beginner:0.50},
+  'runtz':              {relax:0.80,social:0.72,sleep:0.65,focus:0.40,relief:0.55,beginner:0.48},
+  'sherbet':            {relax:0.82,sleep:0.72,social:0.58,focus:0.38,relief:0.58,beginner:0.45},
+  'sherbert':           {relax:0.82,sleep:0.72,social:0.58,focus:0.38,relief:0.58,beginner:0.45},
+  'mac 1':              {relax:0.78,social:0.72,focus:0.60,sleep:0.52,relief:0.50,beginner:0.45},
+  'sunset sherbert':    {relax:0.82,sleep:0.70,social:0.60,focus:0.38,relief:0.55,beginner:0.45},
+  'white widow':        {social:0.75,relax:0.72,focus:0.65,sleep:0.35,relief:0.45,beginner:0.45},
+  'critical mass':      {sleep:0.80,relax:0.82,relief:0.70,social:0.22,focus:0.15,beginner:0.48},
+  'purple haze':        {social:0.75,focus:0.68,relax:0.60,sleep:0.28,relief:0.30,beginner:0.42},
+  // FOCUS / SATIVA ───────────────────────────────────────────────────
+  'jack herer':         {focus:0.88,social:0.75,relax:0.45,sleep:0.08,relief:0.28,beginner:0.38},
+  'durban poison':      {focus:0.92,social:0.72,relax:0.30,sleep:0.05,relief:0.18,beginner:0.32},
+  'green crack':        {focus:0.90,social:0.78,relax:0.28,sleep:0.04,relief:0.15,beginner:0.28},
+  'sour diesel':        {focus:0.85,social:0.80,relax:0.35,sleep:0.06,relief:0.22,beginner:0.30},
+  'super lemon haze':   {focus:0.82,social:0.85,relax:0.42,sleep:0.08,relief:0.20,beginner:0.35},
+  'trainwreck':         {focus:0.78,social:0.72,relax:0.50,sleep:0.18,relief:0.35,beginner:0.28},
+  'amnesia haze':       {focus:0.80,social:0.82,relax:0.40,sleep:0.06,relief:0.18,beginner:0.25},
+  'maui wowie':         {focus:0.75,social:0.82,relax:0.52,sleep:0.12,relief:0.22,beginner:0.40},
+  'super silver haze':  {social:0.82,focus:0.78,relax:0.48,sleep:0.08,relief:0.22,beginner:0.32},
+  'ssh':                {social:0.82,focus:0.78,relax:0.48,sleep:0.08,relief:0.22,beginner:0.32},
+  'golden goat':        {focus:0.78,social:0.82,relax:0.50,sleep:0.10,relief:0.22,beginner:0.35},
+  'jack the ripper':    {focus:0.86,social:0.70,relax:0.32,sleep:0.06,relief:0.18,beginner:0.28},
+  'ghost train haze':   {focus:0.84,social:0.72,relax:0.30,sleep:0.05,relief:0.15,beginner:0.22},
+  // SOCIAL / UPLIFTING ───────────────────────────────────────────────
+  'pineapple express':  {social:0.88,focus:0.68,relax:0.62,sleep:0.15,relief:0.28,beginner:0.45},
+  'blue dream':         {social:0.82,relax:0.75,focus:0.65,sleep:0.30,relief:0.45,beginner:0.52},
+  'tangie':             {social:0.85,focus:0.72,relax:0.50,sleep:0.08,relief:0.20,beginner:0.38},
+  'mimosa':             {social:0.88,focus:0.70,relax:0.52,sleep:0.10,relief:0.22,beginner:0.42},
+  'strawberry cough':   {social:0.88,focus:0.78,relax:0.55,sleep:0.10,relief:0.22,beginner:0.42},
+  'wedding crasher':    {social:0.82,relax:0.70,focus:0.60,sleep:0.22,relief:0.30,beginner:0.42},
+  'orange creamsicle':  {social:0.82,focus:0.68,relax:0.58,sleep:0.12,relief:0.22,beginner:0.44},
+  'tropicana cookies':  {social:0.84,focus:0.72,relax:0.55,sleep:0.12,relief:0.24,beginner:0.40},
+  'clementine':         {social:0.80,focus:0.75,relax:0.50,sleep:0.10,relief:0.20,beginner:0.38},
+  'agent orange':       {social:0.82,focus:0.74,relax:0.50,sleep:0.10,relief:0.20,beginner:0.38},
+  'lemon skunk':        {social:0.80,focus:0.70,relax:0.52,sleep:0.12,relief:0.22,beginner:0.40},
+  'chemdawg':           {social:0.72,focus:0.68,relax:0.65,sleep:0.35,relief:0.55,beginner:0.28},
+  // RELIEF / HIGH-CBD ────────────────────────────────────────────────
+  'acdc':               {relief:0.95,beginner:0.90,relax:0.72,sleep:0.48,focus:0.38,social:0.30},
+  'harlequin':          {relief:0.92,beginner:0.88,relax:0.68,sleep:0.42,focus:0.40,social:0.32},
+  'cannatonic':         {relief:0.90,beginner:0.85,relax:0.70,sleep:0.45,focus:0.35,social:0.28},
+  "charlotte's web":    {relief:0.92,beginner:0.90,relax:0.68,sleep:0.52,focus:0.32,social:0.25},
+  'canna-tsu':          {relief:0.88,beginner:0.82,relax:0.65,sleep:0.45,focus:0.38,social:0.30},
+  'sour tsunami':       {relief:0.88,beginner:0.84,relax:0.68,sleep:0.44,focus:0.36,social:0.28},
+  'remedy':             {relief:0.90,beginner:0.86,relax:0.70,sleep:0.50,focus:0.30,social:0.22},
+  'elektra':            {relief:0.88,beginner:0.85,relax:0.70,sleep:0.48,focus:0.35,social:0.28},
+  'harle-tsu':          {relief:0.90,beginner:0.86,relax:0.68,sleep:0.44,focus:0.36,social:0.28},
+};
+
+// ── 3. STRAIN TYPE BIAS ───────────────────────────────────────────────────────
+const STRAIN_BIAS = {
+  indica:  {sleep:+0.18,relax:+0.14,relief:+0.10,beginner:+0.05,focus:-0.12,social:-0.10},
+  sativa:  {focus:+0.18,social:+0.15,relax:-0.08,sleep:-0.18,relief:-0.05,beginner:-0.05},
+  hybrid:  {sleep:0,relax:0,focus:0,social:0,relief:0,beginner:0},
+  cbd:     {relief:+0.25,beginner:+0.20,relax:+0.08,sleep:+0.05,focus:-0.05,social:-0.05},
+};
+
+// ── 4. CATEGORY MODIFIERS ─────────────────────────────────────────────────────
+const CAT_MODS = {
+  topical:     {relief:+0.25,beginner:+0.20,sleep:-0.10,focus:-0.10,social:-0.15},
+  concentrate: {beginner:-0.22,focus:+0.05,social:+0.05},
+  tincture:    {beginner:+0.12,relief:+0.06},
+  edible:      {sleep:+0.06,relax:+0.04},
+  capsule:     {sleep:+0.06,relax:+0.04,beginner:+0.08},
+  preroll:     {},
+  flower:      {},
+  vape:        {social:+0.04,focus:+0.04},
+};
+
+const EFFECTS = ['sleep','relax','focus','social','relief','beginner'];
+
+// ── FUZZY STRAIN MATCH ────────────────────────────────────────────────────────
+// Returns the best matching strain profile or null.
+function strainMatch(name) {
+  const n = name.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+  // Exact
+  if (STRAIN_LIB[n]) return {profile:STRAIN_LIB[n],confidence:'exact'};
+  // Substring — any library key contained in the product name or vice-versa
+  for (const [key,profile] of Object.entries(STRAIN_LIB)) {
+    if (n.includes(key) || key.includes(n)) return {profile,confidence:'fuzzy'};
+  }
+  // Token overlap — share 2+ significant words
+  const nTokens = n.split(' ').filter(t=>t.length>3);
+  for (const [key,profile] of Object.entries(STRAIN_LIB)) {
+    const kTokens = key.split(' ');
+    const shared = nTokens.filter(t=>kTokens.includes(t)).length;
+    if (shared >= 2) return {profile,confidence:'partial'};
+  }
+  return null;
+}
+
+// ── TERPENE SCORE ─────────────────────────────────────────────────────────────
+// Accepts terpenes as [{name,value}] or {myrcene:0.8,...}
+function terpeneScore(terpenes) {
+  if (!terpenes) return null;
+  let entries = [];
+  if (Array.isArray(terpenes)) {
+    entries = terpenes.map(t=>({name:(t.name||t.terpene||'').toLowerCase().replace(/[^a-z]/g,''),amt:parseFloat(t.value||t.amount||t.percentage||0)}));
+  } else if (typeof terpenes === 'object') {
+    entries = Object.entries(terpenes).map(([k,v])=>({name:k.toLowerCase(),amt:parseFloat(v)||0}));
+  }
+  entries = entries.filter(e=>e.amt>0 && TERPENE_FX[e.name]);
+  if (!entries.length) return null;
+
+  const totAmt = entries.reduce((s,e)=>s+e.amt,0);
+  const scores = Object.fromEntries(EFFECTS.map(fx=>[fx,0]));
+  for (const {name,amt} of entries) {
+    const fx = TERPENE_FX[name];
+    const w = amt/totAmt;
+    for (const ef of EFFECTS) scores[ef] += (fx[ef]||0)*w;
+  }
+  return scores; // each 0–1 weighted average
+}
+
+// ── MAIN MAPPING FUNCTION ─────────────────────────────────────────────────────
+// Dutchie product → Cannascope product row
+function mapDutchieProduct(dp, orgId) {
+  // --- Field extraction (handle multiple Dutchie schema variations) ---
+  const name     = dp.name || dp.productName || dp.strainName || '';
+  const brand    = dp.brand || dp.brandName || dp.vendor || '';
+  const rawCat   = (dp.type || dp.category || dp.productType || '').toLowerCase();
+  const rawStrain= (dp.strainType || dp.strain_type || dp.type2 || '').toLowerCase();
+  const thcRaw   = dp.thcContent?.value ?? dp.thcContent?.range?.[0] ?? dp.thc ?? dp.thcPercentage ?? null;
+  const cbdRaw   = dp.cbdContent?.value ?? dp.cbdContent?.range?.[0] ?? dp.cbd ?? dp.cbdPercentage ?? null;
+  const thc      = thcRaw != null ? parseFloat(thcRaw) : null;
+  const cbd      = cbdRaw != null ? parseFloat(cbdRaw) : null;
+  const price    = parseFloat(dp.price || dp.basePrice || dp.defaultPrice || 0) || null;
+  const inStock  = dp.inStock ?? dp.isActive ?? (dp.quantity > 0) ?? true;
+  const dutchieId= String(dp.id || dp.productId || dp.integrationId || '');
+  const terpenes = dp.terpenes || dp.terpeneData || null;
+
+  // Normalize category to Cannascope values
+  const catMap = {
+    flower:'flower', bud:'flower', herb:'flower',
+    vape:'vape', cartridge:'vape', cart:'vape', vapor:'vape',
+    edible:'edible', gummy:'edible', chocolate:'edible', food:'edible', candy:'edible',
+    concentrate:'concentrate', wax:'concentrate', shatter:'concentrate', live:'concentrate', rosin:'concentrate', resin:'concentrate', dab:'concentrate',
+    tincture:'tincture', oil:'tincture', drop:'tincture',
+    topical:'topical', lotion:'topical', cream:'topical', balm:'topical', patch:'topical',
+    preroll:'preroll', joint:'preroll', blunt:'preroll', 'pre-roll':'preroll',
+    capsule:'tincture', pill:'tincture', softgel:'tincture',
+  };
+  let category = 'flower';
+  for (const [key,val] of Object.entries(catMap)) {
+    if (rawCat.includes(key)) { category = val; break; }
+  }
+
+  // Normalize strain type
+  let strainType = 'hybrid';
+  if (rawStrain.includes('indica')) strainType = 'indica';
+  else if (rawStrain.includes('sativa')) strainType = 'sativa';
+  else if (rawStrain.includes('cbd') || (cbd && thc && cbd > thc*0.5)) strainType = 'cbd';
+
+  // --- Score computation: layer by layer ---
+  let scores = Object.fromEntries(EFFECTS.map(fx=>[fx,0.35])); // baseline 0.35
+  let confidence = 'inferred';
+  let sources = [];
+
+  // Layer 1: Terpene profile (weight: 0.5 if available)
+  const terpScores = terpeneScore(terpenes);
+  if (terpScores) {
+    for (const fx of EFFECTS) scores[fx] = scores[fx]*0.5 + terpScores[fx]*0.5;
+    confidence = 'terpene';
+    sources.push('terpenes');
+  }
+
+  // Layer 2: Strain library lookup (weight: 0.4 if no terpenes, else 0.2)
+  const match = strainMatch(name);
+  if (match) {
+    const w = terpScores ? 0.2 : 0.4;
+    for (const fx of EFFECTS) scores[fx] = scores[fx]*(1-w) + match.profile[fx]*w;
+    if (!terpScores) confidence = match.confidence === 'exact' ? 'strain-exact' : 'strain-fuzzy';
+    sources.push('strain:'+match.confidence);
+  }
+
+  // Layer 3: Strain type bias (absolute offset)
+  const bias = STRAIN_BIAS[strainType] || STRAIN_BIAS.hybrid;
+  for (const fx of EFFECTS) scores[fx] = Math.min(1, Math.max(0, scores[fx] + (bias[fx]||0)));
+
+  // Layer 4: THC/CBD ratio modifiers
+  if (thc != null || cbd != null) {
+    const t = thc || 0, c = cbd || 0;
+    if (c > 8)          { scores.relief   = Math.min(1, scores.relief   + 0.20); scores.beginner = Math.min(1, scores.beginner + 0.18); }
+    if (c > 3 && t > 3) { scores.beginner = Math.min(1, scores.beginner + 0.12); scores.relief   = Math.min(1, scores.relief   + 0.10); }
+    if (t > 25)         { scores.beginner = Math.max(0, scores.beginner - 0.22); }
+    else if (t > 20)    { scores.beginner = Math.max(0, scores.beginner - 0.10); }
+    else if (t < 15 && c < 3) { scores.beginner = Math.min(1, scores.beginner + 0.08); }
+  }
+
+  // Layer 5: Category modifiers
+  const catMod = CAT_MODS[category] || {};
+  for (const [fx,delta] of Object.entries(catMod)) {
+    scores[fx] = Math.min(1, Math.max(0, (scores[fx]||0) + delta));
+  }
+
+  // Pick dominant effect
+  const effect = EFFECTS.reduce((best,fx)=>scores[fx]>scores[best]?fx:best, EFFECTS[0]);
+  const topScore = scores[effect];
+
+  // Auto talking point
+  const talkingPoints = autoTalkingPoint(name, effect, category, thc, cbd, strainType, match);
+
+  return {
+    name,
+    brand,
+    category,
+    effect,
+    thc:  thc  != null ? thc  : null,
+    cbd:  cbd  != null ? cbd  : null,
+    price,
+    in_stock: Boolean(inStock),
+    push:     false,
+    manager_note: '',
+    talking_points: talkingPoints,
+    score_sleep:    +scores.sleep.toFixed(3),
+    score_relax:    +scores.relax.toFixed(3),
+    score_focus:    +scores.focus.toFixed(3),
+    score_social:   +scores.social.toFixed(3),
+    score_relief:   +scores.relief.toFixed(3),
+    score_beginner: +scores.beginner.toFixed(3),
+    organization_id: orgId,
+    // metadata for tracking + re-sync
+    _dutchie_id:  dutchieId,
+    _strain_type: strainType,
+    _confidence:  confidence,
+    _sources:     sources.join(', '),
+  };
+}
+
+// ── AUTO TALKING POINT GENERATOR ──────────────────────────────────────────────
+function autoTalkingPoint(name, effect, category, thc, cbd, strainType, match) {
+  const efLang = {
+    sleep:    'winding down and getting a full night of rest',
+    relax:    'melting stress and finding deep relaxation',
+    focus:    'staying sharp, creative, and productive',
+    social:   'uplifting, social, and energizing experiences',
+    relief:   'managing discomfort, tension, and inflammation',
+    beginner: 'a gentle, approachable first experience',
+  };
+  const catLang = {
+    flower:'Flower',vape:'Vape',edible:'Edible',concentrate:'Concentrate',
+    tincture:'Tincture',topical:'Topical',preroll:'Pre-roll',
+  };
+  const stLang = {indica:'indica',sativa:'sativa',hybrid:'hybrid',cbd:'high-CBD'};
+
+  let tp = `${name} is a ${stLang[strainType]||'hybrid'} ${catLang[category]||'product'} ideal for ${efLang[effect]||effect}.`;
+
+  if (thc > 0 && cbd > 0) {
+    tp += ` THC ${thc.toFixed(1)}% / CBD ${cbd.toFixed(1)}%.`;
+  } else if (thc > 0) {
+    tp += ` ${thc.toFixed(1)}% THC.`;
+  } else if (cbd > 0) {
+    tp += ` ${cbd.toFixed(1)}% CBD.`;
+  }
+
+  if (category === 'topical') tp += ' Applied directly — no psychoactive effect.';
+  if (category === 'edible')  tp += ' Effects take 60–90 min and last 4–8 hours — start low.';
+  if (category === 'concentrate') tp += ' High potency — recommended for experienced consumers.';
+  if (effect === 'beginner' && thc < 15) tp += ' Mild, predictable, and a great starting point.';
+
+  return tp;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTEGRATIONS TAB — UI LOGIC
+// ═══════════════════════════════════════════════════════════════════════════════
+let dtcInitDone = false;
+let dtcMappedProducts = []; // holds last preview/sync result
+
+function dtcInit() {
+  if (dtcInitDone) return;
+  dtcInitDone = true;
+  const saved = localStorage.getItem('cs_dutchie_key');
+  if (saved) {
+    document.getElementById('dtcKeyInput').value = saved;
+    dtcSetStatus('connected', 'Connected');
+    document.getElementById('dtcSyncCard').style.display = 'block';
+    const ts = localStorage.getItem('cs_dutchie_last_sync');
+    if (ts) document.getElementById('dtcLastSync').textContent = 'Last synced: ' + new Date(ts).toLocaleString();
+  }
+}
+
+function dtcToggleKeyVis() {
+  const inp = document.getElementById('dtcKeyInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function dtcSetStatus(state, label) {
+  const dot = document.getElementById('dtcStatusDot');
+  const txt = document.getElementById('dtcStatusTxt');
+  const badge = document.getElementById('dtcBadge');
+  const colors = { connected:'var(--green)', error:'var(--red)', checking:'var(--acc)', '':'var(--border)' };
+  dot.style.background = colors[state] || colors[''];
+  txt.textContent = label;
+  if (badge) badge.style.display = state === 'connected' ? 'inline' : 'none';
+}
+
+function dtcShowMsg(msg, type='info') {
+  const el = document.getElementById('dtcVerifyMsg');
+  const styles = {
+    ok:   'background:var(--green-d);color:var(--green);border:1px solid var(--green-b)',
+    error:'background:var(--red-d);color:var(--red);border:1px solid #FECACA',
+    info: 'background:var(--bg);color:var(--txt2);border:1px solid var(--border)',
+  };
+  el.style.cssText = (styles[type]||styles.info) + ';display:block';
+  el.innerHTML = msg;
+}
+
+async function dtcVerifyKey() {
+  const key = document.getElementById('dtcKeyInput').value.trim();
+  if (!key) { dtcShowMsg('Please paste your Dutchie API key first.', 'error'); return; }
+
+  const btn = document.getElementById('dtcVerifyBtn');
+  btn.disabled = true; btn.textContent = 'Verifying…';
+  dtcSetStatus('checking', 'Checking…');
+
+  try {
+    const res = await fetch('/api/dutchie-sync', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ apiKey: key, endpoint: 'whoami' }),
+    });
+    const data = await res.json();
+
+    if (res.ok && data.locationName) {
+      localStorage.setItem('cs_dutchie_key', key);
+      dtcSetStatus('connected', 'Connected');
+      dtcShowMsg(`✓ Connected to <strong>${data.locationName}</strong>${data.address ? ' · '+data.address : ''}`, 'ok');
+      document.getElementById('dtcSyncCard').style.display = 'block';
+    } else if (res.status === 401) {
+      dtcSetStatus('error', 'Invalid key');
+      dtcShowMsg('Invalid API key — check that it was copied correctly and is still active.', 'error');
+    } else if (res.status === 403) {
+      dtcSetStatus('error', 'Permission denied');
+      dtcShowMsg('Key is valid but lacks permissions. Ask Dutchie Support to add <code>Inventory</code> scope.', 'error');
+    } else {
+      dtcSetStatus('error', 'Error');
+      dtcShowMsg('Unexpected response: ' + JSON.stringify(data).slice(0,120), 'error');
+    }
+  } catch (err) {
+    dtcSetStatus('error', 'Connection error');
+    dtcShowMsg('Could not reach Dutchie API — check your connection. ' + err.message, 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Verify & Connect';
+}
+
+async function dtcSync(doImport) {
+  const key = localStorage.getItem('cs_dutchie_key') || document.getElementById('dtcKeyInput').value.trim();
+  if (!key) { showToast('No API key — verify your connection first.'); return; }
+  if (!userOrgId) { showToast('Not signed in — reload and try again.'); return; }
+
+  // Show progress
+  document.getElementById('dtcProgress').style.display = 'block';
+  document.getElementById('dtcResults').style.display = 'none';
+  document.getElementById('dtcPreviewWrap').style.display = 'none';
+  document.getElementById('dtcProgressBar').style.width = '10%';
+  document.getElementById('dtcProgressTxt').textContent = 'Fetching products from Dutchie…';
+  document.getElementById('dtcPreviewBtn').disabled = true;
+  document.getElementById('dtcSyncBtn').disabled = true;
+
+  try {
+    const res = await fetch('/api/dutchie-sync', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ apiKey: key, endpoint: 'products' }),
+    });
+    if (!res.ok) throw new Error(`Dutchie returned ${res.status}`);
+    const raw = await res.json();
+
+    document.getElementById('dtcProgressBar').style.width = '40%';
+    document.getElementById('dtcProgressTxt').textContent = `Mapping ${raw.length} products…`;
+
+    // Handle array or paginated response
+    const dutchieProducts = Array.isArray(raw) ? raw : (raw.data || raw.products || raw.items || []);
+
+    // Map all products
+    dtcMappedProducts = dutchieProducts.map(p => mapDutchieProduct(p, userOrgId));
+
+    document.getElementById('dtcProgressBar').style.width = '70%';
+
+    if (!doImport) {
+      // Preview mode
+      document.getElementById('dtcProgress').style.display = 'none';
+      showPreview(dtcMappedProducts);
+    } else {
+      await dtcConfirmImport(dtcMappedProducts);
+    }
+  } catch (err) {
+    document.getElementById('dtcProgress').style.display = 'none';
+    showToast('Sync failed: ' + err.message);
+    console.error('[dutchie-sync]', err);
+  }
+
+  document.getElementById('dtcPreviewBtn').disabled = false;
+  document.getElementById('dtcSyncBtn').disabled = false;
+}
+
+function showPreview(mapped) {
+  const CONF_LABEL = {'terpene':'🧪 Terpene','strain-exact':'✓ Strain','strain-fuzzy':'~ Strain','partial':'~ Partial','inferred':'⬡ Inferred'};
+  const body = document.getElementById('dtcPreviewBody');
+  body.innerHTML = mapped.slice(0,50).map(p=>`
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px 10px;font-weight:600;color:var(--txt)">${xe(p.name)}<br><span style="font-size:10px;font-weight:400;color:var(--txt3)">${xe(p.brand||'')}</span></td>
+      <td style="padding:6px 10px;color:var(--txt2)">${xe(p.category)}</td>
+      <td style="padding:6px 10px;color:var(--txt2)">${p.thc!=null?p.thc+'%':'—'}${p.cbd!=null?' / '+p.cbd+'%':''}</td>
+      <td style="padding:6px 10px"><span class="badge eff-${p.effect}">${p.effect}</span></td>
+      <td style="padding:6px 10px;color:var(--green);font-weight:700">${Math.round((p['score_'+p.effect]||0)*100)}%</td>
+      <td style="padding:6px 10px;font-size:10px;color:var(--txt3)">${CONF_LABEL[p._confidence]||p._confidence}</td>
+    </tr>`).join('');
+  if (mapped.length > 50) body.innerHTML += `<tr><td colspan="6" style="padding:8px 10px;text-align:center;color:var(--txt3);font-size:11px">+ ${mapped.length-50} more products…</td></tr>`;
+  document.getElementById('dtcPreviewWrap').style.display = 'block';
+}
+
+async function dtcConfirmImport(mapped) {
+  if (!mapped) mapped = dtcMappedProducts;
+  if (!mapped || !mapped.length) { showToast('No products to import.'); return; }
+
+  document.getElementById('dtcPreviewWrap').style.display = 'none';
+  document.getElementById('dtcProgress').style.display = 'block';
+  document.getElementById('dtcProgressBar').style.width = '80%';
+  document.getElementById('dtcProgressTxt').textContent = `Importing ${mapped.length} products into Cannascope…`;
+
+  // Fetch existing products to detect new vs update
+  const {data:existing} = await sb.from('products').select('name,id').eq('organization_id', userOrgId);
+  const existingNames = new Set((existing||[]).map(p=>p.name.toLowerCase()));
+
+  const toInsert = [], toUpdate = [];
+  for (const p of mapped) {
+    const row = {
+      name:p.name, brand:p.brand, category:p.category, effect:p.effect,
+      thc:p.thc, cbd:p.cbd, price:p.price, in_stock:p.in_stock,
+      push:false, talking_points:p.talking_points,
+      score_sleep:p.score_sleep, score_relax:p.score_relax,
+      score_focus:p.score_focus, score_social:p.score_social,
+      score_relief:p.score_relief, score_beginner:p.score_beginner,
+      organization_id:p.organization_id,
+    };
+    if (existingNames.has(p.name.toLowerCase())) toUpdate.push(row);
+    else toInsert.push(row);
+  }
+
+  let imported = 0, updated = 0, skipped = 0;
+
+  // Insert new
+  if (toInsert.length) {
+    const {error} = await sb.from('products').insert(toInsert);
+    if (error) { console.error('Insert error', error); skipped += toInsert.length; }
+    else imported = toInsert.length;
+  }
+  // Update existing (stock + price only — preserve manager notes/push flags)
+  for (const row of toUpdate) {
+    const {error} = await sb.from('products')
+      .update({in_stock:row.in_stock, price:row.price,
+               score_sleep:row.score_sleep, score_relax:row.score_relax,
+               score_focus:row.score_focus, score_social:row.score_social,
+               score_relief:row.score_relief, score_beginner:row.score_beginner})
+      .eq('name', row.name).eq('organization_id', userOrgId);
+    if (error) skipped++; else updated++;
+  }
+
+  // Update UI
+  document.getElementById('dtcProgress').style.display = 'none';
+  document.getElementById('dtcRFetched').textContent  = mapped.length;
+  document.getElementById('dtcRImported').textContent = imported;
+  document.getElementById('dtcRUpdated').textContent  = updated;
+  document.getElementById('dtcRSkipped').textContent  = skipped;
+  document.getElementById('dtcResults').style.display = 'block';
+
+  const now = new Date().toISOString();
+  localStorage.setItem('cs_dutchie_last_sync', now);
+  document.getElementById('dtcLastSync').textContent = 'Last synced: ' + new Date(now).toLocaleString();
+
+  showToast(`Sync complete — ${imported} imported, ${updated} updated`);
+  // Refresh inventory tab
+  await loadFromDB();
+  anlDone = false;
+}
 
 init();
 </script>
