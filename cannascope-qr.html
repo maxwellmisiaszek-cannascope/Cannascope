@@ -687,7 +687,9 @@ function logDemandEvent(event_type, options = {}) {
     recommendations: options.recommendations || [],
     product_id:      options.product_id      || null,
     product_rank:    options.product_rank    || null
-  }).catch(() => {});
+  }).then(({ error }) => {
+    if (error) console.error('[Cannascope] demand_events insert error:', error.message);
+  }).catch(e => console.error('[Cannascope] demand_events network error:', e));
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────
