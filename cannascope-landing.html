@@ -106,7 +106,8 @@
             display: inline-block;
             animation: blobDrift 6s ease-in-out infinite;
         }
-        .nav-logo span { color: var(--green); }
+        .nav-logo-word { color: var(--text); }
+        .nav-logo .nav-scope { color: var(--green); }
         .nav-right { display: flex; align-items: center; gap: 20px; }
         .nav-client {
             font-size: 12px; font-weight: 500; color: var(--text-3);
@@ -403,6 +404,24 @@
             font-size: 13px; color: var(--text-2); line-height: 1.75;
         }
 
+        /* ── ROTATION NOTE ────────────────────────────────── */
+        .rotation-note {
+            max-width: 780px; margin: 20px auto 0;
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 14px 18px;
+            background: var(--bg-3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+        .rotation-note-icon {
+            flex-shrink: 0; margin-top: 1px;
+            color: var(--green);
+        }
+        .rotation-note-text {
+            font-size: 12.5px; color: var(--text-2); line-height: 1.7;
+        }
+        .rotation-note-text strong { color: var(--text); font-weight: 600; }
+
         /* ── PRODUCT MOCKUP ───────────────────────────────── */
         .mockup-section {
             padding: 96px 24px;
@@ -666,8 +685,7 @@
 <!-- ── NAV ───────────────────────────────────────────────── -->
 <nav id="siteNav">
     <a href="/" class="nav-logo">
-        <span class="nav-logo-dot"></span>
-        Canna<span>scope</span>
+        <span class="nav-logo-dot"></span><span class="nav-logo-word">Canna<span class="nav-scope">scope</span></span>
     </a>
     <div class="nav-right">
         <a href="cannascope-login.html" class="nav-client">
@@ -866,6 +884,15 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="rotation-note reveal reveal-delay-2">
+            <svg class="rotation-note-icon" width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <circle cx="7.5" cy="7.5" r="6.5" stroke="#2D6A4F" stroke-width="1.4"/>
+                <path d="M7.5 7v3.5M7.5 5h.01" stroke="#2D6A4F" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <p class="rotation-note-text">
+                <strong>How the three shown are chosen:</strong> Every product in stock is scored against the goal — terpene fit, THC profile, format, margin, manager priority. The <strong>top 10</strong> by score form a pool. From that pool, three surface with variety across brands and formats. A time-based shift changes which three appear every two hours, so high-fit products rotate in rather than the same picks appearing every visit.
+            </p>
         </div>
     </div>
 </section>
