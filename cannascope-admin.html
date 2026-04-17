@@ -409,16 +409,16 @@ th.row-cb .cb{margin-top:1px}
     <!-- Header -->
     <div style="margin-bottom:28px">
       <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:6px">Integrations</div>
-      <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--txt);margin-bottom:6px">Dutchie POS Sync</div>
-      <div style="font-size:13px;color:var(--txt2);line-height:1.65">Connect your Dutchie POS account to automatically sync your live inventory into Cannascope. Paste your API key below — products are mapped using cannabis science (terpene profiles, strain type, THC/CBD ratios) to assign effect scores, talking points, and categories automatically.</div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--txt);margin-bottom:6px">Dutchie Inventory Sync</div>
+      <div style="font-size:13px;color:var(--txt2);line-height:1.65">Sync your live Dutchie inventory directly — no API approval needed. Paste your public Dutchie menu URL and Cannascope will pull your full product catalog, scoring each product using cannabis science (terpene profiles, strain type, THC/CBD ratios) to assign effect scores, talking points, and categories automatically.</div>
     </div>
 
-    <!-- API Key card -->
+    <!-- URL card -->
     <div class="a-card" style="margin-bottom:16px">
       <div class="a-head">
         <div>
-          <div class="a-title">Dutchie API Key</div>
-          <div class="a-sub">Provided by Dutchie Support after your integration request is approved</div>
+          <div class="a-title">Dutchie Menu URL</div>
+          <div class="a-sub">Your public Dutchie dispensary page — no API key needed</div>
         </div>
         <div id="dtcStatus" style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--txt3)">
           <span id="dtcStatusDot" style="width:7px;height:7px;border-radius:50%;background:var(--border);display:inline-block"></span>
@@ -426,12 +426,11 @@ th.row-cb .cb{margin-top:1px}
         </div>
       </div>
       <div style="display:flex;gap:10px;margin-top:4px">
-        <input id="dtcKeyInput" type="password"
-          style="flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:monospace;color:var(--txt);outline:none;transition:border-color .12s"
-          placeholder="Paste your Dutchie API key here…"
+        <input id="dtcKeyInput" type="text"
+          style="flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;color:var(--txt);outline:none;transition:border-color .12s"
+          placeholder="https://dutchie.com/dispensary/your-dispensary-name"
           onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
-        <button class="hbtn" onclick="dtcToggleKeyVis()" id="dtcToggleBtn" title="Show/hide key" style="min-width:36px">👁</button>
-        <button class="hbtn primary" onclick="dtcVerifyKey()" id="dtcVerifyBtn">Verify &amp; Connect</button>
+        <button class="hbtn primary" onclick="dtcVerifyKey()" id="dtcVerifyBtn">Connect</button>
       </div>
       <div id="dtcVerifyMsg" style="display:none;margin-top:10px;font-size:12px;padding:8px 12px;border-radius:6px"></div>
     </div>
@@ -1713,24 +1712,31 @@ function terpeneScore(terpenes) {
 // ── MAIN MAPPING FUNCTION ─────────────────────────────────────────────────────
 // Dutchie product → Cannascope product row
 function mapDutchieProduct(dp, orgId) {
-  // --- Field extraction (handle multiple Dutchie schema variations) ---
-  const name     = dp.name || dp.productName || dp.strainName || '';
-  const brand    = dp.brand || dp.brandName || dp.vendor || '';
+  // --- Field extraction (handles Dutchie API schema with capital field names) ---
+  const name     = dp.Name || dp.name || dp.productName || dp.strainName || '';
+  const brand    = dp.brandName || dp.brand || dp.vendor || '';
   const rawCat   = (dp.type || dp.category || dp.productType || '').toLowerCase();
   const rawStrain= (dp.strainType || dp.strain_type || dp.type2 || '').toLowerCase();
-  const thcRaw   = dp.thcContent?.value ?? dp.thcContent?.range?.[0] ?? dp.thc ?? dp.thcPercentage ?? null;
-  const cbdRaw   = dp.cbdContent?.value ?? dp.cbdContent?.range?.[0] ?? dp.cbd ?? dp.cbdPercentage ?? null;
+  // THCContent / CBDContent from Dutchie come as {unit, range:[min,max]} — take range max
+  const thcRaw   = dp.THCContent?.range?.[1] ?? dp.THCContent?.value ??
+                   dp.thcContent?.value ?? dp.thcContent?.range?.[0] ?? dp.thc ?? null;
+  const cbdRaw   = dp.CBDContent?.range?.[1] ?? dp.CBDContent?.value ??
+                   dp.cbdContent?.value ?? dp.cbdContent?.range?.[0] ?? dp.cbd ?? null;
   const thc      = thcRaw != null ? parseFloat(thcRaw) : null;
   const cbd      = cbdRaw != null ? parseFloat(cbdRaw) : null;
-  const price    = parseFloat(dp.price || dp.basePrice || dp.defaultPrice || 0) || null;
-  const inStock  = dp.inStock ?? dp.isActive ?? (dp.quantity > 0) ?? true;
-  const dutchieId= String(dp.id || dp.productId || dp.integrationId || '');
+  // Dutchie pricing: recPrices[0] preferred, then Prices[0], then price field
+  const price    = parseFloat(
+    (dp.recPrices && dp.recPrices[0]) || (dp.Prices && dp.Prices[0]) ||
+    dp.price || dp.basePrice || 0
+  ) || null;
+  const inStock  = dp.Status === 'Active' || dp.inStock ?? dp.isActive ?? true;
+  const dutchieId= String(dp._id || dp.id || dp.productId || '');
   const terpenes = dp.terpenes || dp.terpeneData || null;
 
   // Normalize category to Cannascope values
   const catMap = {
     flower:'flower', bud:'flower', herb:'flower',
-    vape:'vape', cartridge:'vape', cart:'vape', vapor:'vape',
+    vape:'vape', vaporizers:'vape', cartridge:'vape', cart:'vape', vapor:'vape',
     edible:'edible', gummy:'edible', chocolate:'edible', food:'edible', candy:'edible',
     concentrate:'concentrate', wax:'concentrate', shatter:'concentrate', live:'concentrate', rosin:'concentrate', resin:'concentrate', dab:'concentrate',
     tincture:'tincture', oil:'tincture', drop:'tincture',
@@ -1861,26 +1867,31 @@ function autoTalkingPoint(name, effect, category, thc, cbd, strainType, match) {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // INTEGRATIONS TAB — UI LOGIC
+// Direct public API sync — no official Dutchie API key required.
+// Uses Dutchie's public GraphQL endpoint with APQ (Automatic Persisted Queries).
 // ═══════════════════════════════════════════════════════════════════════════════
+const DTC_APQ_HASH = '98b4aaef79a84ae804b64d550f98dd64d7ba0aa6d836eb6b5d4b2ae815c95e32';
+const DTC_CATS = ['Flower','Concentrate','Vaporizers','Edible','Tincture','Topicals','Pre-Roll'];
+
 let dtcInitDone = false;
-let dtcMappedProducts = []; // holds last preview/sync result
+let dtcMappedProducts = [];
+let dtcDispensaryId = null;
 
 function dtcInit() {
   if (dtcInitDone) return;
   dtcInitDone = true;
-  const saved = localStorage.getItem('cs_dutchie_key');
-  if (saved) {
-    document.getElementById('dtcKeyInput').value = saved;
+  const savedUrl = localStorage.getItem('cs_dutchie_url');
+  const savedId  = localStorage.getItem('cs_dutchie_id');
+  const savedName= localStorage.getItem('cs_dutchie_name');
+  if (savedUrl && savedId) {
+    document.getElementById('dtcKeyInput').value = savedUrl;
+    dtcDispensaryId = savedId;
     dtcSetStatus('connected', 'Connected');
     document.getElementById('dtcSyncCard').style.display = 'block';
+    if (savedName) dtcShowMsg(`✓ Connected to <strong>${savedName}</strong>`, 'ok');
     const ts = localStorage.getItem('cs_dutchie_last_sync');
     if (ts) document.getElementById('dtcLastSync').textContent = 'Last synced: ' + new Date(ts).toLocaleString();
   }
-}
-
-function dtcToggleKeyVis() {
-  const inp = document.getElementById('dtcKeyInput');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 
 function dtcSetStatus(state, label) {
@@ -1896,88 +1907,173 @@ function dtcSetStatus(state, label) {
 function dtcShowMsg(msg, type='info') {
   const el = document.getElementById('dtcVerifyMsg');
   const styles = {
-    ok:   'background:var(--green-d);color:var(--green);border:1px solid var(--green-b)',
-    error:'background:var(--red-d);color:var(--red);border:1px solid #FECACA',
-    info: 'background:var(--bg);color:var(--txt2);border:1px solid var(--border)',
+    ok:    'background:var(--green-d);color:var(--green);border:1px solid var(--green-b)',
+    error: 'background:#FEF2F2;color:#DC2626;border:1px solid #FECACA',
+    info:  'background:var(--bg);color:var(--txt2);border:1px solid var(--border)',
   };
   el.style.cssText = (styles[type]||styles.info) + ';display:block';
   el.innerHTML = msg;
 }
 
+// Fetch one product from Dutchie using dispensary ID to test connectivity
+async function dtcTestFetch(dispensaryId) {
+  const vars = {
+    includeEnterpriseSpecials: false,
+    productsFilter: {
+      dispensaryId,
+      pricingType: 'rec', strainTypes: [], subcategories: [],
+      Status: 'Active', types: ['Flower'],
+      useCache: true, isDefaultSort: true, sortBy: 'popularSortIdx', sortDirection: 1,
+      bypassOnlineThresholds: false, isKioskMenu: false,
+      removeProductsBelowOptionThresholds: true,
+      platformType: 'ONLINE_MENU', preOrderType: null,
+    },
+    page: 0, perPage: 1,
+  };
+  const ext = { persistedQuery: { version: 1, sha256Hash: DTC_APQ_HASH } };
+  const url = `https://dutchie.com/api-3/graphql?operationName=FilteredProducts` +
+    `&variables=${encodeURIComponent(JSON.stringify(vars))}` +
+    `&extensions=${encodeURIComponent(JSON.stringify(ext))}`;
+  const resp = await fetch(url, { headers: { 'x-apollo-operation-name': 'FilteredProducts', 'apollo-require-preflight': 'true' } });
+  const json = await resp.json();
+  if (json.errors) throw new Error(json.errors[0]?.message || 'Dutchie API error');
+  return json?.data?.filteredProducts?.products || [];
+}
+
 async function dtcVerifyKey() {
-  const key = document.getElementById('dtcKeyInput').value.trim();
-  if (!key) { dtcShowMsg('Please paste your Dutchie API key first.', 'error'); return; }
+  const raw = document.getElementById('dtcKeyInput').value.trim();
+  if (!raw) { dtcShowMsg('Paste your Dutchie dispensary URL first (e.g. https://dutchie.com/dispensary/your-store)', 'error'); return; }
+
+  // Parse dispensary ID: could be the URL slug or a raw MongoDB ID
+  const slugMatch = raw.match(/dutchie\.com\/(?:embedded-menu\/|dispensary\/)([a-z0-9-]+)/i);
+  const idMatch   = raw.match(/^[a-f0-9]{24}$/i);
 
   const btn = document.getElementById('dtcVerifyBtn');
-  btn.disabled = true; btn.textContent = 'Verifying…';
+  btn.disabled = true; btn.textContent = 'Connecting…';
   dtcSetStatus('checking', 'Checking…');
+  dtcShowMsg('Fetching dispensary info from Dutchie…', 'info');
 
   try {
-    const res = await fetch('/api/dutchie-sync', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ apiKey: key, endpoint: 'whoami' }),
-    });
-    const data = await res.json();
+    let dispensaryId = null;
+    let dispensaryName = '';
 
-    if (res.ok && data.locationName) {
-      localStorage.setItem('cs_dutchie_key', key);
-      dtcSetStatus('connected', 'Connected');
-      dtcShowMsg(`✓ Connected to <strong>${data.locationName}</strong>${data.address ? ' · '+data.address : ''}`, 'ok');
-      document.getElementById('dtcSyncCard').style.display = 'block';
-    } else if (res.status === 401) {
-      dtcSetStatus('error', 'Invalid key');
-      dtcShowMsg('Invalid API key — check that it was copied correctly and is still active.', 'error');
-    } else if (res.status === 403) {
-      dtcSetStatus('error', 'Permission denied');
-      dtcShowMsg('Key is valid but lacks permissions. Ask Dutchie Support to add <code>Inventory</code> scope.', 'error');
+    if (idMatch) {
+      // User pasted the raw dispensary ID directly
+      dispensaryId = raw;
+    } else if (slugMatch) {
+      // Try to resolve slug → dispensary ID via the page's __NEXT_DATA__
+      // We can't fetch cross-origin HTML, so try a known fallback:
+      // Attempt to fetch without an ID (will fail), then ask for manual ID
+      dtcShowMsg('Resolving dispensary from URL…', 'info');
+      // Try fetching the Dutchie page to extract ID
+      try {
+        const pageResp = await fetch(`https://dutchie.com/dispensary/${slugMatch[1]}`);
+        const html = await pageResp.text();
+        const idMatch2 = html.match(/"DispensaryID"\s*:\s*"([a-f0-9]{24})"/i) ||
+                         html.match(/"dispensaryId"\s*:\s*"([a-f0-9]{24})"/i) ||
+                         html.match(/"id"\s*:\s*"([a-f0-9]{24})"/i);
+        if (idMatch2) dispensaryId = idMatch2[1];
+        const nameMatch = html.match(/"name"\s*:\s*"([^"]+)"/);
+        if (nameMatch) dispensaryName = nameMatch[1];
+      } catch(corsErr) {
+        // CORS blocked — ask user to provide the dispensary ID manually
+        dtcShowMsg(
+          `CORS blocked the auto-lookup. Please paste your <strong>Dutchie dispensary ID</strong> directly.<br>` +
+          `<span style="font-size:11px;opacity:.8">You can find it in your Dutchie POS settings or by viewing page source on your menu page and searching for "DispensaryID".</span>`,
+          'error'
+        );
+        btn.disabled = false; btn.textContent = 'Connect';
+        dtcSetStatus('error', 'Manual ID needed');
+        return;
+      }
     } else {
-      dtcSetStatus('error', 'Error');
-      dtcShowMsg('Unexpected response: ' + JSON.stringify(data).slice(0,120), 'error');
+      dtcShowMsg('Enter your full Dutchie URL (e.g. https://dutchie.com/dispensary/bud-and-honey) or your 24-character dispensary ID.', 'error');
+      btn.disabled = false; btn.textContent = 'Connect';
+      return;
     }
+
+    if (!dispensaryId) {
+      dtcShowMsg('Could not extract dispensary ID from the URL. Try pasting your 24-character dispensary ID directly.', 'error');
+      btn.disabled = false; btn.textContent = 'Connect';
+      dtcSetStatus('error', 'Not found');
+      return;
+    }
+
+    // Test fetch
+    dtcShowMsg('Testing connection…', 'info');
+    await dtcTestFetch(dispensaryId);
+
+    // Success
+    dtcDispensaryId = dispensaryId;
+    localStorage.setItem('cs_dutchie_url',  raw);
+    localStorage.setItem('cs_dutchie_id',   dispensaryId);
+    if (dispensaryName) localStorage.setItem('cs_dutchie_name', dispensaryName);
+    dtcSetStatus('connected', 'Connected');
+    dtcShowMsg(`✓ Connected${dispensaryName ? ' to <strong>'+dispensaryName+'</strong>' : ''} · Dispensary ID: <code style="font-size:11px">${dispensaryId}</code>`, 'ok');
+    document.getElementById('dtcSyncCard').style.display = 'block';
+
   } catch (err) {
-    dtcSetStatus('error', 'Connection error');
-    dtcShowMsg('Could not reach Dutchie API — check your connection. ' + err.message, 'error');
+    dtcSetStatus('error', 'Error');
+    dtcShowMsg('Connection failed: ' + err.message + '<br><span style="font-size:11px;opacity:.8">Make sure the URL is correct and Dutchie is reachable.</span>', 'error');
   }
-  btn.disabled = false; btn.textContent = 'Verify & Connect';
+
+  btn.disabled = false; btn.textContent = 'Connect';
+}
+
+async function dtcFetchCategory(dispensaryId, cat) {
+  const vars = {
+    includeEnterpriseSpecials: false,
+    productsFilter: {
+      dispensaryId,
+      pricingType: 'rec', strainTypes: [], subcategories: [],
+      Status: 'Active', types: [cat],
+      useCache: false, isDefaultSort: true, sortBy: null, sortDirection: 1,
+      bypassOnlineThresholds: false, isKioskMenu: false,
+      removeProductsBelowOptionThresholds: true,
+      platformType: 'ONLINE_MENU', preOrderType: null,
+    },
+    page: 0, perPage: 200,
+  };
+  const ext = { persistedQuery: { version: 1, sha256Hash: DTC_APQ_HASH } };
+  const url = `https://dutchie.com/api-3/graphql?operationName=FilteredProducts` +
+    `&variables=${encodeURIComponent(JSON.stringify(vars))}` +
+    `&extensions=${encodeURIComponent(JSON.stringify(ext))}`;
+  const resp = await fetch(url, { headers: { 'x-apollo-operation-name': 'FilteredProducts', 'apollo-require-preflight': 'true' } });
+  const json = await resp.json();
+  return json?.data?.filteredProducts?.products || [];
 }
 
 async function dtcSync(doImport) {
-  const key = localStorage.getItem('cs_dutchie_key') || document.getElementById('dtcKeyInput').value.trim();
-  if (!key) { showToast('No API key — verify your connection first.'); return; }
+  const dispensaryId = dtcDispensaryId || localStorage.getItem('cs_dutchie_id');
+  if (!dispensaryId) { showToast('Connect to Dutchie first.'); return; }
   if (!userOrgId) { showToast('Not signed in — reload and try again.'); return; }
 
-  // Show progress
   document.getElementById('dtcProgress').style.display = 'block';
   document.getElementById('dtcResults').style.display = 'none';
   document.getElementById('dtcPreviewWrap').style.display = 'none';
-  document.getElementById('dtcProgressBar').style.width = '10%';
+  document.getElementById('dtcProgressBar').style.width = '5%';
   document.getElementById('dtcProgressTxt').textContent = 'Fetching products from Dutchie…';
   document.getElementById('dtcPreviewBtn').disabled = true;
   document.getElementById('dtcSyncBtn').disabled = true;
 
   try {
-    const res = await fetch('/api/dutchie-sync', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ apiKey: key, endpoint: 'products' }),
-    });
-    if (!res.ok) throw new Error(`Dutchie returned ${res.status}`);
-    const raw = await res.json();
+    const allRaw = [];
+    for (let i = 0; i < DTC_CATS.length; i++) {
+      const cat = DTC_CATS[i];
+      document.getElementById('dtcProgressTxt').textContent = `Fetching ${cat}…`;
+      document.getElementById('dtcProgressBar').style.width = Math.round(5 + (i / DTC_CATS.length) * 40) + '%';
+      const prods = await dtcFetchCategory(dispensaryId, cat);
+      allRaw.push(...prods);
+    }
 
-    document.getElementById('dtcProgressBar').style.width = '40%';
-    document.getElementById('dtcProgressTxt').textContent = `Mapping ${raw.length} products…`;
+    document.getElementById('dtcProgressBar').style.width = '55%';
+    document.getElementById('dtcProgressTxt').textContent = `Mapping ${allRaw.length} products with scoring engine…`;
 
-    // Handle array or paginated response
-    const dutchieProducts = Array.isArray(raw) ? raw : (raw.data || raw.products || raw.items || []);
-
-    // Map all products
-    dtcMappedProducts = dutchieProducts.map(p => mapDutchieProduct(p, userOrgId));
+    dtcMappedProducts = allRaw.map(p => mapDutchieProduct(p, userOrgId));
 
     document.getElementById('dtcProgressBar').style.width = '70%';
 
     if (!doImport) {
-      // Preview mode
       document.getElementById('dtcProgress').style.display = 'none';
       showPreview(dtcMappedProducts);
     } else {
