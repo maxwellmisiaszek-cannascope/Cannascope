@@ -370,6 +370,15 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
                 </div>
             </div>
 
+            <!-- import error -->
+            <div id="importErrorState" style="display:none">
+                <div class="err-box" id="importErrorMsg" style="margin-bottom:20px;font-size:14px;line-height:1.6"></div>
+                <div class="btn-row">
+                    <button class="btn btn-ghost" onclick="showS1('s1d')">&#8592; Back to preview</button>
+                    <button class="btn btn-primary" onclick="retryImport()">Retry import</button>
+                </div>
+            </div>
+
             <!-- after import done -->
             <div id="importDoneState" style="display:none">
                 <div class="import-ok">
@@ -498,12 +507,22 @@ let orgId = null, publicKey = null, budtenderUrl = null, customerQRUrl = null, q
 let csvRaw = null, parsedRows = [], headers = [], mapping = {};
 
 // ── AUTH GUARD ─────────────────────────────────────────────────────────────
+// initReady resolves when orgId is confirmed — confirmImport awaits it
+let initResolve, initReject;
+const initReady = new Promise((res, rej) => { initResolve = res; initReject = rej; });
+
 async function init() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { window.location.href = 'cannascope-login.html'; return; }
-    const { data: profile } = await sb.from('user_profiles').select('organization_id').eq('id', session.user.id).single();
-    if (!profile) { window.location.href = 'cannascope-login.html'; return; }
-    orgId = profile.organization_id;
+    try {
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) { window.location.href = 'cannascope-login.html'; return; }
+        const { data: profile } = await sb.from('user_profiles')
+            .select('organization_id').eq('id', session.user.id).single();
+        if (!profile?.organization_id) { window.location.href = 'cannascope-login.html'; return; }
+        orgId = profile.organization_id;
+        initResolve();
+    } catch (e) {
+        initReject(e);
+    }
 }
 init();
 
@@ -723,11 +742,19 @@ function buildPreview() {
 
 // ── CONFIRM IMPORT ─────────────────────────────────────────────────────────
 async function confirmImport() {
-    if (!orgId) { alert('Session expired. Please sign in again.'); window.location.href = 'cannascope-login.html'; return; }
+    // Wait for auth init to fully resolve before doing anything
+    try { await initReady; } catch (e) {
+        window.location.href = 'cannascope-login.html'; return;
+    }
+    if (!orgId) { window.location.href = 'cannascope-login.html'; return; }
+
     showS1('s1e');
+    document.getElementById('importErrorState').style.display  = 'none';
+    document.getElementById('importDoneState').style.display   = 'none';
+    document.getElementById('importingState').style.display    = 'block';
 
     const rows = parsedRows.slice(1).filter(r => r[mapping.name]?.trim());
-    let tagged = 0, scripted = 0;
+    let tagged = 0, scripted = 0, batchErrors = [];
     const BATCH = 20;
 
     for (let i = 0; i < rows.length; i += BATCH) {
@@ -754,22 +781,59 @@ async function confirmImport() {
         });
 
         const { error } = await sb.from('products').upsert(batch, { onConflict: 'organization_id,name' });
-        if (error) console.error('Batch error:', error.message);
+        if (error) {
+            batchErrors.push(error.message);
+            console.error('Batch error:', error.message, error);
+            // Abort on first error — don't show false progress
+            break;
+        }
 
         const pct = Math.round(((i + batch.length) / rows.length) * 100);
         document.getElementById('progressFill').style.width = pct + '%';
         document.getElementById('progressLabel').textContent = 'Importing ' + Math.min(i + batch.length, rows.length) + ' of ' + rows.length + '…';
     }
 
+    document.getElementById('importingState').style.display = 'none';
+
+    // Surface any errors before declaring success
+    if (batchErrors.length > 0) {
+        document.getElementById('importErrorMsg').innerHTML =
+            '<strong>Import failed.</strong> No products were saved.<br><br>' +
+            'Error: <code style="font-family:monospace;font-size:12px">' + batchErrors[0] + '</code><br><br>' +
+            'This is usually a permissions issue. Try signing out and back in, then retry the import.';
+        document.getElementById('importErrorState').style.display = 'block';
+        return;
+    }
+
+    // Verify products were actually written — catch silent RLS failures
+    const { count } = await sb.from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('organization_id', orgId);
+
+    if (count === 0) {
+        document.getElementById('importErrorMsg').innerHTML =
+            '<strong>Import appeared to succeed but no products are showing up.</strong><br><br>' +
+            'This is usually a database permissions issue. Please sign out, sign back in, and try importing again. If it keeps happening, contact support.';
+        document.getElementById('importErrorState').style.display = 'block';
+        return;
+    }
+
     // Mark sub-step 5 done
     const ss5 = document.getElementById('ss5e');
     if (ss5) { ss5.classList.remove('active'); ss5.classList.add('done'); ss5.querySelector('.ss-d').innerHTML = '&#10003;'; }
 
-    document.getElementById('importingState').style.display = 'none';
     document.getElementById('stTotal').textContent    = rows.length;
     document.getElementById('stTagged').textContent   = tagged;
     document.getElementById('stScripted').textContent = scripted;
     document.getElementById('importDoneState').style.display = 'block';
+}
+
+function retryImport() {
+    document.getElementById('importErrorState').style.display = 'none';
+    document.getElementById('importingState').style.display   = 'block';
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('progressLabel').textContent = 'Importing…';
+    confirmImport();
 }
 
 
