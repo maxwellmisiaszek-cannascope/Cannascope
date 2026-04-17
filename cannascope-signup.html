@@ -354,7 +354,7 @@ async function createOrgAndProfile(userId, dispName, session) {
     document.getElementById('successView').style.display = 'block';
     document.getElementById('successMsg').textContent =
         'Your dispensary is ready. Taking you to your dashboard…';
-    setTimeout(() => { window.location.href = '/admin'; }, 1800);
+    setTimeout(() => { window.location.href = '/onboarding'; }, 1800);
 }
 
 // If user lands here after confirming email with a pending org name
@@ -369,7 +369,7 @@ async function createOrgAndProfile(userId, dispName, session) {
         if (!prof?.organization_id) {
             await createOrgAndProfile(session.user.id, pendingName, session);
         } else {
-            window.location.href = '/admin';
+            window.location.href = '/onboarding';
         }
     }
 })();
