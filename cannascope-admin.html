@@ -1052,8 +1052,41 @@ create policy "demand_events_select" on demand_events
         : `<div style="text-align:center;padding:60px 20px;color:var(--txt3)">Could not load demand data.<br><small style="font-family:monospace">${errMsg}</small></div>`;
       return;
     }
-    renderDemandInsights(rows);
-  }catch(e){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--txt3)">Error loading demand data.</div>';}
+    if(rows.length===0){
+      // Table exists but empty — show test button to verify permissions
+      el.innerHTML=`<div style="text-align:center;padding:48px 24px;max-width:520px;margin:0 auto">
+        <div style="font-size:15px;font-weight:700;color:var(--txt);margin-bottom:8px">No events yet</div>
+        <div style="font-size:13px;color:var(--txt3);margin-bottom:24px;line-height:1.6">No demand events in the last 7 days. Use the budtender tool or QR flow to generate some, or run a quick permissions test below.</div>
+        <button onclick="testDemandInsert()" style="background:var(--acc);color:#000;border:none;padding:10px 22px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Test insert permissions →</button>
+        <div id="testResult" style="margin-top:16px;font-size:13px;line-height:1.6"></div>
+      </div>`;
+    } else {
+      renderDemandInsights(rows);
+    }
+  }catch(e){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--txt3)">Error loading demand data.<br><small style="font-family:monospace">'+e.message+'</small></div>';}
+}
+
+async function testDemandInsert(){
+  const el=document.getElementById('testResult');
+  el.style.color='var(--txt3)';
+  el.textContent='Testing…';
+  const testId=crypto.randomUUID();
+  const {error}=await sb.from('demand_events').insert({
+    session_id:testId,
+    organization_id:userOrgId,
+    source:'admin_test',
+    goal:'test',
+    event_type:'test_insert'
+  });
+  if(error){
+    el.style.color='#f87171';
+    el.innerHTML='<strong>Insert failed:</strong> '+error.message+'<br><br><span style="color:var(--txt3)">Run this in your Supabase SQL editor:</span><pre style="background:var(--surface-el);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:11px;font-family:monospace;text-align:left;margin-top:8px;overflow-x:auto">drop policy if exists "demand_events_insert" on demand_events;\ncreate policy "demand_events_insert" on demand_events\n    for insert to anon with check (true);\ngrant insert on demand_events to anon;\ngrant select on demand_events to authenticated;</pre>';
+  } else {
+    el.style.color='#4ade80';
+    el.textContent='✓ Insert worked. Permissions are correct — events will log as soon as someone uses the budtender tool or QR flow.';
+    // Clean up test row
+    await sb.from('demand_events').delete().eq('session_id',testId);
+  }
 }
 
 function renderDemandInsights(rows){
