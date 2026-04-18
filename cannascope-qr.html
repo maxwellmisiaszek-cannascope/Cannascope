@@ -785,14 +785,39 @@ function selectExp(btn) {
   document.getElementById('btnQ3Next').classList.add('ready');
 }
 
+// ── NAME KEYWORD SCORING ──────────────────────────────────────────────
+// Same logic as budtender tool — product names like "Night", "Sleep",
+// "CBN", "Recovery", "Uplift" are manufacturer-declared effect signals.
+function computeNameScore(name, brand, eff) {
+  const n = ((name || '') + ' ' + (brand || '')).toLowerCase();
+  const keywordMap = {
+    sleep:    ['sleep', 'night', 'cbn', 'dream', 'rest ', 'slumber', 'bedtime', ' pm', 'knockout', 'zz', 'snooze', 'dusk', 'nite'],
+    relax:    ['relax', 'calm', 'chill', 'unwind', 'ease', 'mellow', 'serene', 'tranquil', 'stress', 'soothe', 'gentle'],
+    focus:    ['focus', 'day', 'daytime', 'clarity', 'clear', 'uplift', 'energy', 'morning', 'alert', 'productive', 'wake', 'bright', 'rise', 'elevate', 'sativa'],
+    social:   ['social', 'party', 'euphori', 'happy', 'uplift', 'laugh', 'joy', 'creative', 'festival', 'outdoor', 'vibe', 'bliss'],
+    relief:   ['relief', 'pain', 'recover', 'inflammation', 'ache', 'sore', 'cramp', 'therapy', 'medicinal', 'cbg', 'ratio', 'muscle'],
+    beginner: ['micro', 'microdose', 'light', 'gentle', 'easy', 'mild', '1:1', ':1', '1mg', '2.5mg', '5mg', 'low dose', 'intro', 'starter'],
+  };
+  const hits = (keywordMap[eff] || []).filter(kw => n.includes(kw)).length;
+  return Math.min(0.90, hits * 0.35);
+}
+
 // ── SCORING ENGINE (shared logic from budtender tool) ─────────────────
 // Mirrors the core scoring in the budtender experience — same weights,
 // same logic. Only the output presentation layer differs.
 function scoreProduct(p, eff) {
-  const base = (p['score_' + eff] || 0) * 40;
+  // Base: normalize score_X from DB (baseline ~0.35, range ~0.18-0.65).
+  // Old formula was score_X * 40 which produced 4% matches for low-scored products.
+  // Now we shift the baseline so 0.35 = middle and add name keyword signal.
+  const rawScore    = parseFloat(p['score_' + eff]) || 0.35;
+  const nameBonus   = computeNameScore(p.name, p.brand || '', eff);
+  const normBase    = Math.max(0, Math.min(1.0, (rawScore - 0.20) / 0.45));
+  const combined    = Math.min(1.0, normBase + nameBonus * 0.40);
+  const base        = combined * 40; // 0–40 points
+
   let bonus = 0, maxBonus = 0;
 
-  // Format match
+  // Format: bonus points when format is selected (hard filter applied in runMatch)
   if (selectedFormat) {
     maxBonus += 20;
     if ((p.category || '').toLowerCase() === selectedFormat) bonus += 20;
@@ -908,11 +933,29 @@ async function runMatch() {
 
   const eff = selectedEffect || 'relax';
 
-  const ranked = allProducts
-    .filter(p => p.in_stock !== false)
+  // Hard filter: out-of-stock always excluded.
+  // Format: if the customer picked a format, only show that format.
+  // Previously this was only a scoring bonus — wrong products could win.
+  const eligible = allProducts.filter(p => {
+    if (p.in_stock === false) return false;
+    if (selectedFormat && (p.category || '').toLowerCase() !== selectedFormat) return false;
+    return true;
+  });
+
+  const scored = eligible
     .map(p => ({ ...p, _score: scoreProduct(p, eff) }))
-    .sort((a, b) => b._score.total - a._score.total)
-    .slice(0, 3);
+    .sort((a, b) => b._score.total - a._score.total);
+
+  // Normalize display: top scorer = 100%, floor = 65%.
+  // Customers never see a "4% match" — every eligible product shows 65-100%.
+  const maxTotal = scored[0]?._score.total || 1;
+  scored.forEach(p => {
+    p._score.displayPct = maxTotal > 0
+      ? Math.max(65, Math.round(65 + (p._score.total / maxTotal) * 35))
+      : 65;
+  });
+
+  const ranked = scored.slice(0, 3);
 
   // Build results header
   const effLabel = EFFECT_LABELS[eff] || 'Top Picks';
@@ -952,7 +995,7 @@ async function runMatch() {
         <div class="card-name">${xe(p.name)}</div>
         <div>
           ${price ? `<div class="card-price">${price}</div>` : ''}
-          <div class="card-pct">${p._score.pct}% match</div>
+          <div class="card-pct">${p._score.displayPct}% match</div>
         </div>
       </div>
       <div class="card-meta">
