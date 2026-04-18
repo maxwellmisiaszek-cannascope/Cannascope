@@ -694,8 +694,9 @@ function logDemandEvent(event_type, options = {}) {
 
 // ── INIT ──────────────────────────────────────────────────────────────
 (async () => {
-  const params = new URLSearchParams(location.search);
-  const key = params.get('key');
+  const params      = new URLSearchParams(location.search);
+  const key         = params.get('key');
+  const dispensaryId = params.get('did'); // set by qr-deploy when Dutchie is connected
 
   if (key) {
     const { data: org } = await sb
@@ -707,13 +708,30 @@ function logDemandEvent(event_type, options = {}) {
     if (org) {
       orgId   = org.id;
       orgName = org.name;
-      // Fetch ONLY safe columns — internal fields never leave the server
-      const { data: prods } = await sb
-        .from('products')
-        .select(SAFE_COLS)
-        .eq('organization_id', orgId)
-        .eq('in_stock', true);
-      allProducts = prods || [];
+
+      if (dispensaryId) {
+        // Live mode: fetch directly from Dutchie via our serverless proxy.
+        // No CSV import needed — inventory is always current.
+        try {
+          const resp = await fetch('/api/dutchie?dispensaryId=' + encodeURIComponent(dispensaryId));
+          if (resp.ok) {
+            const { products } = await resp.json();
+            allProducts = (products || []).filter(p => p.in_stock !== false);
+          } else {
+            throw new Error('HTTP ' + resp.status);
+          }
+        } catch (e) {
+          console.warn('[Cannascope QR] Dutchie fetch failed, falling back to Supabase:', e.message);
+          const { data: prods } = await sb.from('products').select(SAFE_COLS)
+            .eq('organization_id', orgId).eq('in_stock', true);
+          allProducts = prods || [];
+        }
+      } else {
+        // Legacy mode: fetch from Supabase products table (CSV-imported inventory)
+        const { data: prods } = await sb.from('products').select(SAFE_COLS)
+          .eq('organization_id', orgId).eq('in_stock', true);
+        allProducts = prods || [];
+      }
     } else {
       useDemoMode();
     }

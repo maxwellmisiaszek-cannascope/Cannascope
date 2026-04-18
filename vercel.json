@@ -1,4 +1,7 @@
 {
+  "functions": {
+    "api/dutchie.js": { "maxDuration": 30 }
+  },
   "rewrites": [
     { "source": "/budtender", "destination": "/cannascope-cheatsheet-v2.html" },
     { "source": "/admin",     "destination": "/cannascope-admin.html" },

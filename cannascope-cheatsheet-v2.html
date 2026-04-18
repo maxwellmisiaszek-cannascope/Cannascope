@@ -1201,6 +1201,46 @@ async function loadOrg(key) {
         el.textContent = allProducts.length + ' products';
         el.classList.add('loaded');
         console.log('[Cannascope] loaded', allProducts.length, 'products for', org.name);
+
+        // Live Dutchie overlay — runs in the background after initial load.
+        // If a Dutchie dispensary ID is stored from admin setup, fetch live inventory
+        // and merge: Dutchie provides fresh stock/price, Supabase provides manager notes.
+        const dutchieId = localStorage.getItem('cs_dutchie_id');
+        if (dutchieId) {
+            (async () => {
+                try {
+                    const resp = await fetch('/api/dutchie?dispensaryId=' + encodeURIComponent(dutchieId));
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    const { products: liveProducts } = await resp.json();
+                    if (!liveProducts || !liveProducts.length) return;
+
+                    // Build a lookup map from Supabase products by lowercased name
+                    const supabaseByName = new Map(allProducts.map(p => [p.name.trim().toLowerCase(), p]));
+
+                    const merged = [];
+                    for (const lp of liveProducts) {
+                        const key = lp.name.trim().toLowerCase();
+                        const existing = supabaseByName.get(key);
+                        if (existing) {
+                            // Keep Supabase manager fields; update stock + price from live Dutchie
+                            merged.push({ ...existing, in_stock: lp.in_stock, price: lp.price || existing.price });
+                        } else {
+                            // New product not yet in Supabase — include it live (no manager note yet)
+                            merged.push(normalizeProduct(lp));
+                        }
+                    }
+
+                    // Products in Supabase but absent from Dutchie live = discontinued/delisted: excluded
+                    allProducts = merged.filter(p => p.in_stock !== false);
+                    el.textContent = allProducts.length + ' products · live';
+                    console.log('[Cannascope] Dutchie live overlay applied:', allProducts.length, 'products');
+                } catch (e) {
+                    // Non-fatal: keep using Supabase data as-is
+                    console.warn('[Cannascope] Dutchie live sync skipped:', e.message);
+                }
+            })();
+        }
+
         return true;
     }
     return false;

@@ -374,9 +374,13 @@ async function loadStore() {
     return;
   }
 
-  // Build the QR target URL
-  const base = window.location.href.replace(/[^/]*$/, '');
-  const qrUrl = base + 'cannascope-qr.html?key=' + encodeURIComponent(key);
+  // Build the QR target URL.
+  // If this browser has a Dutchie dispensary ID stored from admin setup,
+  // embed it as ?did= so the QR tool fetches live inventory automatically.
+  const base        = window.location.href.replace(/[^/]*$/, '');
+  const dutchieId   = localStorage.getItem('cs_dutchie_id');
+  let qrUrl         = base + 'cannascope-qr.html?key=' + encodeURIComponent(key);
+  if (dutchieId)    qrUrl += '&did=' + encodeURIComponent(dutchieId);
 
   // Update UI
   document.getElementById('storeNameLabel').textContent = org.name;
