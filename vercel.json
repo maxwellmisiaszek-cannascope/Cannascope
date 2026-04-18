@@ -1,6 +1,7 @@
 {
   "functions": {
-    "api/dutchie.js": { "maxDuration": 30 }
+    "api/dutchie.js":         { "maxDuration": 30 },
+    "api/dutchie-resolve.js": { "maxDuration": 10 }
   },
   "rewrites": [
     { "source": "/budtender", "destination": "/cannascope-cheatsheet-v2.html" },

@@ -1976,27 +1976,12 @@ function dtcShowMsg(msg, type='info') {
 
 // Fetch one product from Dutchie using dispensary ID to test connectivity
 async function dtcTestFetch(dispensaryId) {
-  const vars = {
-    includeEnterpriseSpecials: false,
-    productsFilter: {
-      dispensaryId,
-      pricingType: 'rec', strainTypes: [], subcategories: [],
-      Status: 'Active', types: ['Flower'],
-      useCache: true, isDefaultSort: true, sortBy: 'popularSortIdx', sortDirection: 1,
-      bypassOnlineThresholds: false, isKioskMenu: false,
-      removeProductsBelowOptionThresholds: true,
-      platformType: 'ONLINE_MENU', preOrderType: null,
-    },
-    page: 0, perPage: 1,
-  };
-  const ext = { persistedQuery: { version: 1, sha256Hash: DTC_APQ_HASH } };
-  const url = `https://dutchie.com/api-3/graphql?operationName=FilteredProducts` +
-    `&variables=${encodeURIComponent(JSON.stringify(vars))}` +
-    `&extensions=${encodeURIComponent(JSON.stringify(ext))}`;
-  const resp = await fetch(url, { headers: { 'x-apollo-operation-name': 'FilteredProducts', 'apollo-require-preflight': 'true' } });
-  const json = await resp.json();
-  if (json.errors) throw new Error(json.errors[0]?.message || 'Dutchie API error');
-  return json?.data?.filteredProducts?.products || [];
+  // Route through our serverless proxy — no browser CORS issues
+  const resp = await fetch('/api/dutchie?dispensaryId=' + encodeURIComponent(dispensaryId));
+  if (!resp.ok) throw new Error('Proxy returned HTTP ' + resp.status);
+  const data = await resp.json();
+  if (data.error) throw new Error(data.error);
+  return data.products || [];
 }
 
 async function dtcVerifyKey() {
@@ -2017,32 +2002,27 @@ async function dtcVerifyKey() {
     let dispensaryName = '';
 
     if (idMatch) {
-      // User pasted the raw dispensary ID directly
+      // User pasted the raw 24-char dispensary ID directly
       dispensaryId = raw;
     } else if (slugMatch) {
-      // Try to resolve slug → dispensary ID via the page's __NEXT_DATA__
-      // We can't fetch cross-origin HTML, so try a known fallback:
-      // Attempt to fetch without an ID (will fail), then ask for manual ID
+      // Resolve slug → dispensary ID via our serverless proxy (server-side, no CORS)
       dtcShowMsg('Resolving dispensary from URL…', 'info');
-      // Try fetching the Dutchie page to extract ID
       try {
-        const pageResp = await fetch(`https://dutchie.com/dispensary/${slugMatch[1]}`);
-        const html = await pageResp.text();
-        const idMatch2 = html.match(/"DispensaryID"\s*:\s*"([a-f0-9]{24})"/i) ||
-                         html.match(/"dispensaryId"\s*:\s*"([a-f0-9]{24})"/i) ||
-                         html.match(/"id"\s*:\s*"([a-f0-9]{24})"/i);
-        if (idMatch2) dispensaryId = idMatch2[1];
-        const nameMatch = html.match(/"name"\s*:\s*"([^"]+)"/);
-        if (nameMatch) dispensaryName = nameMatch[1];
-      } catch(corsErr) {
-        // CORS blocked — ask user to provide the dispensary ID manually
+        const resolveResp = await fetch('/api/dutchie-resolve?slug=' + encodeURIComponent(slugMatch[1]));
+        const resolveData = await resolveResp.json();
+        if (!resolveResp.ok || !resolveData.dispensaryId) {
+          throw new Error(resolveData.error || 'Could not resolve dispensary ID');
+        }
+        dispensaryId   = resolveData.dispensaryId;
+        dispensaryName = resolveData.dispensaryName || '';
+      } catch (resolveErr) {
         dtcShowMsg(
-          `CORS blocked the auto-lookup. Please paste your <strong>Dutchie dispensary ID</strong> directly.<br>` +
-          `<span style="font-size:11px;opacity:.8">You can find it in your Dutchie POS settings or by viewing page source on your menu page and searching for "DispensaryID".</span>`,
+          `Could not resolve dispensary ID: ${resolveErr.message}<br>` +
+          `<span style="font-size:11px;opacity:.8">Paste your 24-character dispensary ID directly — find it in Dutchie POS Settings under your dispensary info.</span>`,
           'error'
         );
         btn.disabled = false; btn.textContent = 'Connect';
-        dtcSetStatus('error', 'Manual ID needed');
+        dtcSetStatus('error', 'Not found');
         return;
       }
     } else {
