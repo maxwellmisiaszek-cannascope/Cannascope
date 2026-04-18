@@ -198,7 +198,23 @@ module.exports = async function handler(req, res) {
 
     for (const cat of CATEGORIES) {
       const variables = {
-        productsFilter: { dispensaryId, category: cat, pricingType: 'rec' }
+        includeEnterpriseSpecials: false,
+        productsFilter: {
+          dispensaryId,
+          pricingType: 'rec',
+          Status: 'Active',
+          types: [cat],
+          useCache: false,
+          isDefaultSort: true,
+          sortBy: null, sortDirection: 1,
+          bypassOnlineThresholds: false,
+          isKioskMenu: false,
+          removeProductsBelowOptionThresholds: true,
+          platformType: 'ONLINE_MENU',
+          preOrderType: null,
+          strainTypes: [], subcategories: [],
+        },
+        page: 0, perPage: 200,
       };
       const url = 'https://dutchie.com/api-3/graphql'
         + '?operationName=FilteredProducts'

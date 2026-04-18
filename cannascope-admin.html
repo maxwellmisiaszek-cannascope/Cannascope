@@ -2010,6 +2010,20 @@ async function dtcVerifyKey() {
       try {
         const resolveResp = await fetch('/api/dutchie-resolve?slug=' + encodeURIComponent(slugMatch[1]));
         const resolveData = await resolveResp.json();
+
+        if (resolveData.error === 'auto_resolve_failed') {
+          // Dutchie page exists but ID can't be extracted automatically — show console helper
+          dtcShowMsg(
+            `Auto-resolve couldn't find the dispensary ID. Run this in your browser console on your Dutchie menu page:<br>` +
+            `<code style="display:block;margin:8px 0;padding:8px 10px;background:rgba(0,0,0,0.06);border-radius:6px;font-size:10px;word-break:break-all;user-select:all;cursor:text">${resolveData.consoleCommand || ''}</code>` +
+            `<span style="font-size:11px;opacity:.8">${resolveData.hint || 'Open your Dutchie menu page → F12 → Console → paste the command → copy the 24-character result and paste it here.'}</span>`,
+            'error'
+          );
+          btn.disabled = false; btn.textContent = 'Connect';
+          dtcSetStatus('error', 'Not found');
+          return;
+        }
+
         if (!resolveResp.ok || !resolveData.dispensaryId) {
           throw new Error(resolveData.error || 'Could not resolve dispensary ID');
         }
