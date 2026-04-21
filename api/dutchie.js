@@ -224,10 +224,16 @@ module.exports = async function handler(req, res) {
       try {
         const resp = await fetch(url, {
           headers: {
+            'User-Agent':              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept':                  '*/*',
+            'Accept-Language':         'en-US,en;q=0.9',
+            'Referer':                 'https://dutchie.com/',
+            'Origin':                  'https://dutchie.com',
             'x-apollo-operation-name': 'FilteredProducts',
-            'apollo-require-preflight': 'true',
+            'apollo-require-preflight':'true',
+            'Content-Type':            'application/json',
           },
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(15000),
         });
 
         if (resp.ok) {
@@ -237,7 +243,9 @@ module.exports = async function handler(req, res) {
             allProducts.push(mapProduct(p, cat));
           }
         } else {
+          const body = await resp.text().catch(() => '');
           fetchErrors++;
+          console.error(`[dutchie-api] ${cat} HTTP ${resp.status}:`, body.slice(0, 200));
         }
       } catch (catErr) {
         fetchErrors++;
