@@ -351,9 +351,8 @@ th.row-cb .cb{margin-top:1px}
     Demand
   </button>
   <button class="tab-btn" onclick="switchTab('dtc')" id="tb-dtc">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 1 0 6h-6a3 3 0 0 1 0-6z"/><path d="M6 21a3 3 0 0 1 0-6h6a3 3 0 0 1 0 6z"/><path d="M15 6v12M9 6v12"/></svg>
-    Integrations
-    <span class="t-badge" id="dtcBadge" style="display:none">●</span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    Import
   </button>
 </div>
 
@@ -406,124 +405,74 @@ th.row-cb .cb{margin-top:1px}
 <div class="tab-pane pad" id="tp-dtc">
   <div style="max-width:720px">
 
-    <!-- Header -->
     <div style="margin-bottom:28px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:6px">Integrations</div>
-      <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--txt);margin-bottom:6px">Dutchie Inventory Sync</div>
-      <div style="font-size:13px;color:var(--txt2);line-height:1.65">Sync your live Dutchie inventory directly — no API approval needed. Paste your public Dutchie menu URL and Cannascope will pull your full product catalog, scoring each product using cannabis science (terpene profiles, strain type, THC/CBD ratios) to assign effect scores, talking points, and categories automatically.</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:6px">Inventory</div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--txt);margin-bottom:6px">Import Products</div>
+      <div style="font-size:13px;color:var(--txt2);line-height:1.65">Upload your store inventory via CSV. Export your menu from your POS (Dutchie: Reports → Products Export), then upload it here. Cannascope handles the rest — THC/CBD, scoring, categories, stock status.</div>
     </div>
 
-    <!-- URL card -->
+    <!-- CSV Import card -->
     <div class="a-card" style="margin-bottom:16px">
       <div class="a-head">
         <div>
-          <div class="a-title">Dutchie Menu URL</div>
-          <div class="a-sub">Your public Dutchie dispensary page — no API key needed</div>
+          <div class="a-title">CSV Import</div>
+          <div class="a-sub">Upload from Dutchie, Jane, or any POS — new products added, existing updated</div>
         </div>
-        <div id="dtcStatus" style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--txt3)">
-          <span id="dtcStatusDot" style="width:7px;height:7px;border-radius:50%;background:var(--border);display:inline-block"></span>
-          <span id="dtcStatusTxt">Not connected</span>
+        <button class="hbtn primary" onclick="openImportCSV()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload CSV
+        </button>
+      </div>
+      <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:6px">Step 1</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.5">Export your menu from Dutchie POS<br><span style="color:var(--txt3)">Reports → Products Export → CSV</span></div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:6px">Step 2</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.5">Click Upload CSV and drop the file — any column format works</div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:6px">Step 3</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.5">Cannascope auto-scores every product — then add talking points for top sellers</div>
         </div>
       </div>
-      <div style="display:flex;gap:10px;margin-top:4px">
-        <input id="dtcKeyInput" type="text"
-          style="flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;color:var(--txt);outline:none;transition:border-color .12s"
-          placeholder="https://dutchie.com/dispensary/your-dispensary-name"
-          onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
-        <button class="hbtn primary" onclick="dtcVerifyKey()" id="dtcVerifyBtn">Connect</button>
+      <div style="margin-top:14px;font-size:11px;color:var(--txt3);line-height:1.6">
+        <strong style="color:var(--txt2)">Works with any column format.</strong> Cannascope recognizes common headers from Dutchie, Jane, Flowhub, Treez, and custom exports. THC ranges like "18–24%" are handled automatically. Re-uploading updates prices and stock without overwriting your talking points.
       </div>
-      <div id="dtcVerifyMsg" style="display:none;margin-top:10px;font-size:12px;padding:8px 12px;border-radius:6px"></div>
     </div>
 
-    <!-- Sync controls card — shown once connected -->
-    <div class="a-card" id="dtcSyncCard" style="margin-bottom:16px;display:none">
+    <!-- Live sync coming soon -->
+    <div class="a-card" style="margin-bottom:16px;border-color:var(--amber-border);background:var(--amber-d)">
       <div class="a-head">
         <div>
-          <div class="a-title">Inventory Sync</div>
-          <div class="a-sub" id="dtcLastSync">Never synced</div>
+          <div class="a-title" style="color:var(--amber)">Live Inventory Sync — Coming Soon</div>
+          <div class="a-sub">Automatic real-time updates from your POS — no CSV needed</div>
         </div>
-        <div style="display:flex;gap:8px">
-          <button class="hbtn" onclick="dtcSync(false)" id="dtcPreviewBtn">Preview</button>
-          <button class="hbtn primary" onclick="dtcSync(true)" id="dtcSyncBtn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            Sync Now
-          </button>
+        <span style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);background:rgba(146,64,14,.1);border:1px solid var(--amber-border);padding:3px 10px;border-radius:20px">Partner Applications In</span>
+      </div>
+      <div style="font-size:12px;color:var(--amber);line-height:1.7;margin-top:10px">
+        Cannascope has applied to official partner programs for the three major cannabis POS platforms. Once approved, your store connects with a single API key and inventory syncs automatically — new products, price changes, and stock updates in real time.
+      </div>
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div style="background:rgba(146,64,14,.06);border:1px solid var(--amber-border);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:4px">Dutchie</div>
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--amber);opacity:.7;margin-bottom:6px">Application submitted</div>
+          <div style="font-size:11px;color:var(--amber);opacity:.8;line-height:1.5">Awaiting partner API approval. 3–5 business days.</div>
+        </div>
+        <div style="background:rgba(146,64,14,.06);border:1px solid var(--amber-border);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:4px">BLAZE</div>
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--amber);opacity:.7;margin-bottom:6px">Application submitted</div>
+          <div style="font-size:11px;color:var(--amber);opacity:.8;line-height:1.5">BLAZE Partner Network application in review.</div>
+        </div>
+        <div style="background:rgba(146,64,14,.06);border:1px solid var(--amber-border);border-radius:8px;padding:12px 14px">
+          <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:4px">Flowhub</div>
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--amber);opacity:.7;margin-bottom:6px">Application submitted</div>
+          <div style="font-size:11px;color:var(--amber);opacity:.8;line-height:1.5">Integration partner request sent to Flowhub team.</div>
         </div>
       </div>
-
-      <!-- Progress bar -->
-      <div id="dtcProgress" style="display:none;margin-top:12px">
-        <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
-          <div id="dtcProgressBar" style="height:100%;width:0%;background:var(--green);border-radius:2px;transition:width .3s"></div>
-        </div>
-        <div id="dtcProgressTxt" style="font-size:11px;color:var(--txt3);margin-top:6px">Fetching products from Dutchie…</div>
-      </div>
-
-      <!-- Results summary -->
-      <div id="dtcResults" style="display:none;margin-top:14px">
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden">
-          <div style="padding:14px 16px;border-right:1px solid var(--border)">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px">Fetched</div>
-            <div style="font-size:22px;font-weight:700;color:var(--txt);letter-spacing:-.03em" id="dtcRFetched">—</div>
-          </div>
-          <div style="padding:14px 16px;border-right:1px solid var(--border)">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px">Imported</div>
-            <div style="font-size:22px;font-weight:700;color:var(--green);letter-spacing:-.03em" id="dtcRImported">—</div>
-          </div>
-          <div style="padding:14px 16px;border-right:1px solid var(--border)">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px">Updated</div>
-            <div style="font-size:22px;font-weight:700;color:var(--txt);letter-spacing:-.03em" id="dtcRUpdated">—</div>
-          </div>
-          <div style="padding:14px 16px">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px">Skipped</div>
-            <div style="font-size:22px;font-weight:700;color:var(--txt3);letter-spacing:-.03em" id="dtcRSkipped">—</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Preview table -->
-      <div id="dtcPreviewWrap" style="display:none;margin-top:14px">
-        <div style="font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:8px">Preview — how Dutchie products will map into Cannascope:</div>
-        <div style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:7px">
-          <table style="width:100%;border-collapse:collapse;font-size:11px">
-            <thead><tr style="border-bottom:1px solid var(--border);background:var(--bg)">
-              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Product</th>
-              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Category</th>
-              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">THC / CBD</th>
-              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Effect</th>
-              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Score</th>
-              <th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Confidence</th>
-            </tr></thead>
-            <tbody id="dtcPreviewBody"></tbody>
-          </table>
-        </div>
-        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
-          <button class="hbtn" onclick="document.getElementById('dtcPreviewWrap').style.display='none'">Cancel</button>
-          <button class="hbtn primary" onclick="dtcConfirmImport()">Import All →</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- How the mapper works -->
-    <div class="a-card" style="margin-bottom:16px">
-      <div class="a-head"><div><div class="a-title">How Smart Mapping Works</div><div class="a-sub">Research-based cannabis science applied to every Dutchie product</div></div></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px">
-        <div style="font-size:12px;color:var(--txt2);line-height:1.7">
-          <strong style="color:var(--txt);display:block;margin-bottom:4px">① Terpene Profile (highest weight)</strong>
-          If Dutchie includes terpene data, each terpene is scored against a matrix of 15 terpenes × 6 effects based on published pharmacology (Russo 2011, Ferber et al. 2020). Myrcene → Sleep/Relax. Limonene → Social/Focus. Pinene → Focus. Linalool → Sleep/Beginner.
-        </div>
-        <div style="font-size:12px;color:var(--txt2);line-height:1.7">
-          <strong style="color:var(--txt);display:block;margin-bottom:4px">② Strain Name Lookup (100+ strains)</strong>
-          The product name is matched against a library of 100+ common strains with known effect profiles. Granddaddy Purple → Sleep. Durban Poison → Focus. Blue Dream → Social/Relax. Fuzzy matching handles abbreviations and variations.
-        </div>
-        <div style="font-size:12px;color:var(--txt2);line-height:1.7">
-          <strong style="color:var(--txt);display:block;margin-bottom:4px">③ Strain Type Bias</strong>
-          Indica biases toward Sleep (+0.18) and Relax (+0.14). Sativa biases toward Focus (+0.18) and Social (+0.15). CBD-dominant products get a strong Relief and Beginner boost. Hybrids stay neutral.
-        </div>
-        <div style="font-size:12px;color:var(--txt2);line-height:1.7">
-          <strong style="color:var(--txt);display:block;margin-bottom:4px">④ THC/CBD Ratio + Category</strong>
-          Very high THC (>25%) reduces Beginner score. High CBD (>8%) boosts Relief and Beginner. Topicals get a strong Relief boost. Concentrates reduce Beginner score. Final effect = highest composite score across all 6 goals.
-        </div>
+      <div style="font-size:11px;color:var(--amber);opacity:.75;margin-top:10px;line-height:1.6">
+        <strong style="opacity:1">Want to speed this up?</strong> Ask your POS rep to flag Cannascope as a priority partner — it helps move the approval forward.
       </div>
     </div>
 
@@ -1380,66 +1329,132 @@ function handleCSVFile(file){
   reader.readAsText(file);
 }
 
+// Parse a THC/CBD value that might be "22.5", "22.5%", "18-24%", "18–24", "<1%", "N/A", ""
+function parsePotency(raw){
+  if(!raw||typeof raw!=='string')return null;
+  const s=raw.trim().replace(/%/g,'').replace(/\s/g,'');
+  if(!s||s==='N/A'||s==='-'||s==='n/a')return null;
+  // range like "18-24" or "18–24" → average
+  const range=s.match(/^([\d.]+)[–-]([\d.]+)$/);
+  if(range)return Math.round(((parseFloat(range[1])+parseFloat(range[2]))/2)*10)/10;
+  // "< 1" or ">25"
+  const lt=s.match(/^[<>]([\d.]+)$/);
+  if(lt)return parseFloat(lt[1]);
+  const v=parseFloat(s);
+  return isNaN(v)?null:v;
+}
+
+// Fuzzy-match a CSV header to a canonical field name
+function matchHeader(h){
+  const s=h.toLowerCase().replace(/[^a-z0-9]/g,'');
+  const MAP={
+    // name / product name
+    name:'name',productname:'name',product:'name',productname:'name',itemname:'name',
+    // brand / vendor
+    brand:'brand',vendor:'brand',manufacturer:'brand',brandname:'brand',
+    // category / type
+    category:'category',type:'category',producttype:'category',itemtype:'category',kind:'category',
+    // effect / goal
+    effect:'effect',goal:'effect',primaryeffect:'effect',
+    // thc
+    thc:'thc',thcpct:'thc',thcpercent:'thc',thcpercentage:'thc',thccontent:'thc',
+    thcmax:'thc',thcavg:'thc',thclevel:'thc',
+    // cbd
+    cbd:'cbd',cbdpct:'cbd',cbdpercent:'cbd',cbdpercentage:'cbd',cbdcontent:'cbd',
+    // price
+    price:'price',cost:'price',retailprice:'price',recprice:'price',
+    // shelf / location
+    shelf:'shelf',location:'shelf',shelflocation:'shelf',
+    // stock
+    instock:'in_stock',stock:'in_stock',available:'in_stock',qty:'in_stock',quantity:'in_stock',
+    // notes / scripts
+    managernote:'manager_note',note:'manager_note',notes:'manager_note',
+    talkingpoints:'talking_points',script:'talking_points',
+    // scores
+    scoresleep:'score_sleep',scorerelax:'score_relax',scorefocus:'score_focus',
+    scoresocial:'score_social',scorerelief:'score_relief',scorebeginner:'score_beginner',
+    // terpenes
+    myrcene:'t_myrcene',linalool:'t_linalool',caryophyllene:'t_caryophyllene',
+    limonene:'t_limonene',pinene:'t_pinene',terpinolene:'t_terpinolene',
+  };
+  return MAP[s]||null;
+}
+
+// Boilerplate detector — don't import auto-generated talking points
+function isBoilerplate(s){
+  if(!s)return true;
+  const t=s.toLowerCase();
+  return t.includes(' is a ') && (t.includes(' ideal for ') || t.includes(' flower') || t.includes(' edible') || t.includes(' vape'));
+}
+
 function parseCSVImport(text){
   const lines=text.trim().split(/\r?\n/);
   if(lines.length<2){showImportStatus('CSV must have a header row and at least one product','err');return;}
-  const headers=parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim());
+  const rawHeaders=parseCSVLine(lines[0]);
+  const headers=rawHeaders.map(h=>matchHeader(h));
   const nameIdx=headers.indexOf('name');
-  if(nameIdx===-1){showImportStatus('CSV must have a "name" column','err');return;}
+  if(nameIdx===-1){showImportStatus('CSV must have a name/product column — check column headers','err');return;}
 
-  const FIELD_MAP={
-    name:'name',brand:'brand',category:'category',effect:'effect',
-    thc:'thc',cbd:'cbd',price:'price',shelf:'shelf',
-    in_stock:'in_stock',push:'push',manager_note:'manager_note',
-    talking_points:'talking_points',
-    t_myrcene:'t_myrcene',t_linalool:'t_linalool',t_caryophyllene:'t_caryophyllene',
-    t_limonene:'t_limonene',t_pinene:'t_pinene',t_terpinolene:'t_terpinolene',
-    score_sleep:'score_sleep',score_relax:'score_relax',score_focus:'score_focus',
-    score_social:'score_social',score_relief:'score_relief',score_beginner:'score_beginner'
-  };
-
-  const existingNames=new Set(products.map(p=>(p.name||'').toLowerCase()));
-  const parsed=[];const skipped=[];
+  const existingByName=new Map(products.map(p=>[(p.name||'').toLowerCase(),p]));
+  const parsed=[];const updated=[];
 
   for(let i=1;i<lines.length;i++){
     const vals=parseCSVLine(lines[i]);
     if(!vals.length||!vals[nameIdx]?.trim())continue;
     const row={};
-    headers.forEach((h,j)=>{if(FIELD_MAP[h]!==undefined)row[FIELD_MAP[h]]=vals[j]?.trim()||'';});
+    headers.forEach((field,j)=>{if(field)row[field]=vals[j]?.trim()||'';});
     if(!row.name)continue;
-    if(existingNames.has(row.name.toLowerCase())){skipped.push(row.name);continue;}
+
     // coerce types
-    row.thc=parseFloat(row.thc)||null;
-    row.cbd=parseFloat(row.cbd)||null;
-    row.price=parseFloat(row.price)||null;
-    row.in_stock=['true','yes','1'].includes((row.in_stock||'').toLowerCase());
-    row.push=['true','yes','1'].includes((row.push||'').toLowerCase());
+    row.thc = parsePotency(row.thc);
+    row.cbd = parsePotency(row.cbd);
+    row.price = parseFloat((row.price||'').replace(/[$,]/g,''))||null;
+    row.in_stock = row.in_stock===undefined ? true : ['true','yes','1','in stock','active'].includes((row.in_stock||'').toLowerCase());
+    row.push = ['true','yes','1'].includes((row.push||'').toLowerCase());
+    // strip boilerplate talking points — don't overwrite real ones
+    if(isBoilerplate(row.talking_points)) row.talking_points='';
     ['t_myrcene','t_linalool','t_caryophyllene','t_limonene','t_pinene','t_terpinolene',
-     'score_sleep','score_relax','score_focus','score_social','score_relief','score_beginner'].forEach(f=>{if(row[f]!==undefined)row[f]=parseFloat(row[f])||null;});
-    parsed.push(row);
+     'score_sleep','score_relax','score_focus','score_social','score_relief','score_beginner'
+    ].forEach(f=>{if(row[f]!==undefined){const v=parseFloat(row[f]);row[f]=isNaN(v)?null:v;}});
+
+    const existing=existingByName.get(row.name.toLowerCase());
+    if(existing){
+      // update: merge in new price/stock/thc/cbd — preserve manager notes & talking points
+      const merged={...existing};
+      if(row.thc!=null)merged.thc=row.thc;
+      if(row.cbd!=null)merged.cbd=row.cbd;
+      if(row.price!=null)merged.price=row.price;
+      merged.in_stock=row.in_stock;
+      if(row.talking_points)merged.talking_points=row.talking_points;
+      if(row.shelf)merged.shelf=row.shelf;
+      merged._isUpdate=true;
+      updated.push(merged);
+    } else {
+      parsed.push(row);
+    }
   }
 
-  importRows=parsed;
+  importRows=[...parsed,...updated];
   const btn=document.getElementById('importConfirmBtn');
   const summary=document.getElementById('importSummary');
+  const total=parsed.length+updated.length;
 
-  if(!parsed.length&&!skipped.length){showImportStatus('No valid products found in CSV','err');btn.style.display='none';return;}
-  if(!parsed.length){showImportStatus(skipped.length+' product'+(skipped.length!==1?'s already exist':'  already exists')+', nothing new to import','err');btn.style.display='none';}
-  else{
-    showImportStatus((parsed.length)+' new product'+(parsed.length!==1?'s':'')+(skipped.length?' ('+skipped.length+' skipped — already exist)':''),'ok');
-    btn.style.display='inline-flex';
-    summary.textContent='';
-  }
+  if(!total){showImportStatus('No products found in CSV — check that it has a "name" column','err');btn.style.display='none';return;}
+
+  const parts=[];
+  if(parsed.length)parts.push(parsed.length+' new');
+  if(updated.length)parts.push(updated.length+' updated');
+  showImportStatus(parts.join(', ')+' product'+(total!==1?'s':''),'ok');
+  btn.style.display='inline-flex';
+  summary.textContent='';
 
   // preview first 8 rows
-  if(parsed.length){
-    const prev=parsed.slice(0,8);
-    document.getElementById('importPreview').style.display='block';
-    document.getElementById('importPreview').innerHTML=`<table>
-      <thead><tr><th>Name</th><th>Brand</th><th>Category</th><th>Effect</th><th>THC</th><th>Price</th><th>Stock</th></tr></thead>
-      <tbody>${prev.map(r=>`<tr><td>${xe(r.name)}</td><td>${xe(r.brand||'')}</td><td>${xe(r.category||'')}</td><td>${xe(r.effect||'')}</td><td>${r.thc!=null?r.thc+'%':'—'}</td><td>${r.price!=null?'$'+r.price:'—'}</td><td>${r.in_stock?'✓':'✗'}</td></tr>`).join('')}
-      ${parsed.length>8?`<tr><td colspan="7" style="text-align:center;color:var(--txt3);padding:8px">…and ${parsed.length-8} more</td></tr>`:''}</tbody></table>`;
-  }
+  const prev=importRows.slice(0,8);
+  document.getElementById('importPreview').style.display='block';
+  document.getElementById('importPreview').innerHTML=`<table>
+    <thead><tr><th>Name</th><th>Brand</th><th>Cat</th><th>THC</th><th>Price</th><th>Stock</th><th></th></tr></thead>
+    <tbody>${prev.map(r=>`<tr><td>${xe(r.name)}</td><td>${xe(r.brand||'')}</td><td>${xe(r.category||'')}</td><td>${r.thc!=null?r.thc+'%':'—'}</td><td>${r.price!=null?'$'+r.price:'—'}</td><td>${r.in_stock?'✓':'✗'}</td><td style="color:var(--txt3);font-size:10px">${r._isUpdate?'update':'new'}</td></tr>`).join('')}
+    ${importRows.length>8?`<tr><td colspan="7" style="text-align:center;color:var(--txt3);padding:8px">…and ${importRows.length-8} more</td></tr>`:''}</tbody></table>`;
 }
 
 function parseCSVLine(line){
