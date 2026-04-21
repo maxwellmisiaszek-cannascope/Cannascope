@@ -1976,8 +1976,8 @@ function dtcShowMsg(msg, type='info') {
 
 // Fetch one product from Dutchie using dispensary ID to test connectivity
 async function dtcTestFetch(dispensaryId) {
-  // Route through our serverless proxy — no browser CORS issues
-  const resp = await fetch('/api/dutchie?dispensaryId=' + encodeURIComponent(dispensaryId));
+  // Route through our serverless proxy — no browser CORS issues, cache-busted for accuracy
+  const resp = await fetch(`/api/dutchie?dispensaryId=${encodeURIComponent(dispensaryId)}&_t=${Date.now()}`);
   if (!resp.ok) throw new Error('Proxy returned HTTP ' + resp.status);
   const data = await resp.json();
   if (data.error) throw new Error(data.error);
@@ -2104,27 +2104,34 @@ async function dtcSync(doImport) {
   document.getElementById('dtcProgress').style.display = 'block';
   document.getElementById('dtcResults').style.display = 'none';
   document.getElementById('dtcPreviewWrap').style.display = 'none';
-  document.getElementById('dtcProgressBar').style.width = '5%';
-  document.getElementById('dtcProgressTxt').textContent = 'Fetching products from Dutchie…';
+  document.getElementById('dtcProgressBar').style.width = '10%';
+  document.getElementById('dtcProgressTxt').textContent = 'Fetching live inventory from Dutchie…';
   document.getElementById('dtcPreviewBtn').disabled = true;
   document.getElementById('dtcSyncBtn').disabled = true;
 
   try {
-    const allRaw = [];
-    for (let i = 0; i < DTC_CATS.length; i++) {
-      const cat = DTC_CATS[i];
-      document.getElementById('dtcProgressTxt').textContent = `Fetching ${cat}…`;
-      document.getElementById('dtcProgressBar').style.width = Math.round(5 + (i / DTC_CATS.length) * 40) + '%';
-      const prods = await dtcFetchCategory(dispensaryId, cat);
-      allRaw.push(...prods);
+    // Route through server-side proxy — no CORS issues, always fresh data.
+    // Cache-bust with a timestamp so Vercel never serves a stale response for manual syncs.
+    const resp = await fetch(
+      `/api/dutchie?dispensaryId=${encodeURIComponent(dispensaryId)}&_t=${Date.now()}`,
+      { signal: AbortSignal.timeout(30000) }
+    );
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}));
+      throw new Error(errData.error || `Proxy returned HTTP ${resp.status}`);
     }
 
     document.getElementById('dtcProgressBar').style.width = '55%';
-    document.getElementById('dtcProgressTxt').textContent = `Mapping ${allRaw.length} products with scoring engine…`;
-
-    dtcMappedProducts = allRaw.map(p => mapDutchieProduct(p, userOrgId));
+    const { products: liveProducts, count } = await resp.json();
+    if (!liveProducts || liveProducts.length === 0) {
+      throw new Error('No products returned from Dutchie — check the dispensary ID');
+    }
 
     document.getElementById('dtcProgressBar').style.width = '70%';
+    document.getElementById('dtcProgressTxt').textContent = `Scoring ${liveProducts.length} products…`;
+
+    // Products from /api/dutchie are already scored — attach org_id for Supabase
+    dtcMappedProducts = liveProducts.map(p => ({ ...p, organization_id: userOrgId }));
 
     if (!doImport) {
       document.getElementById('dtcProgress').style.display = 'none';
