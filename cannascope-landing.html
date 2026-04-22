@@ -10,16 +10,16 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg:            #F8F6F1;
-            --bg-2:          #F2EFE8;
+            --bg:            #FAFAFA;
+            --bg-2:          #F4F4F4;
             --bg-3:          #FFFFFF;
             --green:         #2D6A4F;
             --green-mid:     #40916C;
             --green-light:   #52B788;
-            --green-pale:    #EAF4EE;
-            --green-border:  #A8D5B8;
-            --border:        #E4DFCF;
-            --border-2:      #CEC8B4;
+            --green-pale:    #EFF7F3;
+            --green-border:  #C2DDD0;
+            --border:        #EBEBEB;
+            --border-2:      #D4D4D4;
             --text:          #1C1C16;
             --text-2:        #5A5A48;
             --text-3:        #9A9A82;
@@ -46,14 +46,8 @@
             from { opacity: 0; }
             to   { opacity: 1; }
         }
-        @keyframes blobDrift {
-            0%,100% { transform: translate(0,0) scale(1); }
-            30%     { transform: translate(30px,-20px) scale(1.06); }
             60%     { transform: translate(-18px, 14px) scale(0.96); }
         }
-        @keyframes blobDrift2 {
-            0%,100% { transform: translate(0,0) scale(1); }
-            40%     { transform: translate(-24px, 18px) scale(1.04); }
             70%     { transform: translate(16px, -12px) scale(0.98); }
         }
         @keyframes counterTick {
@@ -88,7 +82,7 @@
             height: 58px;
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 40px;
-            background: rgba(248,246,241,0.88);
+            background: rgba(250,250,250,0.96);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
@@ -104,7 +98,6 @@
             width: 7px; height: 7px; border-radius: 50%;
             background: var(--green-light);
             display: inline-block;
-            animation: blobDrift 6s ease-in-out infinite;
         }
         .nav-logo-word { color: var(--text); }
         .nav-logo .nav-scope { color: var(--green); }
@@ -128,54 +121,25 @@
             transition: background 0.15s, transform 0.12s;
             box-shadow: 0 1px 3px rgba(45,106,79,0.25);
         }
-        .nav-cta:hover { background: var(--green-mid); transform: translateY(-1px); }
+        .nav-cta:hover { background: var(--green-mid); }
 
         /* ── SHARED ───────────────────────────────────────── */
         .container { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
 
         /* ── HERO ─────────────────────────────────────────── */
         .hero {
-            padding: 100px 24px 80px;
+            padding: 120px 24px 100px;
             border-bottom: 1px solid var(--border);
             text-align: center;
             position: relative;
             overflow: hidden;
         }
-        /* Ambient blobs */
-        .hero-blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(72px);
-            pointer-events: none;
-            z-index: 0;
-        }
-        .blob-1 {
-            width: 480px; height: 480px;
-            background: radial-gradient(circle, rgba(82,183,136,0.18) 0%, transparent 70%);
-            top: -80px; left: -60px;
-            animation: blobDrift 12s ease-in-out infinite;
-        }
-        .blob-2 {
-            width: 360px; height: 360px;
-            background: radial-gradient(circle, rgba(45,106,79,0.12) 0%, transparent 70%);
-            top: 40px; right: -40px;
-            animation: blobDrift2 16s ease-in-out infinite;
-        }
-        .blob-3 {
-            width: 280px; height: 280px;
-            background: radial-gradient(circle, rgba(82,183,136,0.10) 0%, transparent 70%);
-            bottom: -40px; left: 40%;
-            animation: blobDrift 20s ease-in-out infinite reverse;
-        }
-        .hero > *:not(.hero-blob) { position: relative; z-index: 1; }
+        .hero > * { position: relative; z-index: 1; }
 
         .hero-eyebrow {
             display: inline-flex; align-items: center; gap: 8px;
             font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
             text-transform: uppercase; color: var(--green);
-            background: var(--green-pale);
-            border: 1px solid var(--green-border);
-            padding: 5px 14px; border-radius: 100px;
             margin-bottom: 28px;
         }
         .hero-eyebrow-dot {
@@ -228,7 +192,6 @@
         }
         .btn-primary:hover {
             background: var(--green-mid);
-            transform: translateY(-1px);
             box-shadow: 0 4px 14px rgba(45,106,79,0.32), 0 2px 4px rgba(45,106,79,0.15);
         }
         .hero-email { font-size: 13px; color: var(--text-3); }
@@ -241,7 +204,7 @@
 
         /* ── HOW IT WORKS ─────────────────────────────────── */
         .flow-section {
-            padding: 88px 24px;
+            padding: 120px 24px;
             border-bottom: 1px solid var(--border);
             background: var(--bg-3);
         }
@@ -254,7 +217,7 @@
             font-size: clamp(26px, 3.2vw, 40px);
             font-weight: 700; letter-spacing: -0.03em;
             text-align: center; color: var(--text);
-            margin-bottom: 52px; line-height: 1.15;
+            margin-bottom: 64px; line-height: 1.15;
         }
         .flow-grid {
             display: grid;
@@ -263,7 +226,7 @@
             max-width: 860px; margin: 0 auto;
         }
         .flow-step {
-            background: var(--bg);
+            background: var(--bg-3);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 28px 24px;
@@ -271,7 +234,6 @@
         }
         .flow-step:hover {
             box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
         }
         .flow-step-num {
             font-size: 10px; font-weight: 700; color: var(--green);
@@ -296,7 +258,7 @@
 
         /* ── TURN EVERY BUDTENDER ─────────────────────────── */
         .budtender-section {
-            padding: 96px 24px;
+            padding: 120px 24px;
             border-bottom: 1px solid var(--border);
         }
         .budtender-inner {
@@ -365,7 +327,7 @@
 
         /* ── VALUE PROPS ──────────────────────────────────── */
         .values-section {
-            padding: 96px 24px;
+            padding: 120px 24px;
             border-bottom: 1px solid var(--border);
             background: var(--bg-3);
         }
@@ -374,7 +336,7 @@
             gap: 16px; max-width: 1040px; margin: 0 auto;
         }
         .value-card {
-            background: var(--bg);
+            background: var(--bg-3);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 32px 28px;
@@ -382,7 +344,6 @@
         }
         .value-card:hover {
             box-shadow: var(--shadow-md);
-            transform: translateY(-3px);
             border-color: var(--green-border);
         }
         .value-icon {
@@ -424,7 +385,7 @@
 
         /* ── PRODUCT MOCKUP ───────────────────────────────── */
         .mockup-section {
-            padding: 96px 24px;
+            padding: 120px 24px;
             border-bottom: 1px solid var(--border);
         }
         .mockup-intro { max-width: 520px; margin: 0 auto 52px; text-align: center; }
@@ -521,7 +482,7 @@
 
         /* ── SPLIT PANEL ──────────────────────────────────── */
         .split-section {
-            padding: 96px 24px;
+            padding: 120px 24px;
             border-bottom: 1px solid var(--border);
             background: var(--bg-3);
         }
@@ -531,7 +492,7 @@
             border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
         }
         .split-panel {
-            background: var(--bg); padding: 48px 40px;
+            background: var(--bg-3); padding: 48px 40px;
             border-right: 1px solid var(--border);
         }
         .split-panel:last-child { border-right: none; }
@@ -539,8 +500,6 @@
             display: inline-block;
             font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
             text-transform: uppercase; color: var(--green);
-            background: var(--green-pale); border: 1px solid var(--green-border);
-            padding: 4px 12px; border-radius: 100px;
             margin-bottom: 20px;
         }
         .split-title {
@@ -560,9 +519,9 @@
 
         /* ── CLIENT PORTAL ────────────────────────────────── */
         .portal-section {
-            padding: 72px 24px;
+            padding: 96px 24px;
             border-bottom: 1px solid var(--border);
-            background: var(--green-pale);
+            background: var(--bg-3);
         }
         .portal-inner {
             max-width: 700px; margin: 0 auto;
@@ -593,7 +552,6 @@
         }
         .btn-portal:hover {
             background: var(--green-mid);
-            transform: translateY(-1px);
             box-shadow: 0 4px 14px rgba(45,106,79,0.3);
         }
         .portal-note {
@@ -603,7 +561,7 @@
 
         /* ── CONTACT ──────────────────────────────────────── */
         .contact-section {
-            padding: 100px 24px;
+            padding: 128px 24px;
             text-align: center;
         }
         .contact-eyebrow {
@@ -632,7 +590,6 @@
         }
         .btn-primary-lg:hover {
             background: var(--green-mid);
-            transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(45,106,79,0.3);
         }
         .contact-email { font-size: 13px; color: var(--text-3); }
@@ -703,10 +660,6 @@
 
 <!-- ── HERO ──────────────────────────────────────────────── -->
 <section class="hero">
-    <div class="hero-blob blob-1"></div>
-    <div class="hero-blob blob-2"></div>
-    <div class="hero-blob blob-3"></div>
-
     <div class="hero-eyebrow">
         <span class="hero-eyebrow-dot"></span>
         For the dispensary floor
