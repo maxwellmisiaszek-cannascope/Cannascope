@@ -1589,7 +1589,60 @@ function matchHeader(h){
 function isBoilerplate(s){
   if(!s)return true;
   const t=s.toLowerCase();
-  return t.includes(' is a ') && (t.includes(' ideal for ') || t.includes(' flower') || t.includes(' edible') || t.includes(' vape'));
+  // Old template format
+  if (t.includes(' is a ') && (t.includes(' ideal for ') || t.includes(' flower') || t.includes(' edible') || t.includes(' vape'))) return true;
+  // Auto-generated but real research content — keep it
+  return false;
+}
+
+
+// ── CATEGORY NORMALIZER ───────────────────────────────────────────────────────
+// Converts any CSV category string to Cannascope's internal values.
+function normalizeCategory(raw) {
+  const s = (raw || '').toLowerCase().trim();
+  if (!s) return '';
+  const exact = {
+    flower:'flower', bud:'flower', herb:'flower', cannabis:'flower', marijuana:'flower', weed:'flower',
+    vape:'vape', vaporizer:'vape', vaporizers:'vape', cartridge:'vape', cart:'vape', vapor:'vape', pod:'vape',
+    edible:'edible', gummy:'edible', gummies:'edible', chocolate:'edible', candy:'edible',
+    beverage:'edible', drink:'edible', chew:'edible', mint:'edible', lozenge:'edible', cookie:'edible', capsule:'edible',
+    concentrate:'concentrate', wax:'concentrate', shatter:'concentrate', rosin:'concentrate',
+    resin:'concentrate', dab:'concentrate', extract:'concentrate', hash:'concentrate',
+    kief:'concentrate', badder:'concentrate', budder:'concentrate', sauce:'concentrate', diamond:'concentrate',
+    tincture:'tincture', oil:'tincture', drop:'tincture', pill:'tincture', softgel:'tincture', tablet:'tincture',
+    topical:'topical', lotion:'topical', cream:'topical', balm:'topical', patch:'topical',
+    salve:'topical', gel:'topical', transdermal:'topical',
+    preroll:'preroll', 'pre-roll':'preroll', joint:'preroll', blunt:'preroll', 'pre roll':'preroll',
+    'pre_roll':'preroll', 'prerolls':'preroll',
+  };
+  if (exact[s]) return exact[s];
+  // substring fallback — handles "Vaporizers", "Pre-Roll", "Flower (Hybrid)" etc.
+  const sub = [
+    ['vaporizer','vape'],['cartridge','vape'],['pre-roll','preroll'],['pre roll','preroll'],
+    ['preroll','preroll'],['flower','flower'],['edible','edible'],['gumm','edible'],
+    ['chocolate','edible'],['tincture','tincture'],['topical','topical'],['concentrate','concentrate'],
+    ['extract','concentrate'],['rosin','concentrate'],['resin','concentrate'],
+    ['lotion','topical'],['cream','topical'],['patch','topical'],
+  ];
+  for (const [key, val] of sub) { if (s.includes(key)) return val; }
+  return s; // pass through unknowns unchanged
+}
+
+// ── EFFECT NORMALIZER ─────────────────────────────────────────────────────────
+function normalizeEffect(raw) {
+  const s = (raw || '').toLowerCase().trim();
+  if (!s) return '';
+  const map = {
+    sleep:'sleep', sleeping:'sleep', sedative:'sleep', insomnia:'sleep', rest:'sleep', nightly:'sleep', night:'sleep', sleepy:'sleep',
+    relax:'relax', relaxation:'relax', relaxing:'relax', calm:'relax', calming:'relax', stress:'relax', anxiety:'relax', unwind:'relax', decompress:'relax', chill:'relax',
+    focus:'focus', focusing:'focus', clarity:'focus', productive:'focus', creative:'focus', daytime:'focus', alert:'focus', energize:'focus', energizing:'focus', concentration:'focus',
+    social:'social', uplifting:'social', uplift:'social', euphoric:'social', euphoria:'social', happy:'social', happiness:'social', mood:'social', giggly:'social',
+    relief:'relief', pain:'relief', inflammation:'relief', therapeutic:'relief', ache:'relief', soreness:'relief', analgesic:'relief', anti:'relief',
+    beginner:'beginner', mild:'beginner', gentle:'beginner', starter:'beginner', 'low thc':'beginner', 'new to':'beginner',
+  };
+  if (map[s]) return map[s];
+  for (const [key, val] of Object.entries(map)) { if (s.includes(key)) return val; }
+  return s;
 }
 
 function parseCSVImport(text){
@@ -1616,6 +1669,9 @@ function parseCSVImport(text){
     row.price = parseFloat((row.price||'').replace(/[$,]/g,''))||null;
     row.in_stock = row.in_stock===undefined ? true : ['true','yes','1','in stock','active'].includes((row.in_stock||'').toLowerCase());
     row.push = ['true','yes','1'].includes((row.push||'').toLowerCase());
+    // Normalize category and effect to internal values
+    if (row.category) row.category = normalizeCategory(row.category);
+    if (row.effect)   row.effect   = normalizeEffect(row.effect);
     // strip boilerplate talking points — don't overwrite real ones
     if(isBoilerplate(row.talking_points)) row.talking_points='';
     ['t_myrcene','t_linalool','t_caryophyllene','t_limonene','t_pinene','t_terpinolene',
@@ -1708,6 +1764,31 @@ async function confirmImport(){
 
   for(const row of importRows){
     if(userOrgId){
+      // Auto-score rows that came in without effect or scores
+      if (!row.effect || !row.score_sleep) {
+        try {
+          const scored = mapDutchieProduct({
+            name:        row.name,
+            brand:       row.brand || '',
+            type:        row.category || 'flower',
+            productType: row.category || 'flower',
+            thcContent:  row.thc  != null ? {range:{min:row.thc, max:row.thc}}  : null,
+            cbdContent:  row.cbd  != null ? {range:{min:row.cbd, max:row.cbd}}   : null,
+            terpenes:    null,
+            Status:      row.in_stock ? 'Active' : 'Inactive',
+          }, userOrgId);
+          // Only fill in missing fields — never overwrite values the user set
+          if (!row.effect      && scored.effect)       row.effect       = scored.effect;
+          if (!row.score_sleep && scored.score_sleep != null) {
+            ['sleep','relax','focus','social','relief','beginner'].forEach(fx => {
+              if (row['score_'+fx] == null) row['score_'+fx] = scored['score_'+fx];
+            });
+            if (!row._strain_type) row._strain_type = scored._strain_type;
+          }
+          // Only use auto talking points if none exist
+          if (!row.talking_points && scored.talking_points) row.talking_points = scored.talking_points;
+        } catch(e) { /* scoring failure — insert without scores */ }
+      }
       let attempts=0;
       while(attempts<8){
         attempts++;
