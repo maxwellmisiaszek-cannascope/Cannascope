@@ -691,6 +691,50 @@
             margin-bottom: 6px;
         }
 
+        /* ── GOAL ICON ────────────────────────────────────── */
+        .goal-icon {
+            font-size: 18px;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        /* ── COLLAPSED BACKUP CARDS ───────────────────────── */
+        .prod-card.collapsed .card-pitch    { display: none; }
+        .prod-card.collapsed .card-actions  { display: none; }
+        .prod-card.collapsed .say-this-drawer { display: none !important; }
+        .prod-card.collapsed .details-drawer  { display: none !important; }
+        .prod-card.collapsed:not(.rank-1)   { cursor: pointer; }
+
+        .card-expand-hint {
+            padding: 6px 16px 10px;
+            font-size: 11px;
+            color: var(--text-3);
+            font-style: italic;
+        }
+        .prod-card:not(.collapsed) .card-expand-hint { display: none; }
+
+        /* ── SAY THIS OPENING LINE ────────────────────────── */
+        .say-this-opening {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.5;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            font-style: italic;
+        }
+
+        /* ── NEXT QUESTION LABEL ──────────────────────────── */
+        .say-this-next-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-3);
+            margin-bottom: 4px;
+        }
+
         /* ── RESPONSIVE ───────────────────────────────────── */
         @media (max-width: 400px) {
             .goal-grid { grid-template-columns: repeat(2, 1fr); }
@@ -719,28 +763,34 @@
     <div class="served-flash" id="servedFlash">Customer served ✓</div>
     <div class="goal-grid">
         <button class="goal-btn" onclick="selectGoal('sleep')">
+            <span class="goal-icon">🌙</span>
             <span class="goal-name">Sleep</span>
-            <span class="goal-sub">Wind down · rest</span>
+            <span class="goal-sub">Rest &amp; recovery</span>
         </button>
         <button class="goal-btn" onclick="selectGoal('relax')">
+            <span class="goal-icon">☁️</span>
             <span class="goal-name">Relax</span>
-            <span class="goal-sub">Decompress · unwind</span>
+            <span class="goal-sub">Unwind · decompress</span>
         </button>
         <button class="goal-btn" onclick="selectGoal('focus')">
+            <span class="goal-icon">🎯</span>
             <span class="goal-name">Focus</span>
-            <span class="goal-sub">Clarity · productivity</span>
+            <span class="goal-sub">Clarity · creativity</span>
         </button>
         <button class="goal-btn" onclick="selectGoal('social')">
+            <span class="goal-icon">⚡</span>
             <span class="goal-name">Social</span>
             <span class="goal-sub">Energy · mood lift</span>
         </button>
         <button class="goal-btn" onclick="selectGoal('relief')">
+            <span class="goal-icon">💚</span>
             <span class="goal-name">Relief</span>
             <span class="goal-sub">Pain · inflammation</span>
         </button>
         <button class="goal-btn" onclick="selectGoal('beginner')">
-            <span class="goal-name">Easy Start</span>
-            <span class="goal-sub">Approachable · gentle</span>
+            <span class="goal-icon">✦</span>
+            <span class="goal-name">Not Sure</span>
+            <span class="goal-sub">Show best picks</span>
         </button>
     </div>
     <div class="goal-tagline">
@@ -783,7 +833,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const GOAL_LABELS = {
     sleep:'Sleep', relax:'Relax', focus:'Focus',
-    social:'Social', relief:'Relief', beginner:'Easy Start'
+    social:'Social', relief:'Relief', beginner:'Not Sure'
 };
 
 // Adjacent goals for fallback bridge
@@ -811,32 +861,38 @@ const TERPENE_EFFECTS = {
 };
 
 // ── REFINE CHIPS DEFINITION ───────────────────────────────────────────────────
-const REFINE_UNIVERSAL = [
-    { label:'Flower',       group:'format',      val:'flower'   },
-    { label:'Vape',         group:'format',      val:'vape'     },
-    { label:'Edible',       group:'format',      val:'edible'   },
-    { label:'Pre-roll',     group:'format',      val:'preroll'  },
-    { label:'Beginner',     group:'experience',  val:'new'      },
-    { label:'Budget <$40',  group:'priceSpec',   val:'budget'   },
-    { label:'Premium $50+', group:'priceSpec',   val:'premium'  },
-    { label:'No Smoke',     group:'avoidSmoke',  val:'yes'      },
-    { label:'Fast Onset',   group:'onset',       val:'quick'    },
-    { label:'Long-lasting', group:'onset',       val:'slow'     },
-];
-
-const REFINE_GOAL = {
-    sleep:    [{ label:'High Potency',  group:'intensity', val:'strong'     },
-               { label:'Mild Potency',  group:'intensity', val:'mild'       }],
-    relax:    [{ label:'Micro-dose',    group:'intensity', val:'mild'       },
-               { label:'CBD Priority',  group:'wantsCbd',  val:'yes'        }],
-    focus:    [{ label:'Low THC',       group:'intensity', val:'mild'       },
-               { label:'High Potency',  group:'intensity', val:'strong'     }],
-    social:   [{ label:'Discreet',      group:'avoidSmoke',val:'yes'        },
-               { label:'High Potency',  group:'intensity', val:'strong'     }],
-    relief:   [{ label:'Topical',       group:'format',    val:'topical'    },
-               { label:'CBD Priority',  group:'wantsCbd',  val:'yes'        }],
-    beginner: [{ label:'CBD Only',      group:'wantsCbd',  val:'yes'        },
-               { label:'Tincture',      group:'format',    val:'tincture'   }],
+// 3 goal-specific chips only — no universal clutter
+const REFINE_GOAL_NEW = {
+    sleep:    [
+        { label:'Flower Only',    group:'format',      val:'flower'   },
+        { label:'No Smoke',       group:'avoidSmoke',  val:'yes'      },
+        { label:'High Tolerance', group:'intensity',   val:'strong'   },
+    ],
+    relax:    [
+        { label:'No Smoke',       group:'avoidSmoke',  val:'yes'      },
+        { label:'Under $40',      group:'priceSpec',   val:'budget'   },
+        { label:'CBD First',      group:'wantsCbd',    val:'yes'      },
+    ],
+    focus:    [
+        { label:'No Smoke',       group:'avoidSmoke',  val:'yes'      },
+        { label:'Light Dose',     group:'intensity',   val:'mild'     },
+        { label:'Daytime',        group:'onset',       val:'quick'    },
+    ],
+    social:   [
+        { label:'Discreet',       group:'avoidSmoke',  val:'yes'      },
+        { label:'Uplifting',      group:'intensity',   val:'strong'   },
+        { label:'First Time',     group:'experience',  val:'new'      },
+    ],
+    relief:   [
+        { label:'Topical',        group:'format',      val:'topical'  },
+        { label:'No Smoke',       group:'avoidSmoke',  val:'yes'      },
+        { label:'High CBD',       group:'wantsCbd',    val:'yes'      },
+    ],
+    beginner: [
+        { label:'CBD First',      group:'wantsCbd',    val:'yes'      },
+        { label:'No Smoke',       group:'avoidSmoke',  val:'yes'      },
+        { label:'Under $40',      group:'priceSpec',   val:'budget'   },
+    ],
 };
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -868,17 +924,17 @@ async function logDemandEvent(event_type, options = {}) {
     });
 }
 
-// ── RECOMMEND TOGGLE ──────────────────────────────────────────────────────────
-function toggleRecommend(btn, productId, rank) {
-    const on = btn.classList.toggle('recommended');
-    btn.textContent = on ? '✓ Recommended' : 'Recommend →';
-    if (on) {
-        logDemandEvent('sale_confirmed', {
-            product_id:      productId,
-            product_rank:    rank,
-            recommendations: _lastRecommendedIds
-        });
-    }
+// ── MARK SOLD ─────────────────────────────────────────────────────────────────
+function markSold(btn, productId, rank) {
+    btn.textContent = '✓ Sold';
+    btn.style.background = '#1a4532';
+    btn.disabled = true;
+    logDemandEvent('sale_confirmed', {
+        product_id:      productId,
+        product_rank:    rank,
+        recommendations: _lastRecommendedIds
+    });
+    setTimeout(() => newCustomer(), 800);
 }
 
 // ── DEMO PRODUCTS ─────────────────────────────────────────────────────────────
@@ -1184,14 +1240,8 @@ function newCustomer() {
 function buildRefineTray(goal) {
     const inner = document.getElementById('refineInner');
     inner.innerHTML = '';
-    REFINE_UNIVERSAL.forEach(chip => inner.appendChild(makeRefineChip(chip)));
-    const goalSpecific = REFINE_GOAL[goal] || [];
-    if (goalSpecific.length) {
-        const sep = document.createElement('div');
-        sep.className = 'refine-sep';
-        inner.appendChild(sep);
-        goalSpecific.forEach(chip => inner.appendChild(makeRefineChip(chip)));
-    }
+    const chips = REFINE_GOAL_NEW[goal] || [];
+    chips.forEach(chip => inner.appendChild(makeRefineChip(chip)));
 }
 
 function makeRefineChip(chip) {
@@ -1791,8 +1841,69 @@ function livePotencySignal(thc, cbd, category) {
     return null;
 }
 
+// ── OPENING LINE GENERATOR ────────────────────────────────────────────────────
+function generateOpeningLine(p, goal) {
+    const name = p.name || 'This';
+    const openers = {
+        sleep: [
+            `"This is ${name} — it's what I'd reach for if someone told me they lie awake for two hours every night."`,
+            `"${name} is what I'd give someone who needs to actually sleep, not just relax."`,
+            `"If someone came in saying they haven't slept well in weeks, this is where I'd start."`,
+        ],
+        relax: [
+            `"This is ${name} — it's what I'd hand someone who said they just need to turn their brain off for a few hours."`,
+            `"${name} is a solid decompress option — not too heavy, does exactly what it's supposed to."`,
+            `"This is what I'd reach for after a long day when I actually need to unwind."`,
+        ],
+        focus: [
+            `"This is ${name} — it's what I'd give someone who wants clarity without getting too far into their head."`,
+            `"${name} is the go-to for people who want to stay productive without anxiety."`,
+            `"If someone wanted to work creatively for a few hours, this is where I'd start."`,
+        ],
+        social: [
+            `"This is ${name} — it's what I'd give someone heading out for a night with friends."`,
+            `"${name} is exactly what I'd reach for if someone wanted to be good company without overdoing it."`,
+            `"If someone wanted a real mood lift without losing control, this is where I'd start."`,
+        ],
+        relief: [
+            `"This is ${name} — it's what I'd give someone who came in specifically asking for pain relief."`,
+            `"${name} is where I'd start for someone dealing with real physical discomfort."`,
+            `"If someone said they needed something for chronic pain, this is my first recommendation."`,
+        ],
+        beginner: [
+            `"This is ${name} — it's what I'd give someone who's curious but doesn't want to be overwhelmed."`,
+            `"${name} is a safe starting point — easy to control, hard to overshoot."`,
+            `"If someone told me it was their first time or they hadn't tried in years, this is where I'd start."`,
+        ],
+    };
+    return pickV(openers[goal] || openers.relax, p);
+}
+
+// ── BACKUP LABEL GENERATOR ────────────────────────────────────────────────────
+function getBackupLabel(backup, topPick) {
+    const topThc   = parseFloat(topPick.thc)   || 0;
+    const bThc     = parseFloat(backup.thc)    || 0;
+    const topPrice = parseFloat(topPick.price) || 0;
+    const bPrice   = parseFloat(backup.price)  || 0;
+    const topCat   = (topPick.category || '').toLowerCase();
+    const bCat     = (backup.category  || '').toLowerCase();
+    const bCbd     = parseFloat(backup.cbd)    || 0;
+    if (bCat !== topCat)                          return 'DIFFERENT FORMAT';
+    if (bPrice < topPrice - 5)                    return 'IF PRICE MATTERS';
+    if (bThc > topThc + 3)                        return 'IF THEY WANT MORE';
+    if (bCbd > bThc || bThc < topThc - 5)        return "IF THEY'RE CAUTIOUS";
+    return 'ALSO WORKS';
+}
+
+// ── EXPAND COLLAPSED CARD ─────────────────────────────────────────────────────
+function expandCard(cardId) {
+    const card = document.getElementById('card-' + cardId);
+    if (!card) return;
+    card.classList.remove('collapsed');
+}
+
 // ── CARD RENDERING ────────────────────────────────────────────────────────────
-function renderCard(p, idx) {
+function renderCard(p, idx, backupLabel) {
     const isTop   = idx === 0;
     const thc     = parseFloat(p.thc) || 0;
     const cbd     = parseFloat(p.cbd) || 0;
@@ -1803,7 +1914,7 @@ function renderCard(p, idx) {
     const goal    = selectedGoal;
 
     // Rank label
-    const rankLabel = isTop ? 'Best Match' : 'Also Consider';
+    const rankLabel = isTop ? 'GIVE THEM THIS' : (backupLabel || 'ALSO WORKS');
 
     // Manager dot (amber dot if manager_note exists)
     const mgrDot = p.manager_note
@@ -1812,6 +1923,9 @@ function renderCard(p, idx) {
 
     // Pitch line
     const pitchLine = generatePitch(p, goal);
+
+    // Opening line for Say This
+    const openingLine = generateOpeningLine(p, goal);
 
     // Parse talking points
     const parsed = parseTalkingPoints(p.talking_points);
@@ -1895,8 +2009,11 @@ function renderCard(p, idx) {
     // Debug section (console only, not rendered in DOM)
     // (kept in JS for window.__runTests compatibility)
 
+    const collapsedClass = isTop ? '' : ' collapsed';
+    const expandAttr     = isTop ? '' : ` onclick="expandCard('${xe(p.id)}')"`;
+
     return `
-<div class="prod-card${isTop ? ' rank-1' : ''}" id="card-${xe(p.id)}">
+<div class="prod-card${isTop ? ' rank-1' : ''}${collapsedClass}" id="card-${xe(p.id)}"${expandAttr}>
     <div class="card-header">
         <div class="card-header-left">
             <div class="card-rank-badge">${rankLabel}${mgrDot}</div>
@@ -1908,15 +2025,17 @@ function renderCard(p, idx) {
             ${p.shelf ? `<div class="card-shelf">Shelf ${xe(p.shelf)}</div>` : ''}
         </div>
     </div>
+    ${!isTop ? `<div class="card-expand-hint">Tap to expand</div>` : ''}
     <div class="card-pitch">${xe(pitchLine)}</div>
     <div class="card-actions">
-        <button class="btn-say-this" onclick="toggleSayThis('${xe(p.id)}')">Say This ↓</button>
-        <button class="rec-btn" id="rec-${xe(p.id)}" onclick="toggleRecommend(this,'${xe(p.id)}',${idx + 1})">Recommend →</button>
+        <button class="btn-say-this" onclick="event.stopPropagation(); toggleSayThis('${xe(p.id)}')">Say This ↓</button>
+        <button class="rec-btn" id="rec-${xe(p.id)}" onclick="event.stopPropagation(); markSold(this,'${xe(p.id)}',${idx + 1})">Sold →</button>
     </div>
     <div class="say-this-drawer" id="say-${xe(p.id)}">
         <div class="say-this-label">Say this</div>
+        <div class="say-this-opening">${xe(openingLine)}</div>
         <div class="say-this-bullets">${bulletHtml}</div>
-        ${nextQ ? `<div class="say-this-next"><strong>Next:</strong> "${xe(nextQ)}"</div>` : ''}
+        ${nextQ ? `<div class="say-this-next-label">NEXT</div><div class="say-this-next">"Ask: ${xe(nextQ)}"</div>` : ''}
         ${detailsHtml ? `<button class="btn-details-link" onclick="toggleDetails('${xe(p.id)}')">Details ↓</button>` : ''}
     </div>
     ${detailsHtml ? `<div class="details-drawer" id="det-${xe(p.id)}">${detailsHtml}</div>` : ''}
@@ -2022,21 +2141,24 @@ async function findProducts() {
 
     // Soft fallback banner (only if genuinely weak)
     if (allWeak) {
+        const adj = ADJACENT_GOALS[selectedGoal] || [];
+        const bridgeBtns = adj.map(g =>
+            `<button class="goal-bridge-btn" onclick="selectGoal('${g}')">${GOAL_LABELS[g]}</button>`
+        ).join('');
         html += `<div class="fallback-banner">
-            <strong>Best available for ${label}</strong>
-            These are your closest options right now. Consider removing a filter to improve results.
+            <strong>BEST IN STOCK</strong>
+            Limited match in current inventory — these are your strongest options.
+            ${bridgeBtns ? `<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">ALSO SCORES WELL FOR: ${bridgeBtns}</div>` : ''}
         </div>`;
     }
 
-    // Best Match card
-    html += `<div class="tier-label">Best Match</div>`;
+    // Cards — no tier label divs
     html += renderCard(topPicks[0], 0);
 
-    // Also Consider cards
     if (topPicks.length > 1) {
-        html += `<div class="tier-label" style="margin-top:20px">Also Consider</div>`;
         for (let i = 1; i < topPicks.length; i++) {
-            html += renderCard(topPicks[i], i);
+            const backupLabel = getBackupLabel(topPicks[i], topPicks[0]);
+            html += renderCard(topPicks[i], i, backupLabel);
         }
     }
 
