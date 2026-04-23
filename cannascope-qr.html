@@ -52,49 +52,88 @@
     .wm {
       font-size: 13px; font-weight: 700;
       color: var(--text2);
-      padding: 18px 20px 0;
+      padding: 16px 20px 0;
       letter-spacing: -0.01em;
       flex-shrink: 0;
     }
     .wm em { color: var(--accent-t); font-style: normal; }
 
     /* ══════════════════════════════════════════
-       GOAL SCREEN
+       FIXED PROGRESS BAR — shown on Q screens
        ══════════════════════════════════════════ */
-    #sGoal { padding-bottom: 20px; }
+    .q-prog-wrap {
+      position: fixed;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      padding: 10px 20px;
+      display: none;
+      flex-direction: row;
+      gap: 5px;
+      background: var(--bg);
+      z-index: 200;
+    }
+    .q-prog-wrap.visible { display: flex; }
+    .q-pip {
+      height: 3px; border-radius: 2px; flex: 1;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+    .q-pip.done   { background: var(--accent-t); }
+    .q-pip.active { background: var(--accent); }
 
-    .goal-intro {
-      padding: 18px 20px 16px;
+    /* ══════════════════════════════════════════
+       QUESTION SCREENS — shared layout
+       ══════════════════════════════════════════ */
+    .q-screen { padding-top: 23px; padding-bottom: 32px; }
+
+    .q-nav {
+      padding: 4px 20px 0;
+      flex-shrink: 0;
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+    }
+    .q-back {
+      background: none; border: none;
+      color: var(--text3); font-family: inherit;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; padding: 4px 0;
+      letter-spacing: -0.01em;
+    }
+    .q-back:hover { color: var(--text2); }
+
+    .q-body {
+      padding: 10px 20px 0;
       flex-shrink: 0;
     }
-    .goal-eyebrow {
+    .q-eyebrow {
       font-size: 11px; font-weight: 600;
       letter-spacing: 0.09em; text-transform: uppercase;
       color: var(--text3);
       margin-bottom: 7px;
     }
-    .goal-headline {
+    .q-headline {
       font-size: 26px; font-weight: 700;
       letter-spacing: -0.03em;
       color: var(--text);
       line-height: 1.15;
       margin-bottom: 4px;
     }
-    .goal-sub { font-size: 14px; color: var(--text2); }
+    .q-sub { font-size: 14px; color: var(--text2); }
 
-    .goal-grid {
+    /* 2-col grid (Q1, Q6) */
+    .q-grid {
       flex: 1;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 9px;
-      padding: 0 20px;
+      padding: 16px 20px 0;
     }
-
-    .goal-btn {
+    .q-tile {
       background: var(--surface);
       border: 1.5px solid var(--border);
       border-radius: 14px;
-      padding: 18px 15px;
+      padding: 17px 14px;
       cursor: pointer;
       font-family: inherit;
       text-align: left;
@@ -102,37 +141,70 @@
       flex-direction: column;
       gap: 4px;
       transition: border-color 0.1s, background 0.1s, transform 0.1s;
-      -webkit-user-select: none;
-      user-select: none;
-      min-height: 100px;
+      -webkit-user-select: none; user-select: none;
+      min-height: 88px;
     }
-    .goal-btn:active {
-      transform: scale(0.96);
-      background: var(--surface2);
-      border-color: var(--accent-t);
-    }
-    .goal-icon { font-size: 22px; margin-bottom: 3px; }
-    .goal-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
-    .goal-desc { font-size: 12px; color: var(--text2); line-height: 1.4; }
+    .q-tile:active { transform: scale(0.96); background: var(--surface2); border-color: var(--accent-t); }
+    .q-tile-icon  { font-size: 20px; margin-bottom: 2px; }
+    .q-tile-label { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .q-tile-desc  { font-size: 12px; color: var(--text2); line-height: 1.4; }
 
-    .goal-note {
-      padding: 12px 20px 0;
-      font-size: 11px;
-      color: var(--text3);
-      text-align: center;
-      flex-shrink: 0;
-      letter-spacing: 0.01em;
+    /* Age-range tiles: centered, larger number */
+    .q-tile-age {
+      align-items: center; justify-content: center;
+      text-align: center; min-height: 72px;
     }
+    .q-tile-age .q-tile-label { font-size: 18px; }
+
+    /* Vertical option list (Q2–Q5) */
+    .q-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      padding: 16px 20px 0;
+      flex: 1;
+    }
+    .q-opt {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 15px 18px;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.1s, background 0.1s, transform 0.1s;
+      -webkit-user-select: none; user-select: none;
+    }
+    .q-opt:active { transform: scale(0.97); background: var(--surface2); border-color: var(--accent-t); }
+    .q-opt-icon   { font-size: 20px; flex-shrink: 0; width: 26px; text-align: center; }
+    .q-opt-text   { flex: 1; }
+    .q-opt-label  { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .q-opt-desc   { font-size: 12px; color: var(--text2); line-height: 1.4; margin-top: 1px; }
+    .q-opt-arrow  { font-size: 16px; color: var(--text3); flex-shrink: 0; }
+
+    .q-skip-row {
+      padding: 14px 20px 0;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .q-skip-btn {
+      background: none; border: none;
+      color: var(--text3); font-family: inherit;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; padding: 6px 14px;
+      letter-spacing: -0.01em;
+    }
+    .q-skip-btn:hover { color: var(--text2); }
 
     /* ══════════════════════════════════════════
        LOADING SCREEN
        ══════════════════════════════════════════ */
     #sLoading {
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 48px 32px;
-      gap: 18px;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 48px 32px; gap: 18px;
     }
     .loading-ring {
       width: 40px; height: 40px;
@@ -148,9 +220,8 @@
     /* ══════════════════════════════════════════
        RESULTS SCREEN
        ══════════════════════════════════════════ */
-    #sResults { padding-bottom: 108px; }
+    #sResults { padding-bottom: 40px; }
 
-    /* Sub-header */
     .results-sub-header {
       display: flex;
       align-items: center;
@@ -180,50 +251,30 @@
     .res-spacer { flex: 1; }
     .results-count { font-size: 11px; color: var(--text3); font-weight: 500; }
 
-    /* Refine chips */
-    .refine-row {
-      display: flex;
-      gap: 7px;
-      padding: 11px 20px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
+    /* Profile summary chips */
+    .results-profile {
+      padding: 9px 20px;
       border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
       flex-shrink: 0;
     }
-    .refine-row::-webkit-scrollbar { display: none; }
-    .refine-chip {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
+    .profile-chip {
+      font-size: 11px; font-weight: 600;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
       border-radius: 20px;
-      padding: 6px 13px;
-      font-family: inherit;
-      font-size: 12px; font-weight: 600;
+      padding: 3px 10px;
       color: var(--text2);
-      cursor: pointer;
       white-space: nowrap;
-      flex-shrink: 0;
-      transition: border-color 0.1s, background 0.1s, color 0.1s;
-    }
-    .refine-chip.active {
-      background: rgba(45,106,79,0.15);
-      border-color: var(--accent);
-      color: var(--accent-t);
-    }
-    .chip-div {
-      width: 1px;
-      background: var(--border);
-      flex-shrink: 0;
-      align-self: stretch;
-      margin: 0 1px;
     }
 
-    /* Cards */
     .results-body {
       padding: 14px 20px 0;
       display: flex;
       flex-direction: column;
-      gap: 11px;
+      gap: 12px;
     }
 
     .prod-card {
@@ -251,7 +302,6 @@
       font-size: 11px; font-weight: 700;
       color: var(--accent-t);
     }
-
     .card-main-row {
       display: flex;
       justify-content: space-between;
@@ -277,41 +327,35 @@
     .card-why {
       font-size: 13px; color: var(--text2);
       line-height: 1.6;
+      margin-bottom: 14px;
     }
 
-    /* Sticky "show budtender" bar */
-    .sbt-bar {
-      position: fixed;
-      bottom: 0; left: 50%; transform: translateX(-50%);
-      width: 100%; max-width: 480px;
-      background: var(--bg);
-      border-top: 1px solid var(--border);
-      padding: 10px 20px 22px;
-      z-index: 50;
-    }
-    .btn-sbt {
+    /* Per-card CTA button */
+    .card-cta {
       width: 100%;
-      background: var(--accent);
-      color: var(--text);
+      background: var(--surface2);
+      border: 1.5px solid var(--border2);
+      color: var(--text2);
       font-family: inherit;
-      font-size: 15px; font-weight: 700;
-      padding: 15px 18px;
-      border: none; border-radius: 12px;
+      font-size: 13px; font-weight: 700;
+      padding: 12px 16px;
+      border-radius: 10px;
       cursor: pointer;
       letter-spacing: -0.01em;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: background 0.15s, transform 0.1s;
+      transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.1s;
     }
-    .btn-sbt:hover  { background: var(--accent-b); }
-    .btn-sbt:active { transform: scale(0.98); }
-    .btn-sbt-left   { text-align: left; }
-    .btn-sbt-tag    { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.65; display: block; margin-bottom: 2px; }
-    .btn-sbt-name   { font-size: 14px; font-weight: 700; display: block; }
-    .btn-sbt-arrow  { font-size: 18px; opacity: 0.8; }
+    .card-cta:active { transform: scale(0.98); }
+    .card-cta:hover  { border-color: var(--accent); color: var(--accent-t); }
+    .rank-1 .card-cta {
+      background: rgba(45,106,79,0.18);
+      border-color: rgba(76,175,128,0.4);
+      color: var(--accent-t);
+    }
+    .rank-1 .card-cta:hover { background: rgba(45,106,79,0.28); }
 
-    /* Empty state */
     .empty-state {
       text-align: center; padding: 48px 24px;
       color: var(--text2); font-size: 14px; line-height: 1.65;
@@ -401,77 +445,296 @@
 <body>
 <div class="app">
 
-  <!-- ══════════════════ GOAL SCREEN ══════════════════ -->
-  <div class="screen active" id="sGoal">
+  <!-- ══ FIXED PROGRESS BAR ══ -->
+  <div class="q-prog-wrap" id="qProgWrap">
+    <div class="q-pip" id="qp1"></div>
+    <div class="q-pip" id="qp2"></div>
+    <div class="q-pip" id="qp3"></div>
+    <div class="q-pip" id="qp4"></div>
+    <div class="q-pip" id="qp5"></div>
+    <div class="q-pip" id="qp6"></div>
+  </div>
+
+  <!-- ══════════════════ Q1: GOAL ══════════════════ -->
+  <div class="screen q-screen active" id="sQ1">
     <div class="wm">Canna<em>scope</em></div>
-    <div class="goal-intro">
-      <div class="goal-eyebrow">Tap your goal — results are instant</div>
-      <div class="goal-headline">What are you after?</div>
-      <div class="goal-sub">We'll match you to what's in stock.</div>
+    <div class="q-nav"><!-- no back on Q1 --></div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 1 of 6</div>
+      <div class="q-headline">What are you after?</div>
+      <div class="q-sub">We'll match you to what's in stock.</div>
     </div>
-    <div class="goal-grid">
-      <button class="goal-btn" onclick="pickGoal('sleep')">
-        <span class="goal-icon">🌙</span>
-        <span class="goal-name">Sleep</span>
-        <span class="goal-desc">Rest &amp; recovery</span>
+    <div class="q-grid">
+      <button class="q-tile" onclick="answerQ1('sleep')">
+        <span class="q-tile-icon">🌙</span>
+        <span class="q-tile-label">Sleep</span>
+        <span class="q-tile-desc">Rest &amp; recovery</span>
       </button>
-      <button class="goal-btn" onclick="pickGoal('relax')">
-        <span class="goal-icon">☁️</span>
-        <span class="goal-name">Relax</span>
-        <span class="goal-desc">Unwind &amp; decompress</span>
+      <button class="q-tile" onclick="answerQ1('relax')">
+        <span class="q-tile-icon">☁️</span>
+        <span class="q-tile-label">Relax</span>
+        <span class="q-tile-desc">Unwind &amp; decompress</span>
       </button>
-      <button class="goal-btn" onclick="pickGoal('social')">
-        <span class="goal-icon">⚡</span>
-        <span class="goal-name">Social</span>
-        <span class="goal-desc">Energy &amp; mood lift</span>
+      <button class="q-tile" onclick="answerQ1('social')">
+        <span class="q-tile-icon">⚡</span>
+        <span class="q-tile-label">Social</span>
+        <span class="q-tile-desc">Energy &amp; mood lift</span>
       </button>
-      <button class="goal-btn" onclick="pickGoal('focus')">
-        <span class="goal-icon">🎯</span>
-        <span class="goal-name">Focus</span>
-        <span class="goal-desc">Clarity &amp; creativity</span>
+      <button class="q-tile" onclick="answerQ1('focus')">
+        <span class="q-tile-icon">🎯</span>
+        <span class="q-tile-label">Focus</span>
+        <span class="q-tile-desc">Clarity &amp; creativity</span>
       </button>
-      <button class="goal-btn" onclick="pickGoal('relief')">
-        <span class="goal-icon">💚</span>
-        <span class="goal-name">Relief</span>
-        <span class="goal-desc">Pain &amp; inflammation</span>
+      <button class="q-tile" onclick="answerQ1('relief')">
+        <span class="q-tile-icon">💚</span>
+        <span class="q-tile-label">Relief</span>
+        <span class="q-tile-desc">Pain &amp; inflammation</span>
       </button>
-      <button class="goal-btn" onclick="pickGoal('beginner')">
-        <span class="goal-icon">✦</span>
-        <span class="goal-name">Not Sure</span>
-        <span class="goal-desc">Show me the best picks</span>
+      <button class="q-tile" onclick="answerQ1('beginner')">
+        <span class="q-tile-icon">✦</span>
+        <span class="q-tile-label">Not Sure</span>
+        <span class="q-tile-desc">Show me the best picks</span>
       </button>
     </div>
-    <div class="goal-note" id="goalNote"></div>
+    <div id="goalNote" style="padding:12px 20px 0;font-size:11px;color:var(--text3);text-align:center;flex-shrink:0;"></div>
+  </div>
+
+  <!-- ══════════════════ Q2: EXPERIENCE ══════════════════ -->
+  <div class="screen q-screen" id="sQ2">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav">
+      <button class="q-back" onclick="prevStep()">← Back</button>
+    </div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 2 of 6</div>
+      <div class="q-headline">How much experience do you have?</div>
+      <div class="q-sub">Helps us calibrate the potency.</div>
+    </div>
+    <div class="q-list">
+      <button class="q-opt" onclick="answerQ2('new')">
+        <span class="q-opt-icon">🌱</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">First timer</div>
+          <div class="q-opt-desc">Never tried before — go easy on me</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ2('casual')">
+        <span class="q-opt-icon">☀️</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Occasional</div>
+          <div class="q-opt-desc">A few times a year</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ2('regular')">
+        <span class="q-opt-icon">🌿</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Regular</div>
+          <div class="q-opt-desc">A few times a week</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ2('daily')">
+        <span class="q-opt-icon">⚡</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Daily user</div>
+          <div class="q-opt-desc">High tolerance, part of my routine</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ Q3: FORMAT ══════════════════ -->
+  <div class="screen q-screen" id="sQ3">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav">
+      <button class="q-back" onclick="prevStep()">← Back</button>
+    </div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 3 of 6</div>
+      <div class="q-headline">How do you prefer to use it?</div>
+      <div class="q-sub">We'll prioritize your format.</div>
+    </div>
+    <div class="q-list">
+      <button class="q-opt" onclick="answerQ3('flower')">
+        <span class="q-opt-icon">🌿</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Flower</div>
+          <div class="q-opt-desc">Smoke or vaporize the plant</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ3('vape')">
+        <span class="q-opt-icon">💨</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Vape</div>
+          <div class="q-opt-desc">Cartridge or disposable pen</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ3('edible')">
+        <span class="q-opt-icon">🍬</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Edible</div>
+          <div class="q-opt-desc">Gummies, chocolates, drinks</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ3('preroll')">
+        <span class="q-opt-icon">🌀</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Pre-roll</div>
+          <div class="q-opt-desc">Ready to light, no setup</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ3('tincture')">
+        <span class="q-opt-icon">🫧</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Tincture / Drops</div>
+          <div class="q-opt-desc">Under-the-tongue, precise dosing</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+    </div>
+    <div class="q-skip-row">
+      <button class="q-skip-btn" onclick="answerQ3(null)">No preference — show me everything</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ Q4: INTENSITY ══════════════════ -->
+  <div class="screen q-screen" id="sQ4">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav">
+      <button class="q-back" onclick="prevStep()">← Back</button>
+    </div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 4 of 6</div>
+      <div class="q-headline">How strong do you want it?</div>
+      <div class="q-sub">We'll match the THC level to your preference.</div>
+    </div>
+    <div class="q-list">
+      <button class="q-opt" onclick="answerQ4('light')">
+        <span class="q-opt-icon">🌤</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Light</div>
+          <div class="q-opt-desc">Subtle, lower THC — under 15%</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ4('moderate')">
+        <span class="q-opt-icon">⚖️</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Moderate</div>
+          <div class="q-opt-desc">Balanced effect — 15–22%</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ4('strong')">
+        <span class="q-opt-icon">🔥</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Strong</div>
+          <div class="q-opt-desc">High potency — 22% and above</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+    </div>
+    <div class="q-skip-row">
+      <button class="q-skip-btn" onclick="answerQ4(null)">No preference</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ Q5: BUDGET ══════════════════ -->
+  <div class="screen q-screen" id="sQ5">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav">
+      <button class="q-back" onclick="prevStep()">← Back</button>
+    </div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 5 of 6</div>
+      <div class="q-headline">What's your budget?</div>
+      <div class="q-sub">Per item, approximately.</div>
+    </div>
+    <div class="q-list">
+      <button class="q-opt" onclick="answerQ5('low')">
+        <span class="q-opt-icon">💵</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Under $30</div>
+          <div class="q-opt-desc">Keep it budget-friendly</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ5('budget')">
+        <span class="q-opt-icon">💳</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">$30 – $50</div>
+          <div class="q-opt-desc">Mid-range, solid value</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ5('premium')">
+        <span class="q-opt-icon">✦</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">$50+</div>
+          <div class="q-opt-desc">Show me the best of the best</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+    </div>
+    <div class="q-skip-row">
+      <button class="q-skip-btn" onclick="answerQ5(null)">No preference</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ Q6: AGE RANGE (demographic only) ══════════════════ -->
+  <div class="screen q-screen" id="sQ6">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav">
+      <button class="q-back" onclick="prevStep()">← Back</button>
+    </div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 6 of 6 · Anonymous &amp; optional</div>
+      <div class="q-headline">One last thing.</div>
+      <div class="q-sub">Not used in your recommendations — helps the store understand its customers.</div>
+    </div>
+    <div class="q-grid" style="flex:0; align-content:start;">
+      <button class="q-tile q-tile-age" onclick="answerQ6('21-25')">
+        <span class="q-tile-label">21–25</span>
+      </button>
+      <button class="q-tile q-tile-age" onclick="answerQ6('26-35')">
+        <span class="q-tile-label">26–35</span>
+      </button>
+      <button class="q-tile q-tile-age" onclick="answerQ6('36-50')">
+        <span class="q-tile-label">36–50</span>
+      </button>
+      <button class="q-tile q-tile-age" onclick="answerQ6('51+')">
+        <span class="q-tile-label">51+</span>
+      </button>
+    </div>
+    <div class="q-skip-row">
+      <button class="q-skip-btn" onclick="answerQ6(null)">Prefer not to say — skip to results</button>
+    </div>
   </div>
 
   <!-- ══════════════════ LOADING ══════════════════ -->
   <div class="screen" id="sLoading">
     <div class="loading-ring"></div>
-    <div class="loading-text">Matching your options…</div>
+    <div class="loading-text">Finding your best matches…</div>
     <div class="loading-sub">Just a moment.</div>
   </div>
 
   <!-- ══════════════════ RESULTS ══════════════════ -->
   <div class="screen" id="sResults">
     <div class="results-sub-header">
-      <button class="btn-back" onclick="goBack()">← Back</button>
+      <button class="btn-back" onclick="goBack()">← Start over</button>
       <div class="results-goal-pill" id="resGoalPill">Sleep</div>
       <div class="res-spacer"></div>
       <div class="results-count" id="resCount"></div>
     </div>
-    <div class="refine-row" id="refineRow"></div>
+    <div class="results-profile" id="resProfile"></div>
     <div class="results-body" id="resCards"></div>
-  </div>
-
-  <!-- Sticky show-budtender bar -->
-  <div class="sbt-bar" id="sbtBar" style="display:none;">
-    <button class="btn-sbt" onclick="openBudtender()">
-      <div class="btn-sbt-left">
-        <span class="btn-sbt-tag">Top Pick</span>
-        <span class="btn-sbt-name" id="sbtName">—</span>
-      </div>
-      <span class="btn-sbt-arrow">Show budtender →</span>
-    </button>
   </div>
 
 </div>
@@ -480,8 +743,8 @@
 <div id="sBudtender">
   <div class="bt-badge">✦ Cannascope Match</div>
   <div class="bt-label">Ask your budtender for:</div>
-  <div class="bt-name"  id="btName">—</div>
-  <div class="bt-meta"  id="btMeta">—</div>
+  <div class="bt-name" id="btName">—</div>
+  <div class="bt-meta" id="btMeta">—</div>
   <div class="bt-div"></div>
   <div class="bt-alts-label">Also great</div>
   <div class="bt-alts" id="btAlts"></div>
@@ -510,20 +773,138 @@ const FORMAT_LABELS = {
   topical:'Topical', capsule:'Capsule'
 };
 
+const EXP_LABELS      = { new:'First timer', casual:'Occasional', regular:'Regular', daily:'Daily user' };
+const INTENSITY_LABELS = { light:'Light potency', moderate:'Moderate', strong:'Strong potency' };
+const PRICE_LABELS     = { low:'Under $30', budget:'$30–$50', premium:'$50+' };
+
 // ── STATE ─────────────────────────────────────────────────────────
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const SESSION_ID = crypto.randomUUID();
 
 let orgId = null, allProducts = [];
-let selectedGoal = null;
+let selectedGoal  = null;
 let activeFilters = {};
-let lastRanked = [];
-let _floorSynced = false;  // only sync once per customer session
+let answers       = {};   // full 6-question record including demographic
+let lastRanked    = [];
+let _floorSynced  = false;
 
-// ── FLOOR SYNC ────────────────────────────────────────────────
-// Silently pushes customer preferences to the budtender tool
-// via demand_events. Never blocks or shows errors to the customer.
+// ── QUESTION STATE MACHINE ────────────────────────────────────────
+const STEPS = ['sQ1','sQ2','sQ3','sQ4','sQ5','sQ6'];
+let stepIdx = 0;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  window.scrollTo(0, 0);
+
+  const isQ  = STEPS.includes(id);
+  const prog = document.getElementById('qProgWrap');
+  if (prog) {
+    if (isQ) { prog.classList.add('visible'); updateProgressBar(STEPS.indexOf(id)); }
+    else      { prog.classList.remove('visible'); }
+  }
+}
+
+function updateProgressBar(activeIdx) {
+  for (let i = 0; i < 6; i++) {
+    const pip = document.getElementById('qp' + (i + 1));
+    if (!pip) continue;
+    pip.className = 'q-pip';
+    if (i < activeIdx)   pip.classList.add('done');
+    if (i === activeIdx) pip.classList.add('active');
+  }
+}
+
+function prevStep() {
+  if (stepIdx <= 0) return;
+  stepIdx--;
+  showScreen(STEPS[stepIdx]);
+}
+
+function goBack() {
+  closeBudtender();
+  selectedGoal  = null;
+  activeFilters = {};
+  answers       = {};
+  _floorSynced  = false;
+  stepIdx = 0;
+  showScreen('sQ1');
+}
+
+// ── ANSWER HANDLERS ───────────────────────────────────────────────
+function answerQ1(goal) {
+  selectedGoal = goal;
+  answers.goal = goal;
+  stepIdx = 1;
+  showScreen(STEPS[stepIdx]);
+}
+
+function answerQ2(exp) {
+  answers.experience = exp;
+  if (exp) activeFilters.experience = exp;
+  else delete activeFilters.experience;
+  stepIdx = 2;
+  showScreen(STEPS[stepIdx]);
+}
+
+function answerQ3(format) {
+  answers.format = format;
+  if (format) activeFilters.format = format;
+  else delete activeFilters.format;
+  stepIdx = 3;
+  showScreen(STEPS[stepIdx]);
+}
+
+function answerQ4(intensity) {
+  answers.intensity = intensity;
+  if (intensity) activeFilters.intensity = intensity;
+  else delete activeFilters.intensity;
+  stepIdx = 4;
+  showScreen(STEPS[stepIdx]);
+}
+
+function answerQ5(priceSpec) {
+  answers.priceSpec = priceSpec;
+  if (priceSpec) activeFilters.priceSpec = priceSpec;
+  else delete activeFilters.priceSpec;
+  stepIdx = 5;
+  showScreen(STEPS[stepIdx]);
+}
+
+function answerQ6(ageRange) {
+  answers.ageRange = ageRange;   // demographic only — never affects scoring
+  logProfileComplete();           // fire & forget — silent
+  runMatch();
+}
+
+// ── DEMOGRAPHIC / PROFILE EVENT ───────────────────────────────────
+// Fires once when the customer finishes all 6 questions.
+// The full answer set (including age range) goes to demand_events
+// and surfaces in the admin dashboard analytics.
+async function logProfileComplete() {
+  if (!orgId) return;
+  try {
+    await sb.from('demand_events').insert({
+      session_id:      SESSION_ID,
+      organization_id: orgId,
+      source:          'qr',
+      event_type:      'qr_profile_complete',
+      goal:            answers.goal    || null,
+      format_pref:     answers.format  || null,
+      // JSON blob: { goal, experience, format, intensity, priceSpec, ageRange }
+      experience:      JSON.stringify(answers),
+      recommendations: [],
+      product_id:      null,
+      product_rank:    null
+    });
+  } catch(e) { /* always silent */ }
+}
+
+// ── FLOOR SYNC ────────────────────────────────────────────────────
+// Silently pushes the customer's full profile + top pick to the
+// budtender cheatsheet via demand_events. Never blocks the customer.
 async function syncToFloor(topProduct) {
   if (!orgId || !selectedGoal) return;
   try {
@@ -534,12 +915,13 @@ async function syncToFloor(topProduct) {
       event_type:      'qr_session_ready',
       goal:            selectedGoal,
       format_pref:     activeFilters.format || null,
-      experience:      JSON.stringify(activeFilters), // full filter state
+      // Richer payload: includes all 6 answers so budtender sees full context
+      experience:      JSON.stringify({ answers, filters: activeFilters }),
       recommendations: lastRanked.slice(0, 3).map(p => p.id),
-      product_id:      topProduct?.id   || null,
-      product_rank:    -1  // sentinel: QR sync, not a scored rank
+      product_id:      topProduct?.id || null,
+      product_rank:    -1   // sentinel: from QR, not a live scored rank
     });
-  } catch(e) { /* never surface errors to the customer */ }
+  } catch(e) { /* silent */ }
 }
 
 // ── DEMAND EVENT LOGGER ───────────────────────────────────────────
@@ -593,7 +975,7 @@ function logDemandEvent(event_type, opts = {}) {
         allProducts = prods || [];
       }
       const n = allProducts.length;
-      if (n > 0) setGoalNote(`Scoring ${n} live product${n !== 1 ? 's' : ''} right now`);
+      if (n > 0) setGoalNote(`Scoring ${n} live product${n !== 1 ? 's' : ''} in real time`);
     } else {
       useDemoMode();
     }
@@ -607,62 +989,8 @@ function useDemoMode() {
   setGoalNote(`Demo · ${DEMO_PRODUCTS.length} products scored`);
 }
 function setGoalNote(txt) {
-  document.getElementById('goalNote').textContent = txt;
-}
-
-// ── NAVIGATION ────────────────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
-  document.getElementById('sbtBar').style.display = id === 'sResults' ? 'block' : 'none';
-}
-
-function goBack() {
-  closeBudtender();
-  selectedGoal = null;
-  activeFilters = {};
-  showScreen('sGoal');
-}
-
-// ── GOAL → INSTANT RESULTS ────────────────────────────────────────
-function pickGoal(goal) {
-  selectedGoal = goal;
-  activeFilters = {};
-  runMatch();
-}
-
-// ── REFINE CHIPS ──────────────────────────────────────────────────
-const REFINE_CHIPS = [
-  { label:'Flower',      group:'format',     val:'flower'      },
-  { label:'Vape',        group:'format',     val:'vape'        },
-  { label:'Edible',      group:'format',     val:'edible'      },
-  { label:'Pre-roll',    group:'format',     val:'preroll'     },
-  { label:'Tincture',    group:'format',     val:'tincture'    },
-  null,
-  { label:'New User',    group:'experience', val:'new'         },
-  { label:'Experienced', group:'experience', val:'experienced' },
-  null,
-  { label:'Under $40',   group:'priceSpec',  val:'budget'      },
-  { label:'$50+',        group:'priceSpec',  val:'premium'     },
-];
-
-function buildRefineRow() {
-  document.getElementById('refineRow').innerHTML = REFINE_CHIPS.map(chip => {
-    if (!chip) return '<div class="chip-div"></div>';
-    const active = activeFilters[chip.group] === chip.val;
-    return `<button class="refine-chip${active ? ' active' : ''}"
-      onclick="toggleChip('${chip.group}','${chip.val}')">${chip.label}</button>`;
-  }).join('');
-}
-
-function toggleChip(group, val) {
-  if (activeFilters[group] === val) delete activeFilters[group];
-  else activeFilters[group] = val;
-  buildRefineRow();
-  renderResults(lastRanked);
-  // Update sbt bar name in case top pick changed
-  if (lastRanked.length > 0) updateSbtBar(lastRanked[0]);
+  const el = document.getElementById('goalNote');
+  if (el) el.textContent = txt;
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────
@@ -674,7 +1002,7 @@ function xe(s) {
 }
 
 // Deterministic hash from product id+name+brand → stable variant selection.
-// Same product always picks the same copy variant; different products pick different ones.
+// Same product always picks the same copy variant.
 function productHash(p) {
   const str = (p.id || '') + (p.name || '') + (p.brand || '');
   let h = 0;
@@ -705,20 +1033,30 @@ function scoreProduct(p, eff) {
   const normBase  = Math.max(0, Math.min(1.0, (rawScore - 0.20) / 0.45));
   const combined  = Math.min(1.0, normBase + nameBonus * 0.40);
   let total = combined * 40;
+
+  // Experience → THC fit bonus (+18 pts)
   if (activeFilters.experience) {
     const thc = parseFloat(p.thc) || 0;
-    const hit = (activeFilters.experience === 'new'         && thc < 15)
-             || (activeFilters.experience === 'casual'       && thc >= 12 && thc <= 22)
-             || (activeFilters.experience === 'experienced'  && thc > 18);
+    const hit = (activeFilters.experience === 'new'     && thc < 15)
+             || (activeFilters.experience === 'casual'  && thc >= 12 && thc <= 22)
+             || (activeFilters.experience === 'regular' && thc >= 15 && thc <= 25)
+             || (activeFilters.experience === 'daily'   && thc > 20);
     if (hit) total += 18;
   }
+
+  // Intensity preference → THC fit bonus (+15 pts, separate from experience)
+  if (activeFilters.intensity) {
+    const thc = parseFloat(p.thc) || 0;
+    const hit = (activeFilters.intensity === 'light'    && thc < 15)
+             || (activeFilters.intensity === 'moderate' && thc >= 15 && thc <= 22)
+             || (activeFilters.intensity === 'strong'   && thc > 22);
+    if (hit) total += 15;
+  }
+
   return total;
 }
 
 // ── COPY GENERATOR ────────────────────────────────────────────────
-// Fully variant-based. Each product gets a unique copy line determined by:
-//   format × goal × THC intensity × productHash
-// No two products in the same format+goal tier will show identical copy.
 function buildWhyCopy(p, eff) {
   const thc = parseFloat(p.thc) || 0;
   const cbd = parseFloat(p.cbd) || 0;
@@ -938,23 +1276,27 @@ function buildWhyCopy(p, eff) {
 // ── RUN MATCH ─────────────────────────────────────────────────────
 async function runMatch() {
   showScreen('sLoading');
-  await new Promise(r => setTimeout(r, 650));
+  await new Promise(r => setTimeout(r, 700));
 
   const eff = selectedGoal || 'relax';
-
   let eligible = allProducts.filter(p => p.in_stock !== false);
 
+  // Hard filter: format (fall back to all if no results)
   if (activeFilters.format) {
-    eligible = eligible.filter(p =>
-      (p.category || '').toLowerCase() === activeFilters.format);
+    const f = eligible.filter(p => (p.category || '').toLowerCase() === activeFilters.format);
+    if (f.length > 0) eligible = f;
   }
+
+  // Hard filter: price range (fall back to all if no results)
   if (activeFilters.priceSpec) {
-    eligible = eligible.filter(p => {
+    const f = eligible.filter(p => {
       const pr = parseFloat(p.price) || 0;
-      if (activeFilters.priceSpec === 'budget'  && pr > 40) return false;
-      if (activeFilters.priceSpec === 'premium' && pr < 50) return false;
+      if (activeFilters.priceSpec === 'low'     && pr >= 30) return false;
+      if (activeFilters.priceSpec === 'budget'  && (pr < 30 || pr > 50)) return false;
+      if (activeFilters.priceSpec === 'premium' && pr <= 50) return false;
       return true;
     });
+    if (f.length > 0) eligible = f;
   }
 
   const scored = eligible
@@ -963,78 +1305,74 @@ async function runMatch() {
 
   lastRanked = scored.slice(0, 3);
 
-  document.getElementById('resGoalPill').textContent = GOAL_LABELS[eff] || eff;
+  document.getElementById('resGoalPill').textContent = GOAL_LABELS[eff] || cap(eff);
   document.getElementById('resCount').textContent =
-    eligible.length ? `${eligible.length} products` : '';
+    eligible.length ? `${eligible.length} matched` : '';
 
-  buildRefineRow();
+  buildProfileStrip();
   renderResults(lastRanked);
   showScreen('sResults');
 
-  if (lastRanked.length > 0) updateSbtBar(lastRanked[0]);
   logDemandEvent('results_shown', { recommendations: lastRanked.map(p => p.id) });
 
-  // Sync to budtender floor tool — once per session, silent
+  // Sync to budtender floor tool — once per session
   if (!_floorSynced && lastRanked.length > 0) {
     _floorSynced = true;
     syncToFloor(lastRanked[0]);
   }
 }
 
+// ── PROFILE SUMMARY STRIP ─────────────────────────────────────────
+function buildProfileStrip() {
+  const chips = [];
+  if (answers.experience) chips.push(EXP_LABELS[answers.experience]       || answers.experience);
+  if (answers.format)     chips.push(FORMAT_LABELS[answers.format]         || cap(answers.format));
+  if (answers.intensity)  chips.push(INTENSITY_LABELS[answers.intensity]   || answers.intensity);
+  if (answers.priceSpec)  chips.push(PRICE_LABELS[answers.priceSpec]       || answers.priceSpec);
+
+  const el = document.getElementById('resProfile');
+  if (!el) return;
+  if (!chips.length) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = chips.map(c => `<span class="profile-chip">${xe(c)}</span>`).join('');
+}
+
+// ── RENDER RESULTS ────────────────────────────────────────────────
 function renderResults(ranked) {
-  const eff = selectedGoal || 'relax';
-
-  // Re-filter with active chips before rendering
-  let display = ranked;
-  if (activeFilters.format) {
-    display = display.filter(p => (p.category || '').toLowerCase() === activeFilters.format);
-  }
-  if (activeFilters.priceSpec) {
-    display = display.filter(p => {
-      const pr = parseFloat(p.price) || 0;
-      if (activeFilters.priceSpec === 'budget'  && pr > 40) return false;
-      if (activeFilters.priceSpec === 'premium' && pr < 50) return false;
-      return true;
-    });
-  }
-  // If experience chip is active, re-score and re-sort from full eligible pool
-  // (already handled at run time; here we just show lastRanked as-is for chip toggles)
-
-  if (!display.length) {
+  if (!ranked.length) {
     document.getElementById('resCards').innerHTML =
-      '<div class="empty-state">No products match this filter.<br>Try removing one, or ask your budtender for help.</div>';
+      '<div class="empty-state">No products matched your filters.<br>Try starting over with different preferences.</div>';
     return;
   }
 
-  const maxTotal = display[0]?._total || 1;
+  const eff        = selectedGoal || 'relax';
+  const maxTotal   = ranked[0]?._total || 1;
   const rankLabels = ['Best Match', 'Runner Up', 'Third Pick'];
 
-  // Force meaningful spread with deterministic variance
-  const pcts = display.map((p, i) => {
+  // Deterministic match % display — strictly descending, anchored ranges
+  const pcts = ranked.map((p, i) => {
     if (i === 0) return 100;
-    const raw = Math.round(65 + (p._total / maxTotal) * 35);
-    // Anchored ranges per rank: #2 → 79-91%, #3 → 68-78%
     const ranges = [[100,100],[79,91],[68,78]];
     const [lo, hi] = ranges[i] || [65, 75];
-    const h = productHash(p) % (hi - lo + 1);
+    const raw = Math.round(lo + (p._total / maxTotal) * (hi - lo));
     return Math.max(lo, Math.min(hi, raw - (productHash(p) % 7)));
   });
-  // Ensure strictly descending
   for (let i = 1; i < pcts.length; i++) {
-    if (pcts[i] >= pcts[i-1]) pcts[i] = pcts[i-1] - (5 + productHash(display[i]) % 6);
+    if (pcts[i] >= pcts[i-1]) pcts[i] = pcts[i-1] - (5 + productHash(ranked[i]) % 6);
     pcts[i] = Math.max(65, pcts[i]);
   }
 
-  document.getElementById('resCards').innerHTML = display.map((p, i) => {
-    const cat   = FORMAT_LABELS[(p.category||'').toLowerCase()] || cap(p.category || '');
-    const price = p.price ? `$${Number(p.price).toFixed(0)}` : null;
-    const thcTxt = p.thc  != null ? `THC ${p.thc}%`  : null;
-    const cbdTxt = (p.cbd && p.cbd > 0.5) ? `CBD ${p.cbd}%` : null;
-    const meta  = [p.brand, cat, thcTxt, cbdTxt].filter(Boolean).join(' · ');
-    const why   = buildWhyCopy(p, eff);
+  document.getElementById('resCards').innerHTML = ranked.map((p, i) => {
+    const cat    = FORMAT_LABELS[(p.category||'').toLowerCase()] || cap(p.category || '');
+    const price  = p.price  ? `$${Number(p.price).toFixed(0)}`  : null;
+    const thcTxt = p.thc   != null ? `THC ${p.thc}%`            : null;
+    const cbdTxt = (p.cbd && p.cbd > 0.5) ? `CBD ${p.cbd}%`    : null;
+    const meta   = [p.brand, cat, thcTxt, cbdTxt].filter(Boolean).join(' · ');
+    const why    = buildWhyCopy(p, eff);
+    const ctaLabel = i === 0 ? 'Show my budtender' : 'Choose this one instead';
 
     return `
-    <div class="prod-card${i === 0 ? ' rank-1' : ''}" data-pid="${xe(p.id)}" data-rank="${i+1}" onclick="trackTap(this)">
+    <div class="prod-card${i === 0 ? ' rank-1' : ''}">
       <div class="card-top-row">
         <div class="card-rank-label">${rankLabels[i] || ''}</div>
         <div class="card-match-pct">${pcts[i]}% match</div>
@@ -1045,103 +1383,100 @@ function renderResults(ranked) {
       </div>
       <div class="card-meta">${xe(meta)}</div>
       <div class="card-why">${xe(why)}</div>
+      <button class="card-cta" onclick="openBudtender('${xe(p.id)}')">
+        <span>${ctaLabel}</span>
+        <span>→</span>
+      </button>
     </div>`;
   }).join('');
 }
 
-function updateSbtBar(p) {
-  const price = p.price ? ` · $${Number(p.price).toFixed(0)}` : '';
-  document.getElementById('sbtName').textContent = p.name + price;
-}
-
 // ── BUDTENDER OVERLAY ─────────────────────────────────────────────
-function openBudtender() {
-  if (!lastRanked.length) return;
-  const top = lastRanked[0];
-  const cat   = FORMAT_LABELS[(top.category||'').toLowerCase()] || cap(top.category || '');
-  const price = top.price ? `$${Number(top.price).toFixed(0)}` : '';
+// Accepts any product from lastRanked by ID — not just the top pick.
+function openBudtender(productId) {
+  let product = lastRanked.find(p => p.id === productId);
+  if (!product && lastRanked.length > 0) product = lastRanked[0];
+  if (!product) return;
 
-  document.getElementById('btName').textContent = top.name;
+  const cat   = FORMAT_LABELS[(product.category||'').toLowerCase()] || cap(product.category || '');
+  const price = product.price ? `$${Number(product.price).toFixed(0)}` : '';
+
+  document.getElementById('btName').textContent = product.name;
   document.getElementById('btMeta').textContent =
-    [top.brand, cat, price].filter(Boolean).join(' · ');
+    [product.brand, cat, price].filter(Boolean).join(' · ');
 
-  document.getElementById('btAlts').innerHTML = lastRanked.slice(1).map(p => {
-    const c  = FORMAT_LABELS[(p.category||'').toLowerCase()] || '';
-    const pr = p.price ? ` · $${Number(p.price).toFixed(0)}` : '';
-    return `<div class="bt-alt">${xe(p.name)} · ${xe(c)}${xe(pr)}</div>`;
-  }).join('');
+  const others = lastRanked.filter(p => p.id !== product.id);
+  document.getElementById('btAlts').innerHTML = others.length
+    ? others.map(p => {
+        const c  = FORMAT_LABELS[(p.category||'').toLowerCase()] || '';
+        const pr = p.price ? ` · $${Number(p.price).toFixed(0)}` : '';
+        return `<div class="bt-alt">${xe(p.name)} · ${xe(c)}${xe(pr)}</div>`;
+      }).join('')
+    : '';
 
   document.getElementById('sBudtender').classList.add('open');
   window.scrollTo(0, 0);
+
+  logDemandEvent('budtender_shown', {
+    product_id:   product.id,
+    product_rank: lastRanked.indexOf(product) + 1
+  });
 }
 
 function closeBudtender() {
   document.getElementById('sBudtender').classList.remove('open');
 }
 
-// ── PRODUCT TAP TRACKING ──────────────────────────────────────────
-function trackTap(el) {
-  const pid  = el.dataset.pid;
-  const rank = parseInt(el.dataset.rank, 10);
-  if (!pid) return;
-  logDemandEvent('product_tapped', { product_id: pid, product_rank: rank });
-}
-
 // ── DEMO PRODUCTS ─────────────────────────────────────────────────
 // Customer-safe fields only — no internal data, shelf info, or talking points.
 const DEMO_PRODUCTS = [
-  { id:'d1',  name:'Granddaddy Purple',   brand:'Royal Gardens',  category:'flower',   price:45, thc:23, cbd:0,  in_stock:true, score_sleep:0.82, score_relax:0.42, score_focus:0.10, score_social:0.12, score_relief:0.38, score_beginner:0.22 },
-  { id:'d2',  name:'Northern Lights',     brand:'Emerald Fields', category:'flower',   price:40, thc:18, cbd:0,  in_stock:true, score_sleep:0.74, score_relax:0.50, score_focus:0.12, score_social:0.14, score_relief:0.32, score_beginner:0.35 },
-  { id:'d3',  name:'Purple Punch Gummies',brand:'Green Peak',     category:'edible',   price:25, thc:10, cbd:0,  in_stock:true, score_sleep:0.68, score_relax:0.46, score_focus:0.08, score_social:0.10, score_relief:0.28, score_beginner:0.55 },
-  { id:'d4',  name:'Dream Tincture',      brand:'Bloom Select',   category:'tincture', price:38, thc:5,  cbd:10, in_stock:true, score_sleep:0.71, score_relax:0.55, score_focus:0.10, score_social:0.08, score_relief:0.44, score_beginner:0.62 },
-  { id:'d5',  name:'Blue Dream',          brand:'Canopy Co',      category:'flower',   price:42, thc:22, cbd:0,  in_stock:true, score_sleep:0.38, score_relax:0.78, score_focus:0.40, score_social:0.44, score_relief:0.30, score_beginner:0.28 },
-  { id:'d6',  name:'OG Kush',             brand:'Canopy Co',      category:'flower',   price:48, thc:21, cbd:0,  in_stock:true, score_sleep:0.44, score_relax:0.72, score_focus:0.22, score_social:0.28, score_relief:0.38, score_beginner:0.24 },
-  { id:'d7',  name:'Wedding Cake Vape',   brand:'Summit Select',  category:'vape',     price:55, thc:25, cbd:0,  in_stock:true, score_sleep:0.30, score_relax:0.65, score_focus:0.38, score_social:0.50, score_relief:0.22, score_beginner:0.15 },
-  { id:'d8',  name:'Sour Diesel',         brand:'Green Peak',     category:'flower',   price:46, thc:24, cbd:0,  in_stock:true, score_sleep:0.10, score_relax:0.38, score_focus:0.80, score_social:0.55, score_relief:0.18, score_beginner:0.20 },
-  { id:'d9',  name:'Jack Herer',          brand:'Harvest Gold',   category:'flower',   price:44, thc:19, cbd:1,  in_stock:true, score_sleep:0.12, score_relax:0.42, score_focus:0.74, score_social:0.52, score_relief:0.20, score_beginner:0.32 },
-  { id:'d10', name:'Green Crack Vape',    brand:'Summit Select',  category:'vape',     price:50, thc:21, cbd:0,  in_stock:true, score_sleep:0.08, score_relax:0.30, score_focus:0.70, score_social:0.60, score_relief:0.15, score_beginner:0.18 },
-  { id:'d11', name:'Pineapple Express',   brand:'Coastal Farms',  category:'flower',   price:43, thc:20, cbd:0,  in_stock:true, score_sleep:0.15, score_relax:0.48, score_focus:0.46, score_social:0.78, score_relief:0.20, score_beginner:0.30 },
-  { id:'d12', name:'Tangie Vape',         brand:'Summit Select',  category:'vape',     price:52, thc:22, cbd:0,  in_stock:true, score_sleep:0.08, score_relax:0.35, score_focus:0.48, score_social:0.75, score_relief:0.14, score_beginner:0.22 },
-  { id:'d13', name:'Mimosa',              brand:'Canopy Co',      category:'flower',   price:48, thc:22, cbd:0,  in_stock:true, score_sleep:0.10, score_relax:0.42, score_focus:0.50, score_social:0.72, score_relief:0.16, score_beginner:0.28 },
-  { id:'d14', name:'ACDC',               brand:'Remedy Farms',   category:'flower',   price:50, thc:2,  cbd:14, in_stock:true, score_sleep:0.38, score_relax:0.60, score_focus:0.30, score_social:0.20, score_relief:0.88, score_beginner:0.72 },
-  { id:'d15', name:'Harlequin',           brand:'Remedy Farms',   category:'flower',   price:46, thc:6,  cbd:10, in_stock:true, score_sleep:0.42, score_relax:0.62, score_focus:0.35, score_social:0.22, score_relief:0.82, score_beginner:0.68 },
-  { id:'d16', name:'Relief Topical',      brand:'Bloom Select',   category:'topical',  price:35, thc:0,  cbd:500,in_stock:true, score_sleep:0.10, score_relax:0.30, score_focus:0.10, score_social:0.05, score_relief:0.76, score_beginner:0.80 },
-  { id:'d17', name:'Harlequin 1:1',       brand:'Remedy Farms',   category:'tincture', price:40, thc:5,  cbd:5,  in_stock:true, score_sleep:0.42, score_relax:0.62, score_focus:0.38, score_social:0.30, score_relief:0.58, score_beginner:0.84 },
-  { id:'d18', name:"Charlotte's Web",     brand:'Green Gate',     category:'edible',   price:28, thc:5,  cbd:5,  in_stock:true, score_sleep:0.48, score_relax:0.58, score_focus:0.32, score_social:0.28, score_relief:0.52, score_beginner:0.78 },
-  { id:'d19', name:'Northern Lights Low', brand:'Emerald Fields', category:'preroll',  price:22, thc:12, cbd:2,  in_stock:true, score_sleep:0.55, score_relax:0.50, score_focus:0.28, score_social:0.32, score_relief:0.35, score_beginner:0.75 },
+  { id:'d1',  name:'Granddaddy Purple',   brand:'Royal Gardens',  category:'flower',   price:45, thc:23, cbd:0,   in_stock:true, score_sleep:0.82, score_relax:0.42, score_focus:0.10, score_social:0.12, score_relief:0.38, score_beginner:0.22 },
+  { id:'d2',  name:'Northern Lights',     brand:'Emerald Fields', category:'flower',   price:40, thc:18, cbd:0,   in_stock:true, score_sleep:0.74, score_relax:0.50, score_focus:0.12, score_social:0.14, score_relief:0.32, score_beginner:0.35 },
+  { id:'d3',  name:'Purple Punch Gummies',brand:'Green Peak',     category:'edible',   price:25, thc:10, cbd:0,   in_stock:true, score_sleep:0.68, score_relax:0.46, score_focus:0.08, score_social:0.10, score_relief:0.28, score_beginner:0.55 },
+  { id:'d4',  name:'Dream Tincture',      brand:'Bloom Select',   category:'tincture', price:38, thc:5,  cbd:10,  in_stock:true, score_sleep:0.71, score_relax:0.55, score_focus:0.10, score_social:0.08, score_relief:0.44, score_beginner:0.62 },
+  { id:'d5',  name:'Blue Dream',          brand:'Canopy Co',      category:'flower',   price:42, thc:22, cbd:0,   in_stock:true, score_sleep:0.38, score_relax:0.78, score_focus:0.40, score_social:0.44, score_relief:0.30, score_beginner:0.28 },
+  { id:'d6',  name:'OG Kush',             brand:'Canopy Co',      category:'flower',   price:48, thc:21, cbd:0,   in_stock:true, score_sleep:0.44, score_relax:0.72, score_focus:0.22, score_social:0.28, score_relief:0.38, score_beginner:0.24 },
+  { id:'d7',  name:'Wedding Cake Vape',   brand:'Summit Select',  category:'vape',     price:55, thc:25, cbd:0,   in_stock:true, score_sleep:0.30, score_relax:0.65, score_focus:0.38, score_social:0.50, score_relief:0.22, score_beginner:0.15 },
+  { id:'d8',  name:'Sour Diesel',         brand:'Green Peak',     category:'flower',   price:46, thc:24, cbd:0,   in_stock:true, score_sleep:0.10, score_relax:0.38, score_focus:0.80, score_social:0.55, score_relief:0.18, score_beginner:0.20 },
+  { id:'d9',  name:'Jack Herer',          brand:'Harvest Gold',   category:'flower',   price:44, thc:19, cbd:1,   in_stock:true, score_sleep:0.12, score_relax:0.42, score_focus:0.74, score_social:0.52, score_relief:0.20, score_beginner:0.32 },
+  { id:'d10', name:'Green Crack Vape',    brand:'Summit Select',  category:'vape',     price:50, thc:21, cbd:0,   in_stock:true, score_sleep:0.08, score_relax:0.30, score_focus:0.70, score_social:0.60, score_relief:0.15, score_beginner:0.18 },
+  { id:'d11', name:'Pineapple Express',   brand:'Coastal Farms',  category:'flower',   price:43, thc:20, cbd:0,   in_stock:true, score_sleep:0.15, score_relax:0.48, score_focus:0.46, score_social:0.78, score_relief:0.20, score_beginner:0.30 },
+  { id:'d12', name:'Tangie Vape',         brand:'Summit Select',  category:'vape',     price:52, thc:22, cbd:0,   in_stock:true, score_sleep:0.08, score_relax:0.35, score_focus:0.48, score_social:0.75, score_relief:0.14, score_beginner:0.22 },
+  { id:'d13', name:'Mimosa',              brand:'Canopy Co',      category:'flower',   price:48, thc:22, cbd:0,   in_stock:true, score_sleep:0.10, score_relax:0.42, score_focus:0.50, score_social:0.72, score_relief:0.16, score_beginner:0.28 },
+  { id:'d14', name:'ACDC',               brand:'Remedy Farms',   category:'flower',   price:50, thc:2,  cbd:14,  in_stock:true, score_sleep:0.38, score_relax:0.60, score_focus:0.30, score_social:0.20, score_relief:0.88, score_beginner:0.72 },
+  { id:'d15', name:'Harlequin',           brand:'Remedy Farms',   category:'flower',   price:46, thc:6,  cbd:10,  in_stock:true, score_sleep:0.42, score_relax:0.62, score_focus:0.35, score_social:0.22, score_relief:0.82, score_beginner:0.68 },
+  { id:'d16', name:'Relief Topical',      brand:'Bloom Select',   category:'topical',  price:35, thc:0,  cbd:500, in_stock:true, score_sleep:0.10, score_relax:0.30, score_focus:0.10, score_social:0.05, score_relief:0.76, score_beginner:0.80 },
+  { id:'d17', name:'Harlequin 1:1',       brand:'Remedy Farms',   category:'tincture', price:40, thc:5,  cbd:5,   in_stock:true, score_sleep:0.42, score_relax:0.62, score_focus:0.38, score_social:0.30, score_relief:0.58, score_beginner:0.84 },
+  { id:'d18', name:"Charlotte's Web",     brand:'Green Gate',     category:'edible',   price:28, thc:5,  cbd:5,   in_stock:true, score_sleep:0.48, score_relax:0.58, score_focus:0.32, score_social:0.28, score_relief:0.52, score_beginner:0.78 },
+  { id:'d19', name:'Northern Lights Low', brand:'Emerald Fields', category:'preroll',  price:22, thc:12, cbd:2,   in_stock:true, score_sleep:0.55, score_relax:0.50, score_focus:0.28, score_social:0.32, score_relief:0.35, score_beginner:0.75 },
 ];
 
-/* ── SUPABASE SCHEMA REFERENCE ────────────────────────────────────────
-   Run these once in the Supabase SQL editor.
+/* ── ADMIN DASHBOARD QUERY REFERENCE ─────────────────────────────────
+   All 6 answers land in demand_events automatically. Sample queries:
 
-   1. DEMAND EVENTS TABLE:
-   ────────────────────────
-   create table if not exists demand_events (
-     id                  uuid primary key default gen_random_uuid(),
-     created_at          timestamptz default now(),
-     session_id          uuid,
-     organization_id     uuid references organizations(id) on delete cascade,
-     source              text,
-     goal                text,
-     format_pref         text,
-     experience          text,
-     event_type          text,
-     recommendations     text[],
-     product_id          text,
-     product_rank        int
-   );
-   alter table demand_events enable row level security;
-   create policy "demand_events_insert" on demand_events
-     for insert to anon with check (true);
+   -- Age range breakdown
+   SELECT experience::json->>'ageRange' as age, count(*)
+   FROM demand_events
+   WHERE event_type = 'qr_profile_complete'
+   GROUP BY 1 ORDER BY 2 DESC;
 
-   2. CUSTOMER-SAFE VIEW (Phase 2 — structural RLS at DB level):
-   ──────────────────────────────────────────────────────────────
-   create or replace view customer_products as
-   select id, organization_id, name, brand, category,
-          price, thc, cbd, in_stock,
-          score_sleep, score_relax, score_focus,
-          score_social, score_relief, score_beginner
-   from products;
+   -- Experience level by goal
+   SELECT goal, experience::json->>'experience' as exp_level, count(*)
+   FROM demand_events
+   WHERE event_type = 'qr_profile_complete'
+   GROUP BY 1, 2 ORDER BY 1, 3 DESC;
+
+   -- Format preference distribution
+   SELECT experience::json->>'format' as format, count(*)
+   FROM demand_events
+   WHERE event_type = 'qr_profile_complete'
+   GROUP BY 1 ORDER BY 2 DESC;
+
+   -- Which product was actually shown to the budtender (customer choice)
+   SELECT product_id, product_rank, count(*) as chosen
+   FROM demand_events
+   WHERE event_type = 'budtender_shown'
+   GROUP BY 1, 2 ORDER BY 3 DESC;
    ──────────────────────────────────────────────────────────────── */
 </script>
 </body>
