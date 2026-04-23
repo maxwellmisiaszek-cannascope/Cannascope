@@ -532,6 +532,29 @@
             font-weight: 600;
             color: var(--text-2);
         }
+        /* LLM upgrade states */
+        .say-this-drawer.tp-loading .say-this-bullets {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .say-this-drawer.tp-loading .say-this-opening,
+        .say-this-drawer.tp-loading .say-this-next {
+            opacity: 0.4;
+        }
+        .tp-live-badge {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: rgba(76,175,128,0.12);
+            border: 1px solid rgba(76,175,128,0.3);
+            border-radius: 4px;
+            padding: 1px 5px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
         .btn-details-link {
             display: inline-block;
             margin-top: 10px;
@@ -945,6 +968,11 @@
 const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
 
+// Talking points API — set to your Vercel deployment URL once deployed
+// Leave empty to use template fallback only
+const TALKING_POINTS_API_URL = '';  // e.g. 'https://cannascope-api.vercel.app/api/talking-points'
+const _tpCache = new Map();         // keyed by `${productId}:${goal}:${contextHash}`
+
 const GOAL_LABELS = {
     sleep:'Sleep', relax:'Relax', focus:'Focus',
     social:'Social', relief:'Relief', beginner:'Not Sure'
@@ -1220,6 +1248,7 @@ let orgId = null, orgName = '', allProducts = [];
 let selectedGoal  = null;
 let filters       = {};
 let debugMode     = false;
+let _orgScoreWeights = {}; // { goal: { format: multiplier } } — loaded from org_score_weights
 
 const SESSION_ID = crypto.randomUUID();
 let _lastRecommendedIds = [];
@@ -1376,6 +1405,29 @@ const DEMO_PRODUCTS = [
       talking_points:'WHY IT WORKS\nLow THC + pre-measured dose = safe first experience with flower. 12% THC is accessible; 2% CBD softens any edge.\n\nTALKING POINTS\n• One or two puffs, then wait 10 minutes before deciding if they want more. That\'s the rule.\n• Pre-rolled format removes the intimidation of rolling for new consumers.\n• Low-dose means they can explore comfortably without fear of overdoing it.\n\nBEST ALONGSIDE\n1:1 CBD tincture for a balanced backup if they want to reduce the THC effect.' }
 ];
 
+// ── LEARNING LOOP — load org score weights ───────────────────────────────────
+// Reads the nightly-computed multipliers (goal × format) from org_score_weights.
+// Applied at scoring time so the algorithm self-corrects based on what actually sells.
+async function loadOrgScoreWeights(id) {
+    try {
+        const { data, error } = await sb
+            .from('org_score_weights')
+            .select('adjustments')
+            .eq('organization_id', id)
+            .single();
+        if (!error && data?.adjustments) {
+            const parsed = typeof data.adjustments === 'string'
+                ? JSON.parse(data.adjustments)
+                : data.adjustments;
+            _orgScoreWeights = parsed || {};
+            console.log('[Cannascope] score weights loaded:', Object.keys(_orgScoreWeights));
+        }
+    } catch (e) {
+        // Non-fatal — fall back to unweighted scoring
+        console.warn('[Cannascope] score weights not loaded:', e.message);
+    }
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function loadOrg(key) {
     const { data: org, error: orgErr } = await sb.from('organizations').select('id,name').eq('public_key', key).single();
@@ -1421,6 +1473,9 @@ async function loadOrg(key) {
                 }
             })();
         }
+        // Load learned score weights in background — non-blocking
+        loadOrgScoreWeights(org.id);
+
         startQRListener();
         return true;
     }
@@ -2154,6 +2209,96 @@ function getNextQuestion(p, goal) {
     return goalMap[goal] || 'What format are they most comfortable with?';
 }
 
+// ── LLM TALKING POINTS — ASYNC UPGRADE ───────────────────────────────────────
+// Builds the customer context object from current filter state.
+function buildCustomerContext() {
+    return {
+        goal:       selectedGoal   || 'relax',
+        experience: filters.experience || null,
+        format:     filters.format     || null,
+        intensity:  filters.intensity  || null,
+        priceSpec:  filters.priceSpec  || null,
+        ageRange:   filters.ageRange   || null,
+    };
+}
+
+// Simple hash for cache key — avoids re-fetching identical calls.
+function _ctxHash(ctx) {
+    return [ctx.experience, ctx.format, ctx.intensity, ctx.priceSpec, ctx.ageRange]
+        .map(v => v || '_').join(':');
+}
+
+// Fetches LLM talking points for a product, then updates the already-rendered
+// say-this drawer in the DOM. Falls back silently to template content on any error.
+async function fetchAndUpgradeTalkingPoints(p, idx) {
+    if (!TALKING_POINTS_API_URL) return; // no API configured — stay with templates
+    const goal = selectedGoal;
+    const ctx  = buildCustomerContext();
+    const cacheKey = `${p.id}:${goal}:${_ctxHash(ctx)}`;
+
+    // Check cache first
+    if (_tpCache.has(cacheKey)) {
+        _applyTalkingPoints(p.id, _tpCache.get(cacheKey));
+        return;
+    }
+
+    const drawer = document.getElementById('say-' + p.id);
+    if (!drawer) return;
+
+    // Show subtle loading state while we wait
+    drawer.classList.add('tp-loading');
+
+    try {
+        const res = await fetch(TALKING_POINTS_API_URL, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ product: p, context: { ...ctx, goal } }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.opening || !Array.isArray(data.bullets) || !data.next_question) {
+            throw new Error('unexpected shape');
+        }
+
+        _tpCache.set(cacheKey, data);
+        _applyTalkingPoints(p.id, data);
+
+    } catch (e) {
+        // Silently swallow — template content stays visible
+        console.warn('[cannascope] talking-points fallback for', p.name, e.message);
+    } finally {
+        if (drawer) drawer.classList.remove('tp-loading');
+    }
+}
+
+// Patches the say-this drawer DOM in place with fresh LLM content.
+function _applyTalkingPoints(productId, data) {
+    const drawer = document.getElementById('say-' + productId);
+    if (!drawer) return;
+
+    const openingEl  = drawer.querySelector('.say-this-opening');
+    const bulletsEl  = drawer.querySelector('.say-this-bullets');
+    const nextEl     = drawer.querySelector('.say-this-next');
+    const labelEl    = drawer.querySelector('.say-this-label');
+
+    if (openingEl) openingEl.textContent = data.opening;
+
+    if (bulletsEl) {
+        bulletsEl.innerHTML = data.bullets
+            .map(b => `<div class="say-this-bullet">${xe(b)}</div>`)
+            .join('');
+    }
+
+    if (nextEl && data.next_question) {
+        nextEl.textContent = `"Ask: ${data.next_question}"`;
+    }
+
+    // Add "Live AI" badge to the drawer label to signal upgraded content
+    if (labelEl && !labelEl.querySelector('.tp-live-badge')) {
+        labelEl.insertAdjacentHTML('beforeend', '<span class="tp-live-badge">Live AI</span>');
+    }
+}
+
 // ── LIVE POTENCY SIGNAL ───────────────────────────────────────────────────────
 function livePotencySignal(thc, cbd, category) {
     const t   = parseFloat(thc) || 0;
@@ -2445,6 +2590,10 @@ async function findProducts() {
     const scored = eligible
         .map((p, i) => {
             const result = scoreProduct(p, goal);
+            // Apply learned multiplier (goal × format) from nightly aggregation
+            const cat = (p.category || 'any').toLowerCase();
+            const wt  = (_orgScoreWeights[goal] || {})[cat] || 1.0;
+            if (wt !== 1.0) result.score = Math.round(Math.min(100, result.score * wt));
             result.score = Math.min(100, result.score + rotationBonus(i, seed));
             return { ...p, _result: result };
         })
@@ -2499,6 +2648,10 @@ async function findProducts() {
     }
 
     document.getElementById('productCards').innerHTML = html;
+
+    // Async-upgrade each top pick's say-this drawer with live LLM talking points.
+    // DOM renders instantly with template content; LLM patches it in background.
+    setTimeout(() => { topPicks.forEach((p, i) => fetchAndUpgradeTalkingPoints(p, i)); }, 0);
 
     _lastRecommendedIds = topPicks.map(p => p.id);
     logDemandEvent('results_shown', { recommendations: _lastRecommendedIds });
