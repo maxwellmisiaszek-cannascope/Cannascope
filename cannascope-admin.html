@@ -922,15 +922,220 @@ async function autoScripts(){
   setTimeout(()=>showToast('Scripts generated for '+miss.length+' product'+(miss.length!==1?'s':'')),600);
 }
 
-function buildScript(p){
-  const em={sleep:'ideal for winding down and restful sleep',relax:'perfect for stress relief and relaxation',focus:'great for staying sharp and productive',social:'a social, uplifting experience',relief:'effective for managing discomfort and tension',beginner:'a gentle, approachable option for new consumers'};
-  const cm={flower:'This flower',vape:'This vape cartridge',edible:'This edible',concentrate:'This concentrate',tincture:'This tincture',topical:'This topical',preroll:'This pre-roll'};
-  const cl=cm[p.category]||'This product';
-  const el=em[p.effect]||'a well-rounded choice';
-  const tn=p.thc?' At '+p.thc+'% THC'+(p.cbd?' and '+p.cbd+'% CBD':'')+', it':' It';
-  const sn=p.shelf?' from our '+p.shelf+'.':'.';
-  return `${cl} from ${p.brand||'the brand'} is ${el}.${tn} delivers a consistent experience for most consumers${sn}${p.manager_note?'\n\nManager note: '+p.manager_note:''}`;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RESEARCH-BACKED SCRIPT ENGINE
+// Every function grounded in published cannabinoid / terpene research.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── CANNABINOID CONTEXT ───────────────────────────────────────────────────────
+// Returns one research-grounded sentence explaining WHY this product works
+// for its effect. Parses cannabinoid names from the product name string.
+function cannabinoidContext(thc, cbd, name, strainType) {
+  const n = (name || '').toLowerCase();
+  const hasCBG  = n.includes('cbg');
+  const hasTHCV = n.includes('thcv');
+  const hasCBN  = n.includes('cbn');
+  const hasCBC  = n.includes('cbc');
+  const hiCBD   = cbd >= 1 || n.includes('1:1') || n.includes('2:1') || n.includes('3:1') || n.includes('cbd');
+  const thcN    = parseFloat(thc) || 0;
+  const cbdN    = parseFloat(cbd) || 0;
+
+  if (hasCBG && hasTHCV)
+    return 'CBG + THCV combination: CBG is linked in research to mood support and anti-inflammatory effects while THCV produces a fast-onset, clear-headed effect with appetite suppression — together they deliver functional daytime energy without anxiety or sedation.';
+  if (hasCBG && hasCBC)
+    return 'CBG + CBC synergy: both are non-intoxicating minor cannabinoids — CBG supports mood and focus while CBC amplifies anti-inflammatory effects through the entourage effect.';
+  if (hasCBG && hiCBD)
+    return 'CBG and CBD work through complementary pathways: CBG engages CB1 receptors for mood and energy while CBD modulates serotonin receptors to reduce anxiety — the combination produces clear-headed calm without intoxication.';
+  if (hasCBG)
+    return 'CBG (cannabigerol) is a non-intoxicating cannabinoid with published research linking it to anti-inflammatory effects, neuroprotection, mood elevation, and sustained mental energy — rare in most products at meaningful concentrations.';
+  if (hasTHCV)
+    return 'THCV produces a fast-onset, shorter-duration high compared to THC alone — research suggests it acts as a partial CB1 antagonist at low doses, producing clear-headed stimulation and appetite suppression ideal for daytime use.';
+  if (hasCBN)
+    return 'CBN is a mildly psychoactive cannabinoid produced from THC oxidation — research indicates sedative properties at higher doses, particularly when combined with THC, making it one of the few cannabinoids with direct sleep-support evidence.';
+  if (hasCBC)
+    return 'CBC (cannabichromene) is non-intoxicating but contributes anti-inflammatory and mood-elevating effects through the entourage effect — particularly relevant for relief-focused consumers who want anti-inflammatory benefit beyond what CBD alone provides.';
+  if (hiCBD && thcN > 0 && cbdN > 0) {
+    const r = Math.round(cbdN / thcN * 10) / 10;
+    if (r >= 2)
+      return `High CBD:THC ratio (${cbdN.toFixed(0)}:${thcN.toFixed(0)}) means the CBD significantly moderates THC's psychoactivity via serotonin 1A receptor binding — suitable for consumers who want therapeutic benefit with minimal intoxication.`;
+    return 'Balanced THC:CBD ratio: the CBD content reduces anxiety and moderates THC intensity, producing a clearer, more functional experience than high-THC products alone.';
+  }
+  if (strainType === 'indica')
+    return 'Indica-dominant genetics typically produce myrcene-heavy terpene profiles — myrcene is the most studied cannabis terpene, with research linking it to sedation, muscle relaxation, and enhanced THC permeability across the blood-brain barrier.';
+  if (strainType === 'sativa')
+    return 'Sativa-dominant genetics typically produce limonene and terpinolene-forward terpene profiles — limonene is linked to mood elevation and anxiolytic effects, terpinolene to cerebral stimulation and energy.';
+  return 'Hybrid genetics produce a balanced terpene profile — effects are more predictable and versatile across tolerance levels than pure indica or sativa strains.';
 }
+
+// ── ONSET + DURATION ──────────────────────────────────────────────────────────
+function onsetDuration(category) {
+  const map = {
+    flower:      'Onset 5–15 min, effects last 1–3 hours. Easiest format to titrate in real time.',
+    preroll:     'Onset 5–15 min, effects last 1–3 hours. Convenient but harder to control dose mid-session.',
+    vape:        'Onset under 5 min, effects last 1–2 hours. Best format for on-demand dosing — one puff, wait 5 min, assess before continuing.',
+    edible:      'Onset 45–90 min, effects last 4–8 hours. Tell the customer: take half, wait the full 90 min, then decide. Redosing too early is the most common mistake.',
+    concentrate: 'Onset under 5 min, effects last 1–3 hours. Very high potency — a rice-grain amount is a full dose for most people. Experienced consumers only.',
+    tincture:    'Sublingual onset 15–30 min (hold under tongue 60–90 sec), swallowed onset 45–90 min. Effects last 2–4 hours. Most controllable format after vape.',
+    topical:     'No psychoactive effect. Localized relief within 15–45 min. Safe for any customer regardless of tolerance or experience.',
+  };
+  return map[(category||'').toLowerCase()] || 'Onset and duration vary — ask the customer about their preferred consumption method.';
+}
+
+// ── EXPERIENCE SIGNAL ─────────────────────────────────────────────────────────
+function experienceSignal(thc, cbd, strainType, category) {
+  const t = parseFloat(thc) || 0;
+  const c = parseFloat(cbd) || 0;
+  const cat = (category || '').toLowerCase();
+  if (cat === 'topical') return 'Non-intoxicating — appropriate for any customer, including those who have never used cannabis.';
+  const ratio = t > 0 && c > 0 ? c / t : 0;
+  if (ratio >= 2)   return 'High CBD moderates THC intensity significantly — suitable for beginners, daytime use, and customers who have had anxiety with THC before.';
+  if (t >= 26)      return 'Very high potency — experienced consumers with established tolerance only. Not for first-timers or occasional users.';
+  if (t >= 20)      return 'High potency — best for experienced to very experienced consumers. Ask the customer how often they use and what their usual dose is.';
+  if (t >= 13)      return 'Moderate potency — accessible for casual to experienced consumers. Good middle-of-the-road recommendation for most regulars.';
+  if (t > 0 && t < 13) return `Mild potency at ${t.toFixed(1)}% THC — well-suited for beginners, low-tolerance customers, or anyone coming back after a long break.`;
+  return 'Potency unknown — ask the customer about their tolerance before recommending.';
+}
+
+// ── LEAD BENEFIT ──────────────────────────────────────────────────────────────
+// The most important bullet. Effect + product-specific rationale.
+function buildLeadBenefit(p, eff, strainType, thc, cbd) {
+  const n  = (p.name  || '').toLowerCase();
+  const cat = (p.category || '').toLowerCase();
+  const hasCBG  = n.includes('cbg');
+  const hasTHCV = n.includes('thcv');
+  const hasCBN  = n.includes('cbn');
+  const hasCBC  = n.includes('cbc');
+  const hiCBD   = cbd >= 1 || n.includes('1:1') || n.includes('2:1') || n.includes('cbd');
+  const t = parseFloat(thc) || 0;
+  const c = parseFloat(cbd) || 0;
+
+  const leads = {
+    sleep: () => {
+      if (hasCBN)    return 'CBN content makes this a sleep-specific pick — one of the few products in the store with a cannabinoid that has direct sedative research behind it, not just indica genetics.';
+      if (cat === 'edible') return 'Edible format carries effects through the night — ideal for customers who fall asleep fine but wake up 3–4 hours later with conventional products.';
+      if (cat === 'tincture') return 'Tincture format gives precise dosing control for sleep — customer can start with half a dropper, wait 20 min, and adjust without committing to a full dose.';
+      if (strainType === 'indica') return 'High-myrcene indica profile is the standard sleep recommendation — myrcene is the most studied sedative terpene in cannabis and works synergistically with THC for body relaxation.';
+      return 'End-of-day product — position for customers dealing with stress-driven insomnia or physical tension that prevents sleep.';
+    },
+    relax: () => {
+      if (hiCBD && t > 0) return `Balanced ratio makes this the best relax pick for functional customers — they can unwind without being couch-locked, which is what most after-work consumers actually want.`;
+      if (cat === 'vape') return 'Vape format gives on-demand relaxation — customer takes one hit, waits 5 minutes, and can continue their evening at whatever level they choose.';
+      if (strainType === 'indica') return 'Body-focused indica effects address physical tension directly — good fit for customers who describe their stress as physical (tight shoulders, clenched jaw, restless).';
+      return 'Relaxation-forward profile — best positioned for after-work or weekend wind-down. Ask the customer what "relax" means to them: physical, mental, or both.';
+    },
+    focus: () => {
+      if (hasCBG)  return 'CBG-forward profile is the strongest focus recommendation in the store — CBG supports focus through a different pathway than THC, without the anxiety or cognitive fog that high-THC products can cause.';
+      if (hasTHCV) return 'THCV is one of the only cannabinoids with research specifically linking it to increased focus and reduced appetite — a rare find and a strong differentiator from standard sativa products.';
+      if (strainType === 'sativa') return 'Sativa-dominant terpene profile (limonene + terpinolene) delivers cerebral stimulation without body sedation — position for creative work, studying, or long work sessions.';
+      return 'Low-sedation, daytime-appropriate profile — suitable for customers who want cannabis to enhance productivity rather than pause it.';
+    },
+    social: () => {
+      if (strainType === 'sativa') return 'Sativa genetics and uplifting terpene profile make this the go-to social pick — promotes talkativeness, humor, and lowered social inhibition without the sedation that kills social energy.';
+      if (cat === 'vape') return 'Portable vape format is ideal for social settings — discreet, fast-acting, and controllable so customers can stay at exactly the level they want.';
+      if (t >= 18)  return 'Higher potency social product — recommend for experienced customers at events or gatherings. Flag that this hits harder than typical social use for beginners.';
+      return 'Uplifting, mood-forward profile — position as a pre-event or group-setting product for customers who want to feel good without getting too high.';
+    },
+    relief: () => {
+      if (hasCBC)  return 'CBC content adds a meaningful anti-inflammatory layer beyond what THC or CBD alone provides — this is the science-backed choice for customers with inflammation-specific complaints, not just general discomfort.';
+      if (hiCBD && t > 0) return `High CBD-to-THC ratio provides anti-inflammatory relief without heavy psychoactive effects — ideal for customers who need to function during the day or who are THC-sensitive.`;
+      if (cat === 'topical') return 'Topical application delivers targeted, localized relief without any psychoactive effect — the strongest recommendation for customers who want pain relief but have concerns about impairment.';
+      if (t >= 18) return 'Higher-THC relief product addresses both the pain signal and the anxiety that accompanies chronic discomfort — best for moderate-to-severe complaints in experienced consumers.';
+      return 'Anti-inflammatory and analgesic profile — position for customers dealing with chronic tension, joint pain, workout recovery, or stress headaches.';
+    },
+    beginner: () => {
+      if (hiCBD && t > 0) return 'High CBD content is the most important feature for beginners — the CBD acts as a safety net against anxiety and prevents the overwhelming intoxication that turns new consumers off cannabis permanently.';
+      if (t < 10)  return `Low THC at ${t.toFixed(1)}% means the effect is mild and predictable — significantly lower risk of overconsumption anxiety than standard products. Tell the customer exactly what to expect.`;
+      if (cat === 'edible') return 'CAUTION with beginners and edibles: the 45–90 min delay causes more bad first experiences than any other product. Only recommend if the customer fully understands the wait time and commits to not redosing early.';
+      return 'Approachable profile — always use the 3-question framework first: have they used cannabis before, what happened, and what are they hoping for today.';
+    },
+  };
+
+  const fn = leads[eff];
+  return fn ? fn() : `Best for ${eff} — ${strainType} profile at ${t > 0 ? t.toFixed(1)+'% THC' : 'unknown potency'}.`;
+}
+
+// ── FIND UPSELL ───────────────────────────────────────────────────────────────
+// Returns { product, reason } or null.
+// Priority: (1) same effect + different format  (2) complementary effect
+//           (3) same brand + different format   (4) highest-scoring in any category
+function findUpsell(p, allProds) {
+  if (!allProds || allProds.length < 2) return null;
+  const pool = allProds.filter(x => x.id !== p.id && x.in_stock !== false && x.name !== p.name);
+  if (!pool.length) return null;
+
+  const scoreKey = 'score_' + (p.effect || 'relax');
+  const complementMap = {
+    sleep:'relax', relax:'sleep', focus:'social',
+    social:'relax', relief:'relax', beginner:'sleep'
+  };
+  const formatPairs = {
+    flower:'vape', vape:'edible', edible:'tincture',
+    tincture:'flower', preroll:'vape', concentrate:'edible', topical:'tincture'
+  };
+  const compEff    = complementMap[p.effect];
+  const compFmt    = formatPairs[(p.category||'').toLowerCase()];
+
+  // 1. Same effect, ideal complementary format
+  const s1 = pool.filter(x => x.effect === p.effect && (x.category||'').toLowerCase() === compFmt)
+               .sort((a,b)=>(b[scoreKey]||0)-(a[scoreKey]||0));
+  if (s1.length) return { product: s1[0], reason: `same goal as a ${compFmt} — different onset and duration gives the customer flexibility` };
+
+  // 2. Same effect, any different format
+  const s2 = pool.filter(x => x.effect === p.effect && x.category !== p.category)
+               .sort((a,b)=>(b[scoreKey]||0)-(a[scoreKey]||0));
+  if (s2.length) return { product: s2[0], reason: `same ${p.effect} goal in ${s2[0].category} format — worth having both for different occasions` };
+
+  // 3. Complementary effect, best scoring
+  if (compEff) {
+    const compKey = 'score_' + compEff;
+    const s3 = pool.filter(x => x.effect === compEff).sort((a,b)=>(b[compKey]||0)-(a[compKey]||0));
+    if (s3.length) return { product: s3[0], reason: `natural pairing — ${p.effect} now, ${compEff} later` };
+  }
+
+  // 4. Same brand, different format
+  const s4 = pool.filter(x => x.brand === p.brand && x.category !== p.category);
+  if (s4.length) return { product: s4[0], reason: `same brand in a different format — customers who like the brand often want variety` };
+
+  // 5. Fallback: highest scorer for this effect in entire pool
+  const s5 = pool.sort((a,b)=>(b[scoreKey]||0)-(a[scoreKey]||0));
+  if (s5.length) return { product: s5[0], reason: `top-scoring ${p.effect} product in the store` };
+
+  return null;
+}
+
+// ── MAIN SCRIPT BUILDER ───────────────────────────────────────────────────────
+function buildScript(p) {
+  const strainType = p._strain_type || 'hybrid';
+  const thc  = parseFloat(p.thc)  || 0;
+  const cbd  = parseFloat(p.cbd)  || 0;
+  const cat  = (p.category || 'product').toLowerCase();
+  const eff  = (p.effect   || 'balanced').toLowerCase();
+
+  const mechanism = cannabinoidContext(thc, cbd, p.name, strainType);
+  const lead      = buildLeadBenefit(p, eff, strainType, thc, cbd);
+  const onset     = onsetDuration(cat);
+  const expSig    = experienceSignal(thc, cbd, strainType, cat);
+  const upsell    = findUpsell(p, products);
+
+  let script = `WHY IT WORKS\n${mechanism}`;
+  script += `\n\nTALKING POINTS\n• ${lead}\n• ${onset}\n• ${expSig}`;
+
+  if (upsell) {
+    const u = upsell.product;
+    const uName  = u.name  || 'Unknown';
+    const uPrice = u.price ? ` ($${u.price})` : '';
+    const uCat   = u.category ? ` · ${u.category}` : '';
+    script += `\n\nBEST ALONGSIDE\n${uName}${uPrice}${uCat} — ${upsell.reason}.`;
+  }
+
+  if (p.manager_note && p.manager_note.trim()) {
+    script += `\n\nMANAGER NOTE\n${p.manager_note}`;
+  }
+
+  return script;
+}
+
 
 // -- EXPORT ----------------------------------------
 function exportCSV(){
@@ -1907,36 +2112,15 @@ function mapDutchieProduct(dp, orgId) {
 
 // ── AUTO TALKING POINT GENERATOR ──────────────────────────────────────────────
 function autoTalkingPoint(name, effect, category, thc, cbd, strainType, match) {
-  const efLang = {
-    sleep:    'winding down and getting a full night of rest',
-    relax:    'melting stress and finding deep relaxation',
-    focus:    'staying sharp, creative, and productive',
-    social:   'uplifting, social, and energizing experiences',
-    relief:   'managing discomfort, tension, and inflammation',
-    beginner: 'a gentle, approachable first experience',
-  };
-  const catLang = {
-    flower:'Flower',vape:'Vape',edible:'Edible',concentrate:'Concentrate',
-    tincture:'Tincture',topical:'Topical',preroll:'Pre-roll',
-  };
-  const stLang = {indica:'indica',sativa:'sativa',hybrid:'hybrid',cbd:'high-CBD'};
-
-  let tp = `${name} is a ${stLang[strainType]||'hybrid'} ${catLang[category]||'product'} ideal for ${efLang[effect]||effect}.`;
-
-  if (thc > 0 && cbd > 0) {
-    tp += ` THC ${thc.toFixed(1)}% / CBD ${cbd.toFixed(1)}%.`;
-  } else if (thc > 0) {
-    tp += ` ${thc.toFixed(1)}% THC.`;
-  } else if (cbd > 0) {
-    tp += ` ${cbd.toFixed(1)}% CBD.`;
-  }
-
-  if (category === 'topical') tp += ' Applied directly — no psychoactive effect.';
-  if (category === 'edible')  tp += ' Effects take 60–90 min and last 4–8 hours — start low.';
-  if (category === 'concentrate') tp += ' High potency — recommended for experienced consumers.';
-  if (effect === 'beginner' && thc < 15) tp += ' Mild, predictable, and a great starting point.';
-
-  return tp;
+  // During CSV import we don't have the full product object or the global products
+  // array yet — generate a research-backed script from available fields only.
+  // Upsell will be added when the user runs Generate Scripts from the dashboard.
+  const p = { name, effect, category, thc, cbd, _strain_type: strainType };
+  const mechanism = cannabinoidContext(thc, cbd, name, strainType);
+  const lead      = buildLeadBenefit(p, (effect||'balanced').toLowerCase(), strainType, parseFloat(thc)||0, parseFloat(cbd)||0);
+  const onset     = onsetDuration((category||'').toLowerCase());
+  const expSig    = experienceSignal(thc, cbd, strainType, category);
+  return `WHY IT WORKS\n${mechanism}\n\nTALKING POINTS\n• ${lead}\n• ${onset}\n• ${expSig}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
