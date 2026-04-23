@@ -194,65 +194,44 @@
             letter-spacing: -0.01em;
         }
         .sub-spacer { flex: 1; }
-        .btn-refine {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-2);
-            background: none;
-            border: 1px solid var(--border-2);
-            border-radius: 7px;
-            padding: 5px 11px;
-            cursor: pointer;
-            font-family: inherit;
-            white-space: nowrap;
-            flex-shrink: 0;
-            transition: all 0.1s;
-        }
-        .btn-refine:hover { border-color: var(--text-3); color: var(--text); }
-        .btn-refine.active {
-            background: var(--surface-2);
-            border-color: var(--border-2);
-            color: var(--text);
-        }
         .btn-new-customer {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--accent);
-            background: var(--accent-light);
-            border: 1px solid var(--accent-border);
-            border-radius: 7px;
-            padding: 5px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            padding: 7px 14px;
             cursor: pointer;
             font-family: inherit;
             white-space: nowrap;
             flex-shrink: 0;
-            transition: all 0.1s;
+            letter-spacing: -0.01em;
+            transition: background 0.1s, transform 0.08s;
         }
-        .btn-new-customer:hover { background: #D8EFE3; border-color: var(--accent-mid); }
+        .btn-new-customer:hover  { background: #245c43; }
         .btn-new-customer:active { transform: scale(0.97); }
 
-        /* ── REFINE TRAY ──────────────────────────────────── */
+        /* ── REFINE TRAY — always-on bar ─────────────────── */
         .refine-tray {
             background: var(--surface);
             border-bottom: 1px solid var(--border);
-            padding: 10px 16px;
+            padding: 9px 16px;
             position: sticky;
             top: 100px;
             z-index: 90;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            display: none;
             scrollbar-width: none;
         }
         .refine-tray::-webkit-scrollbar { display: none; }
-        .refine-tray.open { display: block; }
         .refine-inner {
             display: flex;
             gap: 6px;
             white-space: nowrap;
         }
         .refine-chip {
-            height: 32px;
+            height: 30px;
             padding: 0 12px;
             background: var(--surface);
             border: 1px solid var(--border-2);
@@ -277,7 +256,7 @@
         }
         .refine-sep {
             width: 1px;
-            height: 20px;
+            height: 18px;
             background: var(--border);
             flex-shrink: 0;
             align-self: center;
@@ -714,11 +693,10 @@
         <button class="btn-back" onclick="goToGoal()">← Back</button>
         <span class="goal-pill" id="goalPill">Sleep</span>
         <div class="sub-spacer"></div>
-        <button class="btn-refine" id="btnRefine" onclick="toggleRefine()">Refine ↓</button>
-        <button class="btn-new-customer" onclick="newCustomer()">New Customer →</button>
+        <button class="btn-new-customer" onclick="newCustomer()">+ New Customer</button>
     </div>
 
-    <!-- inline refine tray (slides open below sub-header) -->
+    <!-- always-on refine bar -->
     <div class="refine-tray" id="refineTray">
         <div class="refine-inner" id="refineInner"><!-- populated by JS --></div>
     </div>
@@ -738,16 +716,6 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const GOAL_LABELS = {
     sleep:'Sleep', relax:'Relax', focus:'Focus',
     social:'Social', relief:'Relief', beginner:'Easy Start'
-};
-
-// Follow-up questions — used in Say This drawer
-const FOLLOWUP = {
-    sleep:    'Are they flexible on format, or specifically looking for flower?',
-    relax:    'Do they want quick relief (vape/flower) or something longer-lasting?',
-    focus:    'Daytime productivity or creative work — and how THC-sensitive are they?',
-    social:   'Something to share at an event, or discreet personal use?',
-    relief:   'Physical pain, anxiety, or both? That changes whether we go systemic or topical.',
-    beginner: 'Have they tried cannabis before, even casually?'
 };
 
 // Adjacent goals for fallback bridge
@@ -810,7 +778,6 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 let orgId = null, orgName = '', allProducts = [];
 let selectedGoal  = null;
 let filters       = {};
-let refineOpen    = false;
 let debugMode     = false;
 
 const SESSION_ID = crypto.randomUUID();
@@ -1082,10 +1049,6 @@ function showScreen(id) {
 
 function goToGoal() {
     showScreen('screenGoal');
-    refineOpen = false;
-    document.getElementById('refineTray').classList.remove('open');
-    document.getElementById('btnRefine').classList.remove('active');
-    document.getElementById('btnRefine').textContent = 'Refine ↓';
 }
 
 function selectGoal(goal) {
@@ -1099,21 +1062,10 @@ function selectGoal(goal) {
 
 // New Customer — reset and flash confirmation
 function newCustomer() {
-    // Reset all state
     selectedGoal = null;
     filters = {};
-    refineOpen = false;
-    document.getElementById('refineTray').classList.remove('open');
-    document.getElementById('btnRefine').classList.remove('active');
-    document.getElementById('btnRefine').textContent = 'Refine ↓';
-
-    // Clear any active refine chips in DOM
     document.querySelectorAll('.refine-chip').forEach(c => c.classList.remove('active'));
-
-    // Show goal screen
     showScreen('screenGoal');
-
-    // Flash "Customer served" confirmation
     const flash = document.getElementById('servedFlash');
     flash.classList.add('visible');
     setTimeout(() => flash.classList.remove('visible'), 2000);
@@ -1121,23 +1073,10 @@ function newCustomer() {
 
 // ── REFINE TRAY ───────────────────────────────────────────────────────────────
 function buildRefineTray(goal) {
-    const goalSpecific = REFINE_GOAL[goal] || [];
-    const chips = [...REFINE_UNIVERSAL];
-
-    // Insert goal-specific chips after universal (with separator)
     const inner = document.getElementById('refineInner');
     inner.innerHTML = '';
-
-    chips.forEach((chip, i) => {
-        // Add separator before first goal-specific batch
-        if (i === chips.length) {
-            const sep = document.createElement('div');
-            sep.className = 'refine-sep';
-            inner.appendChild(sep);
-        }
-        inner.appendChild(makeRefineChip(chip));
-    });
-
+    REFINE_UNIVERSAL.forEach(chip => inner.appendChild(makeRefineChip(chip)));
+    const goalSpecific = REFINE_GOAL[goal] || [];
     if (goalSpecific.length) {
         const sep = document.createElement('div');
         sep.className = 'refine-sep';
@@ -1172,14 +1111,6 @@ function toggleRefineChip(btn) {
 
     // Re-run scoring with new filter
     findProducts();
-}
-
-function toggleRefine() {
-    refineOpen = !refineOpen;
-    document.getElementById('refineTray').classList.toggle('open', refineOpen);
-    const btn = document.getElementById('btnRefine');
-    btn.classList.toggle('active', refineOpen);
-    btn.textContent = refineOpen ? 'Refine ↑' : 'Refine ↓';
 }
 
 // ── HARD FILTERS ──────────────────────────────────────────────────────────────
@@ -1451,6 +1382,163 @@ function parseTalkingPoints(raw) {
     return sections;
 }
 
+// ── BOILERPLATE DETECTION ─────────────────────────────────────────────────────
+// Returns true if talking points contain known junk/generic text that should
+// be replaced by live-generated content.
+function isBoilerplate(text) {
+    if (!text || text.trim().length < 20) return true;
+    const lower = text.toLowerCase();
+    const junk = [
+        'potency unknown',
+        'ask the customer about their tolerance',
+        'low thc at 0.0',
+        'thc 0.0%',
+        '0.0% thc',
+        'hybrid genetics produce a balanced terpene',
+        'effects are more predictable and versatile across tolerance levels',
+        'pure indica or sativa strains',
+        'this is a good product',
+        'great product for',
+        'a versatile option',
+        'well-suited for a variety',
+    ];
+    return junk.some(f => lower.includes(f));
+}
+
+// ── LIVE TALKING POINTS GENERATOR ────────────────────────────────────────────
+// Generates 3 honest, product-specific, non-generic bullets from real product data.
+// Called when stored talking_points are absent or boilerplate.
+function generateLiveTalkingPoints(p, goal) {
+    const thc  = parseFloat(p.thc)  || 0;
+    const cbd  = parseFloat(p.cbd)  || 0;
+    const cat  = (p.category || '').toLowerCase();
+    const name = p.name || 'This product';
+    const bullets = [];
+
+    // ── Bullet 1: Format-specific truth ──────────────────────────────────────
+    if (cat === 'edible' || cat === 'capsule') {
+        bullets.push('Edibles take 45–90 minutes to kick in — tell them to take it, wait, and not redose early. That\'s where most bad trips start.');
+    } else if (cat === 'tincture') {
+        bullets.push('Hold under the tongue for 60 seconds before swallowing. Onset is 20–30 min — much faster than if they just swallow it.');
+    } else if (cat === 'vape') {
+        bullets.push('One to two pulls, then wait 5 minutes before deciding if they want more. Vapes are fast — easy to overconsume if they rush it.');
+    } else if (cat === 'topical') {
+        bullets.push('No psychoactive effect at all. Apply directly to the area — works in 15–20 minutes. Safe for daytime, safe for work.');
+    } else if (cat === 'flower') {
+        bullets.push('Effects hit in 5–10 minutes. Start smaller than they think they need — they can always add, can\'t subtract.');
+    } else if (cat === 'preroll') {
+        bullets.push('Two or three puffs, then wait ten minutes before going further. Pre-rolls burn faster than people expect.');
+    } else if (cat === 'concentrate') {
+        bullets.push('High potency, fast onset — best for experienced consumers who know their tolerance. A small amount goes a long way.');
+    } else {
+        bullets.push('Start low and go slow — especially if the customer hasn\'t used this format before.');
+    }
+
+    // ── Bullet 2: Cannabinoid truth ───────────────────────────────────────────
+    if (thc > 0 && cbd > 0) {
+        const ratio = cbd / thc;
+        if (ratio >= 2) {
+            bullets.push(`${cbd}% CBD with only ${thc}% THC — CBD actively reduces the psychoactive ceiling. Very hard to overconsume. Great for sensitive customers.`);
+        } else if (ratio >= 0.5) {
+            bullets.push(`${thc}% THC and ${cbd}% CBD — the ratio balances the effect. More therapeutic, less purely intoxicating than a straight THC product.`);
+        } else {
+            bullets.push(`${thc}% THC with a CBD buffer (${cbd}%) — CBD softens the edge and reduces anxiety risk. Better tolerance profile than straight THC.`);
+        }
+    } else if (thc >= 26) {
+        bullets.push(`${thc}% THC — flag this before recommending. Experienced consumers only. Not for anyone who hasn\'t built tolerance.`);
+    } else if (thc >= 20) {
+        bullets.push(`${thc}% THC — strong, reliable effect. Works well for regular consumers. First-timers should try something milder first.`);
+    } else if (thc >= 13) {
+        bullets.push(`${thc}% THC — moderate, accessible range. Most regular consumers land here comfortably without anxiety.`);
+    } else if (thc > 0) {
+        bullets.push(`${thc}% THC — mild by most standards. Good entry point for sensitive customers or those returning after a break.`);
+    } else if (cbd >= 200) {
+        bullets.push(`${cbd}mg CBD — high-concentration dose. No psychoactive effect. The CBD at this level can meaningfully address inflammation and pain.`);
+    } else if (cbd > 0) {
+        bullets.push(`${cbd}% CBD, no THC — purely therapeutic. No impairment. Customer can use this and drive, work, or do anything else normally.`);
+    }
+
+    // ── Bullet 3: Goal-specific point ────────────────────────────────────────
+    const goalPoints = {
+        sleep: {
+            flower:   'Take it 60–90 min before bed, not right at bedtime. The onset timing matters for sleep.',
+            edible:   'Perfect for customers who wake up mid-night — the 6–8 hour duration covers most of a sleep cycle.',
+            tincture: 'Faster than an edible, longer-lasting than flower. Hits the sleep window reliably.',
+            vape:     'Use it as a bridge — fast onset while the edible or tincture builds up.',
+            preroll:  'Consistent dosing makes it easy to find the right amount each night.',
+        },
+        relax: {
+            flower:   'Body-first relaxation — customers feel it in the shoulders and chest before the head.',
+            edible:   'Long, even relaxation for a full evening. No peaks and valleys like smoking.',
+            tincture: 'Predictable, controllable — dose to comfort level without commitment.',
+            vape:     'Adjustable — one pull, assess, repeat. Good for customers who want to dial it in.',
+        },
+        focus: {
+            flower:   'Best mid-morning or early afternoon. Avoid within 4 hours of sleep.',
+            vape:     'One pull, 5 minutes, back to work. Fastest route to the effect.',
+            edible:   'Sustained clarity for 4–6 hours. Good for long work sessions without re-dosing.',
+            tincture: 'Steady, controllable focus effect. Doesn\'t peak hard or crash.',
+        },
+        social: {
+            flower:   'Passes easily, starts a conversation, feels familiar to most customers.',
+            vape:     'Discreet — a quick pull in the bathroom, no smell to linger. Good for events.',
+            edible:   'Gradual build keeps energy consistent throughout. No mid-event crash.',
+        },
+        relief: {
+            flower:   'Fast onset means they feel it within minutes — useful for acute pain.',
+            topical:  'Target the exact spot. No systemic effect means no impairment.',
+            tincture: 'Good for ongoing pain — takes the edge off without full sedation.',
+            edible:   'Long-duration relief (6–8 hours). Useful for chronic conditions.',
+        },
+        beginner: {
+            flower:   'Low-commitment format — they can stop after two puffs if it\'s enough.',
+            tincture: 'Easiest to dose precisely. Hard to overshoot.',
+            edible:   'Tell them to take half and wait 90 minutes. Nonnegotiable. That rule prevents most bad experiences.',
+            vape:     'One pull, wait. Simple and controllable.',
+            preroll:  'Pre-measured, familiar format — lower barrier for curious first-timers.',
+        },
+    };
+    const goalMap = goalPoints[goal] || {};
+    const extra   = goalMap[cat] || goalMap['flower'] || '';
+    if (extra) bullets.push(extra);
+
+    return bullets.filter(Boolean).slice(0, 3);
+}
+
+// ── FORMAT-SPECIFIC FOLLOW-UP QUESTION ────────────────────────────────────────
+function getNextQuestion(p, goal) {
+    const cat = (p.category || '').toLowerCase();
+    const thc = parseFloat(p.thc) || 0;
+
+    // Format-specific first — these are more useful than goal-generic
+    if (cat === 'edible' || cat === 'capsule') {
+        return 'Have they used edibles before? Onset can catch people off guard if they haven\'t.';
+    }
+    if (cat === 'topical') {
+        return 'Is this for a specific body part, or general muscle soreness? Application changes.';
+    }
+    if (cat === 'tincture') {
+        return 'Do they prefer sublingual (fast, 20 min) or just swallowing it (slower, 45 min)?';
+    }
+    if (cat === 'vape') {
+        return 'Are they looking for something discreet? Or do they not mind the smell?';
+    }
+    if (cat === 'concentrate') {
+        return 'Have they dabbed before? Concentrates hit very differently than flower.';
+    }
+
+    // Goal-specific for flower/preroll
+    const goalMap = {
+        sleep:    'Do they wake up in the middle of the night, or just have trouble falling asleep?',
+        relax:    'Is this for after work, or do they need something usable during the day too?',
+        focus:    'Are they working alone or in a group? That changes what potency makes sense.',
+        social:   'Will they be sharing it at an event, or is this personal use?',
+        relief:   'Is this physical pain, anxiety, or both? That changes the format recommendation.',
+        beginner: 'Have they ever tried cannabis before, even casually? That matters for dosing.',
+    };
+    return goalMap[goal] || 'What format are they most comfortable with?';
+}
+
 // ── LIVE POTENCY SIGNAL ───────────────────────────────────────────────────────
 function livePotencySignal(thc, cbd, category) {
     const t   = parseFloat(thc) || 0;
@@ -1492,36 +1580,53 @@ function renderCard(p, idx) {
     const parsed = parseTalkingPoints(p.talking_points);
 
     // Say This content — bullets
+    // Logic: use stored talking points ONLY if they're structured and non-boilerplate.
+    // Otherwise fall back to live generation from real product data.
     let bulletHtml = '';
-    if (parsed?.tp) {
-        bulletHtml = parsed.tp.split('\n')
+    let usedLiveGeneration = false;
+
+    if (parsed?.tp && !isBoilerplate(parsed.tp)) {
+        // Structured talking points, clean — use them
+        const cleanBullets = parsed.tp.split('\n')
             .map(l => l.trim().replace(/^[•\-]\s*/, ''))
-            .filter(l => l)
-            .map(l => `<div class="say-this-bullet">${xe(l)}</div>`)
-            .join('');
-    } else if (parsed?.raw) {
-        // Plain old-format — break into sentences
-        bulletHtml = parsed.raw.split(/\.\s+/)
+            .filter(l => l && !isBoilerplate(l));
+        if (cleanBullets.length >= 2) {
+            bulletHtml = cleanBullets
+                .map(l => `<div class="say-this-bullet">${xe(l)}</div>`)
+                .join('');
+        }
+    }
+
+    if (!bulletHtml && parsed?.raw && !isBoilerplate(parsed.raw)) {
+        // Old-format plain text — sentence-split it
+        const sentences = parsed.raw.split(/\.\s+/)
             .map(s => s.trim())
-            .filter(s => s.length > 20)
-            .slice(0, 3)
-            .map(s => `<div class="say-this-bullet">${xe(s.endsWith('.') ? s : s + '.')}</div>`)
-            .join('');
-    } else if (p._result.reasons.length) {
-        bulletHtml = p._result.reasons.slice(0, 3)
-            .map(r => `<div class="say-this-bullet">${xe(r)}</div>`)
+            .filter(s => s.length > 25 && !isBoilerplate(s));
+        if (sentences.length >= 2) {
+            bulletHtml = sentences.slice(0, 3)
+                .map(s => `<div class="say-this-bullet">${xe(s.endsWith('.') ? s : s + '.')}</div>`)
+                .join('');
+        }
+    }
+
+    if (!bulletHtml) {
+        // Fall back to live generation — always product-specific, always honest
+        usedLiveGeneration = true;
+        const liveBullets = generateLiveTalkingPoints(p, goal);
+        bulletHtml = liveBullets
+            .map(b => `<div class="say-this-bullet">${xe(b)}</div>`)
             .join('');
     }
 
     if (!bulletHtml) bulletHtml = `<div class="say-this-bullet">${xe(pitchLine)}</div>`;
 
-    // Next question
-    const nextQ = FOLLOWUP[goal] || '';
+    // Next question — format-specific, not generic per-goal
+    const nextQ = getNextQuestion(p, goal);
 
     // Details content
-    const mechanism = parsed?.why || '';
+    const mechanism = (parsed?.why && !isBoilerplate(parsed.why)) ? parsed.why : '';
     const sig       = livePotencySignal(thc, cbd, cat);
-    const upsell    = parsed?.upsell || '';
+    const upsell    = (parsed?.upsell && !isBoilerplate(parsed.upsell)) ? parsed.upsell : '';
     const mgrNote   = p.manager_note || '';
 
     let detailsHtml = '';
