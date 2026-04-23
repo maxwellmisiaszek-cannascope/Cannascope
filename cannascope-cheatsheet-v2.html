@@ -333,20 +333,14 @@
             border-left: 3px solid var(--accent);
         }
         .rec-btn {
-            display: block;
-            width: calc(100% - 32px);
-            margin: 0 16px 14px;
-            padding: 9px;
-            border-radius: 8px;
-            border: 1px solid var(--border-2);
-            background: transparent;
-            color: var(--text-3);
-            font-family: inherit;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.03em;
-            cursor: pointer;
-            transition: all 0.15s;
+            display: block; width: 100%;
+            margin-top: 14px; padding: 12px;
+            background: var(--accent); color: #fff;
+            border: none; border-radius: 8px;
+            font-size: 14px; font-weight: 700;
+            font-family: inherit; cursor: pointer;
+            transition: background 0.15s, opacity 0.15s;
+            letter-spacing: -0.01em;
         }
         .rec-btn:hover { border-color: var(--accent); color: var(--accent); }
         .rec-btn.recommended {
@@ -575,6 +569,30 @@
             color: var(--text-2);
             line-height: 1.65;
         }
+
+
+        /* ── Structured script rendering ────────────────────────── */
+        .tp-bullets { display: flex; flex-direction: column; gap: 6px; }
+        .tp-bullet {
+            font-size: 13px; color: var(--txt2); line-height: 1.6;
+        }
+        .tp-mechanism {
+            margin-top: 6px;
+            font-size: 12px; color: var(--txt3); line-height: 1.6;
+            font-style: italic;
+        }
+        .card-potency {
+            font-size: 12px; font-weight: 600;
+            padding: 7px 14px;
+            border-top: 1px solid var(--border);
+        }
+        .sig-mild   { color: var(--accent); background: var(--accent-pale); }
+        .sig-mod    { color: var(--txt2);   background: transparent; }
+        .sig-strong { color: #DC2626;       background: #FEF2F2; border-top-color: #FECACA; }
+        .card-upsell { background: var(--bg); border-top: 1px solid var(--border); }
+        .card-upsell .card-section-label { color: var(--txt3); }
+        .rec-btn:hover  { background: #245c43; }
+        .rec-btn.active { background: #1a4532; }
 
         /* No-match banner */
         .no-match-banner {
@@ -1706,7 +1724,9 @@ async function findProducts() {
     const topPicks = pickDiverseTop3(top10);
     const alsoAvail = scored.filter(p => !topPicks.includes(p));
 
-    const allLow   = topPicks.every(p => p._result.confidence === 'LOW');
+    // Only warn when the top raw score is genuinely poor (<55), not just data-sparse
+    const maxRaw   = scored[0]?._result.score || 0;
+    const allLow   = topPicks.every(p => p._result.confidence === 'LOW') && maxRaw < 55;
     const rankLbls = ['Top Pick', '2nd Pick', '3rd Pick'];
 
     let cardsHtml = '';
@@ -1780,6 +1800,50 @@ function generatePitch(p, eff) {
     }
 }
 
+
+// ── PARSE STRUCTURED TALKING POINTS ──────────────────────────────────────────
+// Converts the WHY IT WORKS / TALKING POINTS / BEST ALONGSIDE format into
+// structured sections. Falls back gracefully for old plain-text scripts.
+function parseTalkingPoints(raw) {
+    if (!raw || !raw.trim()) return null;
+    const s = raw.trim();
+    // Check if it's the new structured format
+    if (!s.includes('WHY IT WORKS') && !s.includes('TALKING POINTS')) {
+        return { raw: s }; // old format — pass through as-is
+    }
+    const sections = {};
+    // Split on double-newline followed by an ALL-CAPS header
+    const blocks = s.split(/\n\n(?=[A-Z][A-Z ]+\n)/);
+    for (const block of blocks) {
+        const nl = block.indexOf('\n');
+        if (nl === -1) continue;
+        const header = block.slice(0, nl).trim();
+        const body   = block.slice(nl + 1).trim();
+        if (header === 'WHY IT WORKS')    sections.why    = body;
+        else if (header === 'TALKING POINTS') sections.tp = body;
+        else if (header === 'BEST ALONGSIDE') sections.upsell = body;
+        else if (header === 'MANAGER NOTE')   sections.mgr  = body;
+    }
+    return sections;
+}
+
+// ── LIVE POTENCY SIGNAL ───────────────────────────────────────────────────────
+// Generates a live, accurate experience signal from the product's actual THC/CBD.
+// Replaces the stored "Potency unknown" strings from the script.
+function livePotencySignal(thc, cbd, category) {
+    const t   = parseFloat(thc) || 0;
+    const c   = parseFloat(cbd) || 0;
+    const cat = (category || '').toLowerCase();
+    if (cat === 'topical') return null;
+    const ratio = t > 0 && c > 0 ? c / t : 0;
+    if (ratio >= 2)  return { text: 'High CBD — reduces THC intensity. Beginner and THC-sensitive friendly.', cls: 'sig-mild' };
+    if (t >= 26)     return { text: t.toFixed(1) + '% THC — experienced consumers only. Flag this before recommending.', cls: 'sig-strong' };
+    if (t >= 20)     return { text: t.toFixed(1) + '% THC — moderate to strong. Best for casual to experienced consumers.', cls: 'sig-mod' };
+    if (t >= 13)     return { text: t.toFixed(1) + '% THC — moderate potency. Accessible for most regular consumers.', cls: 'sig-mod' };
+    if (t > 0)       return { text: t.toFixed(1) + '% THC — mild. Great for beginners and low-tolerance customers.', cls: 'sig-mild' };
+    return null;
+}
+
 function renderCard(p, idx, eff, rankLabel) {
     const result  = p._result;
     const thc     = parseFloat(p.thc)   || 0;
@@ -1787,7 +1851,7 @@ function renderCard(p, idx, eff, rankLabel) {
     const cat     = (p.category || 'flower').toLowerCase();
     const cbdNote = cbd > 0 ? ` · CBD ${cbd}%` : '';
 
-    const confLabels = { HIGH:'Strong', MEDIUM:'Good', LOW:'Weak' };
+    const confLabels = { HIGH:'Strong match', MEDIUM:'Good match' };
 
     // Match chips for visual indicators
     const chips    = getMatchChips(p);
@@ -1795,13 +1859,8 @@ function renderCard(p, idx, eff, rankLabel) {
     const shelfHtml = p.shelf ? `<span class="chip-shelf">Shelf ${xe(p.shelf)}</span>` : '';
     const chipsHtml = (matchHtml || shelfHtml) ? `<div class="card-chips">${matchHtml}${shelfHtml}</div>` : '';
 
-    // Why it works — conversational 1-line pitch based on effect + product format
-    const pitchLine = generatePitch(p, eff);
-    const whyHtml = `
-    <div class="card-section card-why">
-        <div class="card-section-label">Why This Works</div>
-        <div class="card-section-text">${xe(pitchLine)}</div>
-    </div>`;
+    // Why it works — built later with parsed mechanism (see whyHtmlFinal below)
+    const pitchLine = generatePitch(p, eff); // kept for reference
 
     // Penalty notes
     const penHtml = result.penalties.length ? `
@@ -1810,13 +1869,67 @@ function renderCard(p, idx, eff, rankLabel) {
         <div class="card-section-text">${result.penalties.map(pe => xe(pe)).join(' · ')}</div>
     </div>` : '';
 
-    // Talking points — use DB talking_points if available, fall back to terpene reasons
-    const tpSource = p.talking_points || (result.reasons.slice(0, 3).join(' · '));
-    const talkHtml = tpSource ? `
+    // Parse structured talking points
+    const parsed = parseTalkingPoints(p.talking_points);
+
+    // "Why This Works" — always goal-aware pitch first, mechanism as supporting detail
+    const pitchForWhy = generatePitch(p, eff);
+    const mechanism   = parsed?.why || '';
+    const whyInnerHtml = mechanism
+        ? `<div class="card-section-text">${xe(pitchForWhy)}</div>
+           <div class="card-section-text tp-mechanism">${xe(mechanism)}</div>`
+        : `<div class="card-section-text">${xe(pitchForWhy)}</div>`;
+
+    // Override the whyHtml built above with the enriched version
+    const whyHtmlFinal = `
+    <div class="card-section card-why">
+        <div class="card-section-label">Why This Works</div>
+        ${whyInnerHtml}
+    </div>`;
+
+    // Talking Points — render as proper bullets, never dump raw structured text
+    let talkHtml = '';
+    if (parsed?.tp) {
+        const bullets = parsed.tp.split('\n')
+            .map(l => l.trim())
+            .filter(l => l)
+            .map(l => {
+                const text = l.replace(/^[•\-]\s*/, '');
+                return `<div class="tp-bullet">• ${xe(text)}</div>`;
+            }).join('');
+        talkHtml = `
     <div class="card-section card-talk">
         <div class="card-section-label">Talking Points</div>
-        <div class="card-section-text">${xe(tpSource)}</div>
+        <div class="tp-bullets">${bullets}</div>
+    </div>`;
+    } else if (parsed?.raw) {
+        // Plain old-format talking points — show directly
+        talkHtml = `
+    <div class="card-section card-talk">
+        <div class="card-section-label">Talking Points</div>
+        <div class="card-section-text">${xe(parsed.raw)}</div>
+    </div>`;
+    } else if (result.reasons.length) {
+        // Fallback to scoring reasons
+        const bullets = result.reasons.slice(0, 3)
+            .map(r => `<div class="tp-bullet">• ${xe(r)}</div>`).join('');
+        talkHtml = `
+    <div class="card-section card-talk">
+        <div class="card-section-label">Talking Points</div>
+        <div class="tp-bullets">${bullets}</div>
+    </div>`;
+    }
+
+    // Best Alongside (upsell from structured script)
+    const upsellHtml = parsed?.upsell ? `
+    <div class="card-section card-upsell">
+        <div class="card-section-label">Best Alongside</div>
+        <div class="card-section-text">${xe(parsed.upsell)}</div>
     </div>` : '';
+
+    // Live potency signal — always computed fresh, never from stored string
+    const sig = livePotencySignal(thc, cbd, cat);
+    const sigHtml = sig ? `<div class="card-potency ${sig.cls}">${xe(sig.text)}</div>` : '';
 
     // Manager note
     const mgrHtml = p.manager_note ? `
@@ -1854,7 +1967,7 @@ function renderCard(p, idx, eff, rankLabel) {
                 <div class="card-price">$${Number(p.price || 0).toFixed(0)}</div>
                 <div class="card-match-pct">
                     ${result.displayPct || result.score}% match
-                    <span class="conf-badge conf-${result.confidence.toLowerCase()}">${confLabels[result.confidence]}</span>
+                    ${result.confidence !== 'LOW' ? `<span class="conf-badge conf-${result.confidence.toLowerCase()}">${confLabels[result.confidence]}</span>` : ''}
                 </div>
             </div>
         </div>
@@ -1865,7 +1978,7 @@ function renderCard(p, idx, eff, rankLabel) {
             <span class="meta-sep">·</span>
             <span>THC ${thc > 0 ? thc + '%' : '—'}${cbdNote}</span>
         </div>
-        ${chipsHtml}${whyHtml}${penHtml}${talkHtml}${mgrHtml}${debugHtml}
+        ${chipsHtml}${whyHtmlFinal}${sigHtml}${penHtml}${talkHtml}${upsellHtml}${mgrHtml}${debugHtml}
         <button
             class="rec-btn"
             id="rec-${xe(p.id)}"
