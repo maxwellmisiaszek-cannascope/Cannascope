@@ -911,15 +911,64 @@ async function confirmDel(){
 
 // -- AUTO SCRIPTS ----------------------------------
 async function autoScripts(){
-  const miss=products.filter(p=>!p.talking_points?.trim());
-  if(!miss.length){showToast('All products already have scripts');return;}
-  showToast('Generating '+miss.length+' script'+(miss.length!==1?'s':'')+'...');
-  for(const p of miss){
-    p.talking_points=buildScript(p);
-    try{await sb.from('products').update({talking_points:p.talking_points}).eq('id',p.id);}catch(e){}
+  if(!products.length){showToast('No products to process');return;}
+  showToast('Repairing categories, effects, and scripts…');
+
+  let repaired=0, scripted=0;
+
+  for(const p of products){
+    const updates={};
+
+    // ── 1. Normalize category ─────────────────────────────────────────────────
+    const catFixed = normalizeCategory(p.category);
+    if(catFixed && catFixed !== p.category){ updates.category = catFixed; p.category = catFixed; }
+
+    // ── 2. Normalize + auto-detect effect ────────────────────────────────────
+    const effFixed = p.effect ? normalizeEffect(p.effect) : '';
+    if(effFixed && effFixed !== p.effect){ updates.effect = effFixed; p.effect = effFixed; }
+
+    // If still no effect, run the full scoring engine
+    if(!p.effect){
+      try{
+        const scored = mapDutchieProduct({
+          name:        p.name,
+          brand:       p.brand || '',
+          type:        p.category || 'flower',
+          productType: p.category || 'flower',
+          thcContent:  p.thc  != null ? {range:{min:p.thc,  max:p.thc}}  : null,
+          cbdContent:  p.cbd  != null ? {range:{min:p.cbd,  max:p.cbd}}  : null,
+          terpenes:    null,
+          Status:      p.in_stock ? 'Active' : 'Inactive',
+        }, p.organization_id || userOrgId);
+        if(scored.effect){ updates.effect = scored.effect; p.effect = scored.effect; }
+        if(scored.score_sleep != null){
+          ['sleep','relax','focus','social','relief','beginner'].forEach(fx=>{
+            const k='score_'+fx;
+            if(p[k]==null){ updates[k]=scored[k]; p[k]=scored[k]; }
+          });
+        }
+        if(scored._strain_type && !p._strain_type){ updates._strain_type=scored._strain_type; p._strain_type=scored._strain_type; }
+      }catch(e){}
+    }
+
+    // ── 3. Generate script ────────────────────────────────────────────────────
+    if(!p.talking_points?.trim()){
+      updates.talking_points = buildScript(p);
+      p.talking_points = updates.talking_points;
+      scripted++;
+    }
+
+    // ── 4. Push all updates to Supabase in one call ───────────────────────────
+    if(Object.keys(updates).length && p.id){
+      try{ await sb.from('products').update(updates).eq('id',p.id); repaired++; }catch(e){}
+    }
   }
-  renderAll();anlDone=false;
-  setTimeout(()=>showToast('Scripts generated for '+miss.length+' product'+(miss.length!==1?'s':'')),600);
+
+  renderAll(); anlDone=false;
+  const parts=[];
+  if(repaired) parts.push(repaired+' products repaired');
+  if(scripted) parts.push(scripted+' scripts generated');
+  setTimeout(()=>showToast(parts.length ? parts.join(', ') : 'All products already up to date'), 400);
 }
 
 
