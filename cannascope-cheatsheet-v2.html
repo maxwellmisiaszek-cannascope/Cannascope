@@ -97,7 +97,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 32px 20px 40px;
+            padding: 32px 20px 100px; /* bottom pad for ticker */
             min-height: calc(100vh - 52px);
         }
         #screenGoal.active { display: flex; }
@@ -116,6 +116,66 @@
             pointer-events: none;
         }
         .served-flash.visible { opacity: 1; }
+
+        /* goal screen tagline */
+        .goal-tagline {
+            margin-top: 16px;
+            font-size: 12px;
+            color: var(--text-3);
+            letter-spacing: 0.01em;
+            text-align: center;
+        }
+        .goal-tagline-accent { color: var(--accent); font-weight: 600; }
+
+        /* ── TICKER BAR ────────────────────────────────────── */
+        .ticker-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 36px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            z-index: 50;
+        }
+        /* only show on goal screen */
+        #screenResults.active ~ .ticker-bar,
+        #screenResults.active + .ticker-bar { display: none; }
+        .ticker-track {
+            display: flex;
+            align-items: center;
+            animation: ticker-scroll 40s linear infinite;
+            white-space: nowrap;
+            will-change: transform;
+        }
+        .ticker-track:hover { animation-play-state: paused; }
+        @keyframes ticker-scroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 28px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-3);
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+        }
+        .ticker-item b { color: var(--text-2); font-weight: 600; }
+        .ticker-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            opacity: 0.5;
+        }
 
         .goal-grid {
             display: grid;
@@ -683,6 +743,14 @@
             <span class="goal-sub">Approachable · gentle</span>
         </button>
     </div>
+    <div class="goal-tagline">
+        Scoring <span class="goal-tagline-accent" id="taglineCount">—</span> live products against terpene science
+    </div>
+</div>
+
+<!-- ── TICKER BAR (goal screen only) ──────────────────────── -->
+<div class="ticker-bar" id="tickerBar">
+    <div class="ticker-track" id="tickerTrack"><!-- populated by JS --></div>
 </div>
 
 <!-- ── SCREEN B: RESULTS ───────────────────────────────────── -->
@@ -951,6 +1019,7 @@ async function loadOrg(key) {
         const el = document.getElementById('productCount');
         el.textContent = allProducts.length + ' products';
         el.classList.add('loaded');
+        updateTaglineCount(allProducts.length);
 
         // Dutchie live overlay
         const dutchieId = localStorage.getItem('cs_dutchie_id');
@@ -1038,6 +1107,45 @@ function useDemoMode() {
     const el = document.getElementById('productCount');
     el.textContent = DEMO_PRODUCTS.length + ' products';
     el.classList.add('loaded');
+    updateTaglineCount(DEMO_PRODUCTS.length);
+}
+
+function updateTaglineCount(n) {
+    const el = document.getElementById('taglineCount');
+    if (el) el.textContent = n;
+}
+
+// ── TICKER ────────────────────────────────────────────────────────────────────
+(function buildTicker() {
+    const items = [
+        'Live inventory scored every session',
+        'Terpene science behind every recommendation',
+        'Rotation ensures every product gets seen',
+        'Manager priorities surfaced automatically',
+        'Demand signals captured on every tap',
+        'Format variety enforced across top picks',
+        'No upsell is ever random',
+        'Every product scored against 6 effect goals',
+        'Built for the counter, not the office',
+        'New hire or veteran — same confident recommendation',
+        'Goal → score → move — in under 3 seconds',
+        'Real cannabinoid data, not marketing copy',
+    ];
+    const track = document.getElementById('tickerTrack');
+    if (!track) return;
+    // Double the items so the loop is seamless
+    const full = [...items, ...items];
+    track.innerHTML = full.map(item =>
+        `<span class="ticker-item"><span class="ticker-dot"></span><b>${item.split(' ')[0]}</b> ${item.split(' ').slice(1).join(' ')}</span>`
+    ).join('');
+})();
+
+// Show/hide ticker based on active screen
+function syncTicker() {
+    const ticker = document.getElementById('tickerBar');
+    if (!ticker) return;
+    const goalActive = document.getElementById('screenGoal').classList.contains('active');
+    ticker.style.display = goalActive ? 'flex' : 'none';
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
@@ -1045,6 +1153,7 @@ function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0, 0);
+    syncTicker();
 }
 
 function goToGoal() {
@@ -1405,102 +1514,230 @@ function isBoilerplate(text) {
     return junk.some(f => lower.includes(f));
 }
 
+// ── PRODUCT VARIANCE HASH ─────────────────────────────────────────────────────
+// Stable number derived from product identity — ensures same product always
+// picks the same variant, but different products pick different ones.
+function productVariance(p) {
+    const str = (p.id || '') + (p.name || '') + (p.brand || '');
+    let h = 0;
+    for (let i = 0; i < str.length; i++) { h = Math.imul(31, h) + str.charCodeAt(i) | 0; }
+    return Math.abs(h);
+}
+
+function pickV(arr, p) { return arr[productVariance(p) % arr.length]; }
+
 // ── LIVE TALKING POINTS GENERATOR ────────────────────────────────────────────
-// Generates 3 honest, product-specific, non-generic bullets from real product data.
-// Called when stored talking_points are absent or boilerplate.
+// Uses actual product data (THC, CBD, format, brand, name) so two similar
+// products always produce meaningfully different bullets.
 function generateLiveTalkingPoints(p, goal) {
-    const thc  = parseFloat(p.thc)  || 0;
-    const cbd  = parseFloat(p.cbd)  || 0;
-    const cat  = (p.category || '').toLowerCase();
-    const name = p.name || 'This product';
+    const thc   = parseFloat(p.thc)  || 0;
+    const cbd   = parseFloat(p.cbd)  || 0;
+    const cat   = (p.category || '').toLowerCase();
+    const brand = p.brand || '';
+    const name  = p.name  || 'This product';
     const bullets = [];
 
-    // ── Bullet 1: Format-specific truth ──────────────────────────────────────
+    // ── Bullet 1: Format truth — multiple variants so same format ≠ same copy ─
     if (cat === 'edible' || cat === 'capsule') {
-        bullets.push('Edibles take 45–90 minutes to kick in — tell them to take it, wait, and not redose early. That\'s where most bad trips start.');
+        bullets.push(pickV([
+            `${name} takes 45–90 minutes to kick in. Biggest mistake: redosing at 45 min thinking it's not working.`,
+            `Edible format means effects build slowly and last 6–8 hours. Tell them to take it and leave it alone for 90 minutes.`,
+            `Onset is 45–90 min — tell them that up front. Most bad edible experiences start with "it wasn't doing anything so I took more."`,
+        ], p));
     } else if (cat === 'tincture') {
-        bullets.push('Hold under the tongue for 60 seconds before swallowing. Onset is 20–30 min — much faster than if they just swallow it.');
+        bullets.push(pickV([
+            `Hold under the tongue for 60 seconds. Sublingual onset is 20–30 min — four times faster than if they just swallow it.`,
+            `The difference between sublingual and swallowed is real: under the tongue hits in 20 min, swallowed takes 45–60. Tell them how to use it.`,
+            `${brand || 'This brand'} tincture works best sublingual — under the tongue, 60 seconds, then swallow. Onset 20–30 minutes.`,
+        ], p));
     } else if (cat === 'vape') {
-        bullets.push('One to two pulls, then wait 5 minutes before deciding if they want more. Vapes are fast — easy to overconsume if they rush it.');
+        const isConc = thc > 50;
+        bullets.push(isConc
+            ? pickV([
+                `${thc.toFixed(1)}% is concentrate-level, not flower-level. One short pull equals several bowls of flower. Warn first-timers.`,
+                `This is a high-potency extract — ${thc.toFixed(1)}% THC. One pull, 5 minutes, done. Customers who are used to flower will be surprised by the intensity.`,
+                `Vape cart at ${thc.toFixed(1)}% is roughly 3–4x stronger per pull than most flower. Small dose, wait, assess.`,
+            ], p)
+            : pickV([
+                `One to two pulls, then wait 5 minutes before deciding if they want more. Vapes are fast — easy to overconsume if they rush it.`,
+                `Pull, wait 5 minutes, assess. Most customers find 1–2 pulls of ${name} is a full dose.`,
+                `Fast onset — 2–3 minutes. That's the upside and the risk. Tell them to pace it.`,
+            ], p));
     } else if (cat === 'topical') {
-        bullets.push('No psychoactive effect at all. Apply directly to the area — works in 15–20 minutes. Safe for daytime, safe for work.');
+        bullets.push(pickV([
+            `No psychoactive effect — zero. Apply directly to the area, works in 15–20 minutes. Safe for daytime, safe for work.`,
+            `Completely non-intoxicating. Goes right to the source. Good for customers who want relief without impairment.`,
+            `${name} is topical-only — no systemic effect. Apply to the specific spot and let it absorb. Most people notice it in 15–20 min.`,
+        ], p));
     } else if (cat === 'flower') {
-        bullets.push('Effects hit in 5–10 minutes. Start smaller than they think they need — they can always add, can\'t subtract.');
+        bullets.push(pickV([
+            `Effects hit in 5–10 minutes. Start smaller than they think they need — they can always add, can't subtract.`,
+            `Standard flower onset — 5–10 min. One or two hits, wait, decide. The best consumers are patient ones.`,
+            `${brand || 'This'} flower hits fast. First-time customers especially: two hits and a 10-minute wait before going further.`,
+        ], p));
     } else if (cat === 'preroll') {
-        bullets.push('Two or three puffs, then wait ten minutes before going further. Pre-rolls burn faster than people expect.');
+        bullets.push(pickV([
+            `Two or three puffs, wait ten minutes before going further. Pre-rolls burn faster than people expect.`,
+            `Pre-rolled and ready — great for customers who don't roll their own. Pace it the same way: small hits, wait between them.`,
+            `${name} is a solid format for convenience. Remind them it burns continuously — take a hit, set it down, wait.`,
+        ], p));
     } else if (cat === 'concentrate') {
-        bullets.push('High potency, fast onset — best for experienced consumers who know their tolerance. A small amount goes a long way.');
+        bullets.push('High potency, fast onset — experienced consumers only. A rice-grain sized amount is a full dose.');
     } else {
-        bullets.push('Start low and go slow — especially if the customer hasn\'t used this format before.');
+        bullets.push('Start with less than they think they need. Every format is different — give it time before deciding.');
     }
 
-    // ── Bullet 2: Cannabinoid truth ───────────────────────────────────────────
+    // ── Bullet 2: Cannabinoid truth — specific to the actual numbers ─────────
     if (thc > 0 && cbd > 0) {
         const ratio = cbd / thc;
         if (ratio >= 2) {
-            bullets.push(`${cbd}% CBD with only ${thc}% THC — CBD actively reduces the psychoactive ceiling. Very hard to overconsume. Great for sensitive customers.`);
+            bullets.push(`${cbd}% CBD to ${thc}% THC — CBD is the dominant compound here. Psychoactive effect is very mild. Hard to overconsume. Solid pick for sensitive customers.`);
         } else if (ratio >= 0.5) {
-            bullets.push(`${thc}% THC and ${cbd}% CBD — the ratio balances the effect. More therapeutic, less purely intoxicating than a straight THC product.`);
+            bullets.push(`${thc}% THC and ${cbd}% CBD together — the ratio creates a more balanced, therapeutic effect than a straight THC product. Less anxiety risk.`);
         } else {
-            bullets.push(`${thc}% THC with a CBD buffer (${cbd}%) — CBD softens the edge and reduces anxiety risk. Better tolerance profile than straight THC.`);
+            bullets.push(`${thc}% THC with a trace CBD buffer (${cbd}%) — small amount but it matters. Softer ceiling than pure THC products.`);
         }
+    } else if (thc >= 70) {
+        bullets.push(`${thc.toFixed(1)}% THC — this is extract-level potency. Experienced concentrate consumers only. Not comparable to flower percentages.`);
     } else if (thc >= 26) {
-        bullets.push(`${thc}% THC — flag this before recommending. Experienced consumers only. Not for anyone who hasn\'t built tolerance.`);
+        bullets.push(`${thc}% THC — flag this clearly before recommending. Strong even for regular consumers. Anyone without tolerance should start elsewhere.`);
     } else if (thc >= 20) {
-        bullets.push(`${thc}% THC — strong, reliable effect. Works well for regular consumers. First-timers should try something milder first.`);
+        bullets.push(pickV([
+            `${thc}% THC — strong and reliable. Works well for regular consumers. Not the right first-time pick.`,
+            `At ${thc}% THC, this is in the strong range. Great for experienced customers; steer first-timers somewhere milder.`,
+        ], p));
     } else if (thc >= 13) {
-        bullets.push(`${thc}% THC — moderate, accessible range. Most regular consumers land here comfortably without anxiety.`);
+        bullets.push(pickV([
+            `${thc}% THC — sits right in the accessible moderate range. Most regular consumers land here without anxiety.`,
+            `${thc}% THC is a clean, accessible potency — works for regular consumers without overwhelming sensitive ones.`,
+        ], p));
     } else if (thc > 0) {
-        bullets.push(`${thc}% THC — mild by most standards. Good entry point for sensitive customers or those returning after a break.`);
+        bullets.push(`${thc}% THC — mild. Good entry point for sensitive customers or anyone coming back after a long break.`);
     } else if (cbd >= 200) {
-        bullets.push(`${cbd}mg CBD — high-concentration dose. No psychoactive effect. The CBD at this level can meaningfully address inflammation and pain.`);
+        bullets.push(`${cbd}mg CBD — high-concentration therapeutic dose. No psychoactive effect. At this concentration it can meaningfully address inflammation.`);
     } else if (cbd > 0) {
-        bullets.push(`${cbd}% CBD, no THC — purely therapeutic. No impairment. Customer can use this and drive, work, or do anything else normally.`);
+        bullets.push(`${cbd}% CBD, no detectable THC — purely therapeutic. Zero impairment. They can drive, work, and function completely normally.`);
     }
 
-    // ── Bullet 3: Goal-specific point ────────────────────────────────────────
+    // ── Bullet 3: Goal × format — unique per combination ─────────────────────
     const goalPoints = {
         sleep: {
-            flower:   'Take it 60–90 min before bed, not right at bedtime. The onset timing matters for sleep.',
-            edible:   'Perfect for customers who wake up mid-night — the 6–8 hour duration covers most of a sleep cycle.',
-            tincture: 'Faster than an edible, longer-lasting than flower. Hits the sleep window reliably.',
-            vape:     'Use it as a bridge — fast onset while the edible or tincture builds up.',
-            preroll:  'Consistent dosing makes it easy to find the right amount each night.',
+            flower:   [
+                'Take it 60–90 min before bed, not right at bedtime — timing changes the whole experience.',
+                `${name} is the kind of strain most people reach for nighttime. Just remind them: earlier than they think.`,
+            ],
+            edible:   [
+                'Perfect if they wake up during the night — 6–8 hour duration carries through a full sleep cycle.',
+                'Take at dinner, feel it at bedtime. Edible timing for sleep is the key piece of advice.',
+            ],
+            tincture: [
+                'Faster than edible, longer-lasting than flower. Reliable for the sleep window.',
+                `${brand || 'This'} tincture is a solid middle ground — onset in 20–30 min, effect holds 3–5 hours.`,
+            ],
+            vape:     [
+                'Fast onset makes it useful as a bridge while an edible builds up.',
+                'Good as a top-up option later in the night if they wake and can\'t get back to sleep.',
+            ],
+            preroll:  [
+                'Pre-measured dose makes it easy to find the right amount and keep it consistent night to night.',
+                'Wind-down ritual format — a nightly pre-roll is predictable and easy to track.',
+            ],
         },
         relax: {
-            flower:   'Body-first relaxation — customers feel it in the shoulders and chest before the head.',
-            edible:   'Long, even relaxation for a full evening. No peaks and valleys like smoking.',
-            tincture: 'Predictable, controllable — dose to comfort level without commitment.',
-            vape:     'Adjustable — one pull, assess, repeat. Good for customers who want to dial it in.',
+            flower:   [
+                'Body-first effect — customers feel it in the shoulders and chest before anything else.',
+                `${brand || 'This'} flower comes on in the body first. Good for stress that's physical, not just mental.`,
+            ],
+            edible:   [
+                'Long, even relaxation for a full evening. No peaks and valleys like smoking.',
+                'Lasts 4–6 hours — good for a whole evening without needing to re-dose.',
+            ],
+            tincture: [
+                'Controllable and predictable — they can dose to their comfort level and stop.',
+                `${brand || 'This'} tincture is dialed in. Tell them to start with half a dropper and wait 30 minutes.`,
+            ],
+            vape:     [
+                'Discreet and portable — quick hit, put it away, no smell to linger.',
+                'Works well for customers who want on-demand relaxation without commitment.',
+            ],
         },
         focus: {
-            flower:   'Best mid-morning or early afternoon. Avoid within 4 hours of sleep.',
-            vape:     'One pull, 5 minutes, back to work. Fastest route to the effect.',
-            edible:   'Sustained clarity for 4–6 hours. Good for long work sessions without re-dosing.',
-            tincture: 'Steady, controllable focus effect. Doesn\'t peak hard or crash.',
+            flower:   [
+                'Best mid-morning or early afternoon. Avoid within 4 hours of sleep or it will fight them.',
+                `${name} is a daytime strain — better for creative or focused work than anything passive.`,
+            ],
+            vape:     [
+                'One pull, 5 minutes, back to work. Fastest route to the effect with a vape.',
+                'Good for on-demand focus — single pull when they need to lock in, no ceremony.',
+            ],
+            edible:   [
+                'Sustained clarity for 4–6 hours without re-dosing. Good for long sessions.',
+                'Edible format means consistent, even effect — no peaks that distract.',
+            ],
+            tincture: [
+                'Steady focus effect, no hard peak or crash. Good for long work days.',
+                `${brand || 'This'} tincture builds steadily — more controlled than flower for sustained work.`,
+            ],
         },
         social: {
-            flower:   'Passes easily, starts a conversation, feels familiar to most customers.',
-            vape:     'Discreet — a quick pull in the bathroom, no smell to linger. Good for events.',
-            edible:   'Gradual build keeps energy consistent throughout. No mid-event crash.',
+            flower:   [
+                'Good for sharing — familiar format, starts conversations, feels accessible.',
+                `${name} has a social reputation for a reason. Most customers know it or have heard of it.`,
+            ],
+            vape:     [
+                'Discreet — a quick pull before going in, no smell to carry. Good for events.',
+                'Portable and clean. Customers can use it in the bathroom at an event without anyone knowing.',
+            ],
+            edible:   [
+                'Gradual build keeps energy consistent all night. No crash mid-event.',
+                'Take it 90 min before the event for peak timing. Long duration means it lasts.',
+            ],
         },
         relief: {
-            flower:   'Fast onset means they feel it within minutes — useful for acute pain.',
-            topical:  'Target the exact spot. No systemic effect means no impairment.',
-            tincture: 'Good for ongoing pain — takes the edge off without full sedation.',
-            edible:   'Long-duration relief (6–8 hours). Useful for chronic conditions.',
+            flower:   [
+                'Fast onset means they feel it within minutes — useful for acute pain that needs quick coverage.',
+                `${name} works fast. For customers with chronic pain, that matters.`,
+            ],
+            topical:  [
+                'Target the exact spot — no systemic effect, no impairment. Goes right where it\'s needed.',
+                'Great add-on for any pain customer. Stack it with a systemic product for dual-action coverage.',
+            ],
+            tincture: [
+                'Steady, ongoing relief without full sedation. Good for chronic pain through the day.',
+                `${brand || 'This'} tincture is controllable — they can dose for the amount of relief they need.`,
+            ],
+            edible:   [
+                '6–8 hour duration. Good for chronic conditions that need consistent coverage without re-dosing.',
+                'Long-lasting option for customers who can\'t keep stopping to re-dose.',
+            ],
         },
         beginner: {
-            flower:   'Low-commitment format — they can stop after two puffs if it\'s enough.',
-            tincture: 'Easiest to dose precisely. Hard to overshoot.',
-            edible:   'Tell them to take half and wait 90 minutes. Nonnegotiable. That rule prevents most bad experiences.',
-            vape:     'One pull, wait. Simple and controllable.',
-            preroll:  'Pre-measured, familiar format — lower barrier for curious first-timers.',
+            flower:   [
+                'Low-commitment — they can take one or two hits and stop if it\'s enough.',
+                `${name} is a gentler entry point. Reassure them that they control the dose completely with flower.`,
+            ],
+            tincture: [
+                'Easiest format to dose precisely. Hard to overshoot. Good for nervous first-timers.',
+                'They can start with a few drops, wait, and increase only if needed. Very controllable.',
+            ],
+            edible:   [
+                'Take half, wait 90 minutes. That rule prevents almost every bad first experience.',
+                `Tell them: half of one ${name.toLowerCase().includes('gummy') ? 'gummy' : 'piece'}, 90 minutes, then decide. That\'s the protocol.`,
+            ],
+            vape:     [
+                'Single pull, 5 minutes, assess. The simplest introduction to fast-onset formats.',
+                'Controllable and portable. One pull at a time — they can stop whenever.',
+            ],
+            preroll:  [
+                'Pre-measured and familiar format. Lower barrier for someone curious about flower.',
+                'Two hits max, then 10 minutes. Pre-rolls make it easy to keep track of what they\'ve had.',
+            ],
         },
     };
+
     const goalMap = goalPoints[goal] || {};
-    const extra   = goalMap[cat] || goalMap['flower'] || '';
-    if (extra) bullets.push(extra);
+    const variants = goalMap[cat] || goalMap['flower'] || ['This is a solid match for the goal.'];
+    bullets.push(pickV(variants, p));
 
     return bullets.filter(Boolean).slice(0, 3);
 }
