@@ -519,6 +519,28 @@ let orgId = null, allProducts = [];
 let selectedGoal = null;
 let activeFilters = {};
 let lastRanked = [];
+let _floorSynced = false;  // only sync once per customer session
+
+// ── FLOOR SYNC ────────────────────────────────────────────────
+// Silently pushes customer preferences to the budtender tool
+// via demand_events. Never blocks or shows errors to the customer.
+async function syncToFloor(topProduct) {
+  if (!orgId || !selectedGoal) return;
+  try {
+    await sb.from('demand_events').insert({
+      session_id:      SESSION_ID,
+      organization_id: orgId,
+      source:          'qr',
+      event_type:      'qr_session_ready',
+      goal:            selectedGoal,
+      format_pref:     activeFilters.format || null,
+      experience:      JSON.stringify(activeFilters), // full filter state
+      recommendations: lastRanked.slice(0, 3).map(p => p.id),
+      product_id:      topProduct?.id   || null,
+      product_rank:    -1  // sentinel: QR sync, not a scored rank
+    });
+  } catch(e) { /* never surface errors to the customer */ }
+}
 
 // ── DEMAND EVENT LOGGER ───────────────────────────────────────────
 function logDemandEvent(event_type, opts = {}) {
@@ -951,6 +973,12 @@ async function runMatch() {
 
   if (lastRanked.length > 0) updateSbtBar(lastRanked[0]);
   logDemandEvent('results_shown', { recommendations: lastRanked.map(p => p.id) });
+
+  // Sync to budtender floor tool — once per session, silent
+  if (!_floorSynced && lastRanked.length > 0) {
+    _floorSynced = true;
+    syncToFloor(lastRanked[0]);
+  }
 }
 
 function renderResults(ranked) {
