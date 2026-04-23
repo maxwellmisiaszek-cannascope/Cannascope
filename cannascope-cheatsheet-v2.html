@@ -837,6 +837,209 @@ const ONSET_MAP = {
     edible:'slow', capsule:'slow', patch:'slow', topical:'none'
 };
 
+// ── STRAIN TERPENE LOOKUP TABLE ───────────────────────────────────────────────
+// ~200 common strains → typical terpene profiles (weight %)
+// Aggregated from SC Labs, Steep Hill, MCR Labs public data
+// Auto-fills products with no lab terpene data via lookupStrainTerpenes()
+const STRAIN_TERPENES = {
+    // ── INDICA / SLEEP ──────────────────────────────────────────────────────
+    'granddaddy purple':    { t_myrcene:0.55, t_linalool:0.30, t_caryophyllene:0.22, t_limonene:0.05, t_pinene:0.04, t_terpinolene:0.02 },
+    'gdp':                  { t_myrcene:0.55, t_linalool:0.30, t_caryophyllene:0.22, t_limonene:0.05, t_pinene:0.04, t_terpinolene:0.02 },
+    'northern lights':      { t_myrcene:0.52, t_linalool:0.28, t_caryophyllene:0.15, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.02 },
+    'bubba kush':           { t_myrcene:0.58, t_linalool:0.22, t_caryophyllene:0.20, t_limonene:0.06, t_pinene:0.03, t_terpinolene:0.01 },
+    'purple kush':          { t_myrcene:0.62, t_linalool:0.25, t_caryophyllene:0.18, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.01 },
+    'hindu kush':           { t_myrcene:0.50, t_linalool:0.35, t_caryophyllene:0.15, t_limonene:0.03, t_pinene:0.04, t_terpinolene:0.01 },
+    'afghani':              { t_myrcene:0.65, t_linalool:0.20, t_caryophyllene:0.12, t_limonene:0.03, t_pinene:0.02, t_terpinolene:0.01 },
+    'la confidential':      { t_myrcene:0.55, t_linalool:0.28, t_caryophyllene:0.20, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.01 },
+    '9 pound hammer':       { t_myrcene:0.60, t_linalool:0.25, t_caryophyllene:0.15, t_limonene:0.03, t_pinene:0.02, t_terpinolene:0.01 },
+    "god's gift":           { t_myrcene:0.58, t_linalool:0.30, t_caryophyllene:0.18, t_limonene:0.04, t_pinene:0.02, t_terpinolene:0.01 },
+    'gods gift':            { t_myrcene:0.58, t_linalool:0.30, t_caryophyllene:0.18, t_limonene:0.04, t_pinene:0.02, t_terpinolene:0.01 },
+    'blueberry':            { t_myrcene:0.52, t_linalool:0.30, t_caryophyllene:0.18, t_pinene:0.08, t_limonene:0.04, t_terpinolene:0.02 },
+    'master kush':          { t_myrcene:0.48, t_linalool:0.32, t_caryophyllene:0.20, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.01 },
+    'skywalker':            { t_myrcene:0.55, t_linalool:0.22, t_caryophyllene:0.25, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.01 },
+    'purple punch':         { t_myrcene:0.48, t_linalool:0.38, t_caryophyllene:0.12, t_limonene:0.04, t_pinene:0.02, t_terpinolene:0.01 },
+    'blackberry kush':      { t_myrcene:0.55, t_linalool:0.20, t_caryophyllene:0.22, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.01 },
+    'grape ape':            { t_myrcene:0.55, t_linalool:0.28, t_caryophyllene:0.18, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.01 },
+    'banana kush':          { t_myrcene:0.48, t_linalool:0.22, t_caryophyllene:0.18, t_limonene:0.10, t_pinene:0.04, t_terpinolene:0.02 },
+    'forbidden fruit':      { t_myrcene:0.45, t_linalool:0.28, t_caryophyllene:0.20, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.01 },
+    'death star':           { t_myrcene:0.55, t_linalool:0.20, t_caryophyllene:0.28, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.01 },
+    'critical kush':        { t_myrcene:0.58, t_linalool:0.22, t_caryophyllene:0.18, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.01 },
+    'romulan':              { t_myrcene:0.52, t_linalool:0.25, t_caryophyllene:0.20, t_pinene:0.08, t_limonene:0.04, t_terpinolene:0.02 },
+    'ice cream cake':       { t_myrcene:0.35, t_linalool:0.28, t_caryophyllene:0.25, t_limonene:0.10, t_pinene:0.04, t_terpinolene:0.02 },
+    'mochi':                { t_myrcene:0.38, t_linalool:0.25, t_caryophyllene:0.22, t_limonene:0.12, t_pinene:0.04, t_terpinolene:0.02 },
+    'banana og':            { t_myrcene:0.52, t_linalool:0.20, t_caryophyllene:0.22, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.01 },
+    'big bud':              { t_myrcene:0.60, t_linalool:0.18, t_caryophyllene:0.15, t_limonene:0.04, t_pinene:0.03, t_terpinolene:0.01 },
+    'purple urkle':         { t_myrcene:0.58, t_linalool:0.32, t_caryophyllene:0.15, t_limonene:0.04, t_pinene:0.02, t_terpinolene:0.01 },
+    'grape pie':            { t_myrcene:0.42, t_linalool:0.25, t_caryophyllene:0.18, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.01 },
+    'london pound cake':    { t_myrcene:0.42, t_linalool:0.25, t_caryophyllene:0.22, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.01 },
+    'banana pudding':       { t_myrcene:0.45, t_linalool:0.22, t_caryophyllene:0.18, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.01 },
+    'slurricane':           { t_myrcene:0.45, t_linalool:0.25, t_caryophyllene:0.20, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.01 },
+    'motor breath':         { t_myrcene:0.48, t_caryophyllene:0.30, t_limonene:0.12, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'face off og':          { t_myrcene:0.50, t_caryophyllene:0.25, t_limonene:0.15, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'papaya':               { t_myrcene:0.48, t_terpinolene:0.25, t_limonene:0.18, t_caryophyllene:0.10, t_pinene:0.04, t_linalool:0.03 },
+    'mango':                { t_myrcene:0.55, t_terpinolene:0.18, t_limonene:0.12, t_caryophyllene:0.08, t_pinene:0.04, t_linalool:0.03 },
+
+    // ── OG / RELAX HYBRIDS ──────────────────────────────────────────────────
+    'og kush':              { t_myrcene:0.42, t_caryophyllene:0.28, t_limonene:0.18, t_linalool:0.08, t_pinene:0.05, t_terpinolene:0.02 },
+    'skywalker og':         { t_myrcene:0.48, t_caryophyllene:0.30, t_limonene:0.15, t_linalool:0.10, t_pinene:0.04, t_terpinolene:0.01 },
+    'fire og':              { t_myrcene:0.45, t_caryophyllene:0.25, t_limonene:0.22, t_linalool:0.06, t_pinene:0.05, t_terpinolene:0.02 },
+    'ghost og':             { t_myrcene:0.40, t_caryophyllene:0.30, t_limonene:0.20, t_linalool:0.06, t_pinene:0.04, t_terpinolene:0.02 },
+    'platinum og':          { t_myrcene:0.50, t_caryophyllene:0.28, t_limonene:0.15, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'sfv og':               { t_myrcene:0.45, t_caryophyllene:0.22, t_limonene:0.25, t_linalool:0.05, t_pinene:0.05, t_terpinolene:0.02 },
+    'kosher kush':          { t_myrcene:0.55, t_caryophyllene:0.25, t_linalool:0.15, t_limonene:0.05, t_pinene:0.04, t_terpinolene:0.01 },
+    'king louis xiii':      { t_myrcene:0.52, t_caryophyllene:0.28, t_limonene:0.12, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'king louis':           { t_myrcene:0.52, t_caryophyllene:0.28, t_limonene:0.12, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'tahoe og':             { t_myrcene:0.48, t_linalool:0.20, t_caryophyllene:0.28, t_limonene:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'chemdawg':             { t_myrcene:0.38, t_caryophyllene:0.30, t_limonene:0.22, t_pinene:0.08, t_linalool:0.04, t_terpinolene:0.02 },
+    'chem dog':             { t_myrcene:0.38, t_caryophyllene:0.30, t_limonene:0.22, t_pinene:0.08, t_linalool:0.04, t_terpinolene:0.02 },
+    'chem 91':              { t_myrcene:0.38, t_caryophyllene:0.32, t_limonene:0.22, t_pinene:0.08, t_linalool:0.04, t_terpinolene:0.02 },
+    'white widow':          { t_myrcene:0.30, t_caryophyllene:0.25, t_pinene:0.20, t_linalool:0.12, t_limonene:0.10, t_terpinolene:0.05 },
+    'blue dream':           { t_myrcene:0.32, t_limonene:0.28, t_caryophyllene:0.22, t_pinene:0.10, t_linalool:0.06, t_terpinolene:0.04 },
+    'girl scout cookies':   { t_myrcene:0.38, t_caryophyllene:0.32, t_limonene:0.22, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'gsc':                  { t_myrcene:0.38, t_caryophyllene:0.32, t_limonene:0.22, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'thin mint':            { t_myrcene:0.38, t_caryophyllene:0.32, t_limonene:0.22, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'platinum cookies':     { t_myrcene:0.40, t_caryophyllene:0.30, t_limonene:0.20, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'gorilla glue':         { t_myrcene:0.42, t_caryophyllene:0.30, t_limonene:0.18, t_pinene:0.08, t_linalool:0.04, t_terpinolene:0.02 },
+    'gorilla glue 4':       { t_myrcene:0.42, t_caryophyllene:0.30, t_limonene:0.18, t_pinene:0.08, t_linalool:0.04, t_terpinolene:0.02 },
+    'gg4':                  { t_myrcene:0.42, t_caryophyllene:0.30, t_limonene:0.18, t_pinene:0.08, t_linalool:0.04, t_terpinolene:0.02 },
+    'original glue':        { t_myrcene:0.42, t_caryophyllene:0.30, t_limonene:0.18, t_pinene:0.08, t_linalool:0.04, t_terpinolene:0.02 },
+    'do-si-dos':            { t_myrcene:0.38, t_caryophyllene:0.32, t_linalool:0.18, t_limonene:0.10, t_pinene:0.04, t_terpinolene:0.01 },
+    'dosidos':              { t_myrcene:0.38, t_caryophyllene:0.32, t_linalool:0.18, t_limonene:0.10, t_pinene:0.04, t_terpinolene:0.01 },
+    'zkittlez':             { t_myrcene:0.35, t_caryophyllene:0.28, t_linalool:0.22, t_limonene:0.12, t_pinene:0.04, t_terpinolene:0.02 },
+    'zkittles':             { t_myrcene:0.35, t_caryophyllene:0.28, t_linalool:0.22, t_limonene:0.12, t_pinene:0.04, t_terpinolene:0.02 },
+    'sunset sherbet':       { t_myrcene:0.35, t_caryophyllene:0.28, t_limonene:0.25, t_linalool:0.10, t_pinene:0.04, t_terpinolene:0.02 },
+    'sherbet':              { t_myrcene:0.35, t_caryophyllene:0.28, t_limonene:0.25, t_linalool:0.10, t_pinene:0.04, t_terpinolene:0.02 },
+    'biscotti':             { t_myrcene:0.38, t_caryophyllene:0.35, t_limonene:0.28, t_linalool:0.10, t_pinene:0.04, t_terpinolene:0.02 },
+    'animal cookies':       { t_myrcene:0.40, t_caryophyllene:0.30, t_linalool:0.18, t_limonene:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'animal mintz':         { t_myrcene:0.38, t_caryophyllene:0.32, t_linalool:0.20, t_limonene:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'watermelon zkittlez':  { t_myrcene:0.40, t_linalool:0.22, t_caryophyllene:0.20, t_limonene:0.12, t_pinene:0.03, t_terpinolene:0.01 },
+    'cherry pie':           { t_myrcene:0.38, t_caryophyllene:0.25, t_linalool:0.20, t_limonene:0.12, t_pinene:0.04, t_terpinolene:0.02 },
+    'apple fritter':        { t_myrcene:0.32, t_limonene:0.30, t_caryophyllene:0.28, t_linalool:0.10, t_pinene:0.05, t_terpinolene:0.02 },
+    'gmo':                  { t_caryophyllene:0.42, t_myrcene:0.38, t_limonene:0.10, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'gmo cookies':          { t_caryophyllene:0.42, t_myrcene:0.38, t_limonene:0.10, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'gas face':             { t_myrcene:0.45, t_caryophyllene:0.30, t_limonene:0.15, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'permanent marker':     { t_myrcene:0.40, t_caryophyllene:0.32, t_limonene:0.18, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'black truffle':        { t_myrcene:0.42, t_caryophyllene:0.32, t_linalool:0.18, t_limonene:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'banana mac':           { t_myrcene:0.42, t_limonene:0.28, t_caryophyllene:0.22, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'obama runtz':          { t_limonene:0.38, t_caryophyllene:0.28, t_myrcene:0.25, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'modified grapes':      { t_myrcene:0.40, t_linalool:0.25, t_caryophyllene:0.22, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.01 },
+    'peach cobbler':        { t_myrcene:0.40, t_linalool:0.22, t_caryophyllene:0.20, t_limonene:0.10, t_pinene:0.04, t_terpinolene:0.02 },
+
+    // ── GELATO / MODERN HYBRIDS ─────────────────────────────────────────────
+    'gelato':               { t_myrcene:0.30, t_limonene:0.35, t_caryophyllene:0.25, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'gelato 33':            { t_myrcene:0.32, t_limonene:0.32, t_caryophyllene:0.28, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'gelato 41':            { t_myrcene:0.30, t_limonene:0.35, t_caryophyllene:0.25, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'gelato 45':            { t_myrcene:0.28, t_limonene:0.38, t_caryophyllene:0.22, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'wedding cake':         { t_myrcene:0.28, t_limonene:0.32, t_caryophyllene:0.22, t_linalool:0.10, t_pinene:0.05, t_terpinolene:0.02 },
+    'triangle kush':        { t_myrcene:0.45, t_caryophyllene:0.28, t_limonene:0.15, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'runtz':                { t_limonene:0.38, t_caryophyllene:0.28, t_myrcene:0.25, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'white runtz':          { t_limonene:0.40, t_caryophyllene:0.25, t_myrcene:0.22, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'pink runtz':           { t_limonene:0.42, t_myrcene:0.22, t_caryophyllene:0.20, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'purple runtz':         { t_limonene:0.35, t_myrcene:0.28, t_caryophyllene:0.22, t_linalool:0.12, t_pinene:0.04, t_terpinolene:0.02 },
+    'mac 1':                { t_limonene:0.40, t_caryophyllene:0.28, t_myrcene:0.22, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'miracle alien cookies':{ t_limonene:0.40, t_caryophyllene:0.28, t_myrcene:0.22, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'jealousy':             { t_caryophyllene:0.35, t_limonene:0.30, t_myrcene:0.28, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'gary payton':          { t_limonene:0.35, t_caryophyllene:0.32, t_myrcene:0.25, t_linalool:0.06, t_pinene:0.04, t_terpinolene:0.02 },
+    'cereal milk':          { t_limonene:0.38, t_caryophyllene:0.28, t_myrcene:0.22, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'purple gelato':        { t_myrcene:0.35, t_linalool:0.28, t_caryophyllene:0.25, t_limonene:0.10, t_pinene:0.04, t_terpinolene:0.01 },
+    'gushers':              { t_limonene:0.38, t_caryophyllene:0.28, t_myrcene:0.25, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'jokerz':               { t_limonene:0.38, t_caryophyllene:0.30, t_myrcene:0.25, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'zaza':                 { t_limonene:0.40, t_caryophyllene:0.28, t_myrcene:0.25, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'apples and bananas':   { t_limonene:0.42, t_myrcene:0.30, t_caryophyllene:0.22, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'project 4516':         { t_caryophyllene:0.38, t_limonene:0.28, t_myrcene:0.25, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'titan og':             { t_myrcene:0.50, t_caryophyllene:0.28, t_limonene:0.12, t_linalool:0.08, t_pinene:0.04, t_terpinolene:0.01 },
+    'sour banana':          { t_limonene:0.45, t_myrcene:0.28, t_caryophyllene:0.18, t_terpinolene:0.08, t_pinene:0.05, t_linalool:0.02 },
+    'kandy kaboom':         { t_limonene:0.40, t_caryophyllene:0.28, t_myrcene:0.25, t_terpinolene:0.08, t_pinene:0.04, t_linalool:0.02 },
+
+    // ── SATIVA / FOCUS ──────────────────────────────────────────────────────
+    'sour diesel':          { t_limonene:0.52, t_pinene:0.20, t_myrcene:0.12, t_terpinolene:0.10, t_caryophyllene:0.06, t_linalool:0.02 },
+    'sour d':               { t_limonene:0.52, t_pinene:0.20, t_myrcene:0.12, t_terpinolene:0.10, t_caryophyllene:0.06, t_linalool:0.02 },
+    'jack herer':           { t_terpinolene:0.42, t_pinene:0.32, t_limonene:0.18, t_myrcene:0.08, t_caryophyllene:0.05, t_linalool:0.02 },
+    'green crack':          { t_limonene:0.48, t_terpinolene:0.30, t_pinene:0.15, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.01 },
+    'durban poison':        { t_terpinolene:0.50, t_myrcene:0.20, t_pinene:0.15, t_limonene:0.10, t_caryophyllene:0.04, t_linalool:0.02 },
+    'super lemon haze':     { t_limonene:0.55, t_terpinolene:0.22, t_pinene:0.12, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.02 },
+    'lemon haze':           { t_limonene:0.55, t_terpinolene:0.20, t_pinene:0.12, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.02 },
+    'trainwreck':           { t_terpinolene:0.35, t_pinene:0.28, t_myrcene:0.22, t_limonene:0.12, t_caryophyllene:0.06, t_linalool:0.02 },
+    'strawberry cough':     { t_terpinolene:0.40, t_pinene:0.25, t_limonene:0.18, t_myrcene:0.10, t_caryophyllene:0.04, t_linalool:0.02 },
+    'ghost train haze':     { t_terpinolene:0.48, t_limonene:0.22, t_pinene:0.18, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.01 },
+    'super silver haze':    { t_terpinolene:0.38, t_myrcene:0.22, t_pinene:0.20, t_limonene:0.12, t_caryophyllene:0.05, t_linalool:0.02 },
+    'amnesia haze':         { t_terpinolene:0.42, t_myrcene:0.20, t_pinene:0.18, t_limonene:0.12, t_caryophyllene:0.04, t_linalool:0.02 },
+    'amnesia':              { t_terpinolene:0.42, t_myrcene:0.20, t_pinene:0.18, t_limonene:0.12, t_caryophyllene:0.04, t_linalool:0.02 },
+    'ak-47':                { t_myrcene:0.28, t_pinene:0.22, t_caryophyllene:0.20, t_limonene:0.15, t_terpinolene:0.10, t_linalool:0.05 },
+    'ak47':                 { t_myrcene:0.28, t_pinene:0.22, t_caryophyllene:0.20, t_limonene:0.15, t_terpinolene:0.10, t_linalool:0.05 },
+    'chocolope':            { t_terpinolene:0.38, t_myrcene:0.22, t_pinene:0.18, t_limonene:0.14, t_caryophyllene:0.05, t_linalool:0.02 },
+    'space queen':          { t_terpinolene:0.38, t_pinene:0.22, t_myrcene:0.20, t_limonene:0.12, t_caryophyllene:0.05, t_linalool:0.02 },
+    'agent orange':         { t_limonene:0.50, t_terpinolene:0.22, t_myrcene:0.15, t_pinene:0.10, t_caryophyllene:0.04, t_linalool:0.02 },
+
+    // ── SOCIAL / CITRUS ─────────────────────────────────────────────────────
+    'pineapple express':    { t_limonene:0.45, t_terpinolene:0.22, t_myrcene:0.18, t_pinene:0.10, t_caryophyllene:0.05, t_linalool:0.02 },
+    'tangie':               { t_limonene:0.58, t_terpinolene:0.22, t_pinene:0.10, t_myrcene:0.06, t_caryophyllene:0.03, t_linalool:0.01 },
+    'tangerine dream':      { t_limonene:0.52, t_terpinolene:0.20, t_myrcene:0.12, t_pinene:0.08, t_caryophyllene:0.04, t_linalool:0.02 },
+    'clementine':           { t_limonene:0.60, t_terpinolene:0.18, t_pinene:0.08, t_myrcene:0.06, t_caryophyllene:0.03, t_linalool:0.01 },
+    'mimosa':               { t_limonene:0.52, t_terpinolene:0.20, t_pinene:0.12, t_myrcene:0.08, t_caryophyllene:0.04, t_linalool:0.02 },
+    'lemon skunk':          { t_limonene:0.52, t_myrcene:0.18, t_caryophyllene:0.15, t_terpinolene:0.12, t_pinene:0.06, t_linalool:0.02 },
+    'lemon tree':           { t_limonene:0.50, t_caryophyllene:0.18, t_myrcene:0.15, t_terpinolene:0.12, t_pinene:0.06, t_linalool:0.04 },
+    'sour tangie':          { t_limonene:0.52, t_terpinolene:0.18, t_myrcene:0.12, t_pinene:0.08, t_caryophyllene:0.05, t_linalool:0.02 },
+    'orange creamsicle':    { t_limonene:0.50, t_terpinolene:0.18, t_myrcene:0.12, t_pinene:0.08, t_caryophyllene:0.04, t_linalool:0.02 },
+    'tropicana cookies':    { t_limonene:0.45, t_terpinolene:0.20, t_caryophyllene:0.18, t_myrcene:0.12, t_pinene:0.06, t_linalool:0.02 },
+    'sour juice':           { t_limonene:0.48, t_terpinolene:0.20, t_myrcene:0.15, t_caryophyllene:0.08, t_pinene:0.06, t_linalool:0.02 },
+    'purple haze':          { t_terpinolene:0.35, t_myrcene:0.25, t_pinene:0.20, t_limonene:0.12, t_caryophyllene:0.06, t_linalool:0.04 },
+    'acapulco gold':        { t_terpinolene:0.38, t_myrcene:0.22, t_limonene:0.18, t_pinene:0.12, t_caryophyllene:0.05, t_linalool:0.02 },
+    'maui wowie':           { t_terpinolene:0.38, t_myrcene:0.22, t_limonene:0.18, t_pinene:0.12, t_caryophyllene:0.05, t_linalool:0.02 },
+    'hawaiian':             { t_terpinolene:0.42, t_myrcene:0.20, t_limonene:0.18, t_pinene:0.12, t_caryophyllene:0.04, t_linalool:0.02 },
+    'super sour diesel':    { t_limonene:0.50, t_pinene:0.18, t_myrcene:0.12, t_terpinolene:0.10, t_caryophyllene:0.06, t_linalool:0.02 },
+    'bubblegum':            { t_terpinolene:0.32, t_myrcene:0.25, t_limonene:0.20, t_pinene:0.12, t_caryophyllene:0.08, t_linalool:0.05 },
+    'jack frost':           { t_terpinolene:0.35, t_pinene:0.25, t_limonene:0.20, t_myrcene:0.15, t_caryophyllene:0.06, t_linalool:0.02 },
+
+    // ── CBD / RELIEF ────────────────────────────────────────────────────────
+    'acdc':                 { t_caryophyllene:0.48, t_myrcene:0.32, t_linalool:0.18, t_limonene:0.06, t_pinene:0.04, t_terpinolene:0.01 },
+    'harlequin':            { t_caryophyllene:0.42, t_myrcene:0.38, t_linalool:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.01 },
+    'cannatonic':           { t_caryophyllene:0.38, t_myrcene:0.30, t_linalool:0.20, t_limonene:0.10, t_pinene:0.04, t_terpinolene:0.01 },
+    "ringo's gift":         { t_caryophyllene:0.40, t_myrcene:0.30, t_linalool:0.22, t_limonene:0.06, t_pinene:0.04, t_terpinolene:0.01 },
+    'ringos gift':          { t_caryophyllene:0.40, t_myrcene:0.30, t_linalool:0.22, t_limonene:0.06, t_pinene:0.04, t_terpinolene:0.01 },
+    "charlotte's web":      { t_caryophyllene:0.28, t_linalool:0.38, t_myrcene:0.22, t_limonene:0.10, t_pinene:0.05, t_terpinolene:0.02 },
+    'charlottes web':       { t_caryophyllene:0.28, t_linalool:0.38, t_myrcene:0.22, t_limonene:0.10, t_pinene:0.05, t_terpinolene:0.02 },
+    'remedy':               { t_caryophyllene:0.35, t_myrcene:0.28, t_linalool:0.25, t_limonene:0.06, t_pinene:0.04, t_terpinolene:0.01 },
+    'harle-tsu':            { t_caryophyllene:0.42, t_myrcene:0.35, t_linalool:0.15, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.01 },
+    'sour tsunami':         { t_caryophyllene:0.38, t_myrcene:0.28, t_linalool:0.18, t_limonene:0.08, t_pinene:0.05, t_terpinolene:0.02 },
+    'pennywise':            { t_caryophyllene:0.35, t_linalool:0.30, t_myrcene:0.28, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.01 },
+    'critical mass':        { t_myrcene:0.55, t_caryophyllene:0.22, t_linalool:0.18, t_limonene:0.05, t_pinene:0.04, t_terpinolene:0.01 },
+    'electra':              { t_caryophyllene:0.35, t_myrcene:0.25, t_limonene:0.20, t_pinene:0.10, t_linalool:0.08, t_terpinolene:0.04 },
+    'lifter':               { t_myrcene:0.32, t_caryophyllene:0.28, t_limonene:0.22, t_pinene:0.12, t_terpinolene:0.08, t_linalool:0.05 },
+    'hawaiian haze':        { t_terpinolene:0.40, t_myrcene:0.22, t_limonene:0.18, t_caryophyllene:0.10, t_pinene:0.08, t_linalool:0.04 },
+
+    // ── KUSH VARIANTS ───────────────────────────────────────────────────────
+    'candy kush':           { t_myrcene:0.45, t_linalool:0.22, t_caryophyllene:0.20, t_limonene:0.08, t_pinene:0.04, t_terpinolene:0.02 },
+    'lemon kush':           { t_myrcene:0.38, t_limonene:0.35, t_linalool:0.18, t_caryophyllene:0.15, t_pinene:0.06, t_terpinolene:0.02 },
+    'strawberry kush':      { t_myrcene:0.45, t_linalool:0.25, t_limonene:0.18, t_caryophyllene:0.12, t_pinene:0.04, t_terpinolene:0.02 },
+    'mango kush':           { t_myrcene:0.52, t_linalool:0.20, t_caryophyllene:0.18, t_limonene:0.08, t_pinene:0.03, t_terpinolene:0.02 },
+    'bubble kush':          { t_myrcene:0.52, t_linalool:0.25, t_caryophyllene:0.20, t_limonene:0.05, t_pinene:0.03, t_terpinolene:0.01 },
+};
+
+// ── STRAIN TERPENE LOOKUP ─────────────────────────────────────────────────────
+// Match product name against known strain names.
+// Returns longest match (most specific) or null if no match found.
+function lookupStrainTerpenes(productName) {
+    if (!productName) return null;
+    const n = productName.toLowerCase()
+        .replace(/[^a-z0-9 ]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    if (STRAIN_TERPENES[n]) return STRAIN_TERPENES[n];
+
+    // Find longest matching strain name contained in product name
+    // (longest = most specific, avoids 'kush' matching before 'og kush')
+    let bestMatch = null, bestLen = 0;
+    for (const strainName of Object.keys(STRAIN_TERPENES)) {
+        if (n.includes(strainName) && strainName.length > bestLen) {
+            bestMatch = STRAIN_TERPENES[strainName];
+            bestLen   = strainName.length;
+        }
+    }
+    return bestMatch;
+}
+
 // ── TERPENE → EFFECT WEIGHTS ──────────────────────────────────────────────────
 const TERPENE_EFFECTS = {
     t_myrcene:       { sleep:0.90, relax:0.45, relief:0.45, beginner:0.35, social:0.10, focus:0.10 },
@@ -1141,6 +1344,16 @@ function skipToDemo() {
 function normalizeProduct(p) {
     if (p.score_pain     != null && p.score_relief   == null) p.score_relief   = p.score_pain;
     if (p.score_balanced != null && p.score_beginner == null) p.score_beginner = p.score_balanced;
+
+    // Auto-fill terpene data from strain lookup if no lab data present
+    if (!hasTerpeneData(p)) {
+        const found = lookupStrainTerpenes(p.name);
+        if (found) {
+            Object.assign(p, found);
+            p._terpeneSource = 'lookup'; // flag for transparency
+        }
+    }
+
     return p;
 }
 
