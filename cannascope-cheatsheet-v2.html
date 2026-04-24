@@ -354,18 +354,18 @@
         .prod-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         .prod-card.rank-1 {
             border-left: 3px solid var(--accent);
-            box-shadow: 0 2px 12px rgba(45, 106, 79, 0.09);
+            box-shadow: 0 2px 16px rgba(45, 106, 79, 0.12);
         }
 
         /* card header */
         .card-header {
-            padding: 14px 16px 0;
+            padding: 16px 16px 0;
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
@@ -427,12 +427,64 @@
             margin-top: 2px;
         }
 
+        /* ── REDESIGNED CARD INTERNALS ───────────────────── */
+        .card-main {
+            padding: 16px 16px 14px;
+        }
+        .card-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .card-shelf-pill {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            background: rgba(76,175,128,0.1);
+            border: 1px solid rgba(76,175,128,0.25);
+            border-radius: 20px;
+            padding: 2px 9px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .card-ind {
+            font-size: 9px;
+            font-weight: 700;
+            border-radius: 3px;
+            padding: 1px 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .qr-ind {
+            background: rgba(76,175,128,0.15);
+            color: var(--accent);
+            border: 1px solid rgba(76,175,128,0.3);
+        }
+        .mgr-ind {
+            background: rgba(251,191,36,0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.3);
+        }
+        .card-meta-strip {
+            font-size: 11px;
+            color: var(--text-3);
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            letter-spacing: 0.01em;
+        }
+        .card-actions-inline {
+            margin-top: 12px;
+        }
+
         /* pitch line */
         .card-pitch {
-            padding: 10px 16px 0;
             font-size: 13px;
             color: var(--text-2);
             line-height: 1.55;
+            margin-bottom: 12px;
         }
         .prod-card.rank-1 .card-pitch {
             font-size: 14px;
@@ -1271,16 +1323,48 @@ async function logDemandEvent(event_type, options = {}) {
 }
 
 // ── MARK SOLD ─────────────────────────────────────────────────────────────────
+let _salesToday = parseInt(sessionStorage.getItem('cs_sales_today') || '0');
+
 function markSold(btn, productId, rank) {
     btn.textContent = '✓ Sold';
     btn.style.background = '#1a4532';
     btn.disabled = true;
+
+    // Increment daily counter
+    _salesToday++;
+    sessionStorage.setItem('cs_sales_today', _salesToday);
+    _showSaleFlash(_salesToday);
+
     logDemandEvent('sale_confirmed', {
         product_id:      productId,
         product_rank:    rank,
         recommendations: _lastRecommendedIds
     });
-    setTimeout(() => newCustomer(), 800);
+
+    // Clear QR context after a sale — next customer starts fresh
+    window._qrCustomerAnswers  = null;
+    window._qrActiveProductId  = null;
+
+    setTimeout(() => newCustomer(), 1000);
+}
+
+function _showSaleFlash(count) {
+    let flash = document.getElementById('saleFlash');
+    if (!flash) {
+        flash = document.createElement('div');
+        flash.id = 'saleFlash';
+        flash.style.cssText = `
+            position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+            background:#1a4532; border:1px solid var(--accent); border-radius:24px;
+            padding:10px 20px; font-size:13px; font-weight:700; color:var(--accent);
+            z-index:999; opacity:0; transition:opacity 0.3s; pointer-events:none;
+            white-space:nowrap;
+        `;
+        document.body.appendChild(flash);
+    }
+    flash.textContent = `Sale logged · ${count} today`;
+    flash.style.opacity = '1';
+    setTimeout(() => { flash.style.opacity = '0'; }, 2500);
 }
 
 // ── DEMO PRODUCTS ─────────────────────────────────────────────────────────────
@@ -2210,15 +2294,19 @@ function getNextQuestion(p, goal) {
 }
 
 // ── LLM TALKING POINTS — ASYNC UPGRADE ───────────────────────────────────────
-// Builds the customer context object from current filter state.
+// Builds the customer context object from current filter state + QR answers.
+// QR answers are richer (6 questions) — always prefer them when available.
 function buildCustomerContext() {
+    const qa = window._qrCustomerAnswers || {};
     return {
-        goal:       selectedGoal   || 'relax',
-        experience: filters.experience || null,
-        format:     filters.format     || null,
-        intensity:  filters.intensity  || null,
-        priceSpec:  filters.priceSpec  || null,
-        ageRange:   filters.ageRange   || null,
+        goal:       selectedGoal          || qa.goal       || 'relax',
+        experience: qa.experience         || filters.experience || null,
+        format:     qa.format             || filters.format     || null,
+        intensity:  qa.intensity          || filters.intensity  || null,
+        priceSpec:  qa.priceSpec          || filters.priceSpec  || null,
+        ageRange:   qa.ageRange           || null,
+        // Flag so Claude knows this came from a real customer interaction
+        fromQR:     !!window._qrCustomerAnswers,
     };
 }
 
@@ -2373,6 +2461,11 @@ function expandCard(cardId) {
     const card = document.getElementById('card-' + cardId);
     if (!card) return;
     card.classList.remove('collapsed');
+    // Auto-open the say-this drawer when a backup card is tapped
+    const drawer = document.getElementById('say-' + cardId);
+    if (drawer && !drawer.classList.contains('open')) {
+        drawer.classList.add('open');
+    }
 }
 
 // ── CARD RENDERING ────────────────────────────────────────────────────────────
@@ -2487,30 +2580,46 @@ function renderCard(p, idx, backupLabel) {
     const collapsedClass = isTop ? '' : ' collapsed';
     const expandAttr     = isTop ? '' : ` onclick="expandCard('${xe(p.id)}')"`;
 
+    // Compact meta string for inside the drawer
+    const metaStrip = [
+        fmtLbl,
+        thc > 0 ? `THC ${thc}%` : null,
+        cbd > 0.5 ? `CBD ${cbd}%` : null,
+        price > 0 ? `$${price}` : null,
+        p.shelf ? `Shelf ${p.shelf}` : null,
+    ].filter(Boolean).join(' · ');
+
+    // Subtle indicators for rank and QR
+    const indicators = [
+        fromQR ? '<span class="card-ind qr-ind">QR</span>' : '',
+        p.manager_note ? `<span class="card-ind mgr-ind" title="${xe(p.manager_note)}">★</span>` : '',
+    ].join('');
+
     return `
 <div class="prod-card${isTop ? ' rank-1' : ''}${collapsedClass}" id="card-${xe(p.id)}"${expandAttr}>
-    <div class="card-header">
-        <div class="card-header-left">
-            <div class="card-rank-badge">${rankLabel}${qrBadge}${mgrDot}</div>
-            <div class="card-name">${xe(p.name)}</div>
-            <div class="card-meta-row">${xe(p.brand || '')} · ${xe(fmtLbl)} · THC ${thc > 0 ? thc + '%' : '—'}${xe(cbdNote)}</div>
+    <div class="card-main">
+        <div class="card-top-row">
+            <div class="card-name">${xe(p.name)}${indicators}</div>
+            ${p.shelf ? `<div class="card-shelf-pill">Shelf ${xe(p.shelf)}</div>` : ''}
         </div>
-        <div class="card-header-right">
-            <div class="card-price">$${xe(price)}</div>
-            ${p.shelf ? `<div class="card-shelf">Shelf ${xe(p.shelf)}</div>` : ''}
-        </div>
-    </div>
-    ${!isTop ? `<div class="card-expand-hint">Tap to expand</div>` : ''}
-    <div class="card-pitch">${xe(pitchLine)}</div>
-    <div class="card-actions">
-        <button class="btn-say-this" onclick="event.stopPropagation(); toggleSayThis('${xe(p.id)}')">Say This ↓</button>
-        <button class="rec-btn" id="rec-${xe(p.id)}" onclick="event.stopPropagation(); markSold(this,'${xe(p.id)}',${idx + 1})">Sold →</button>
+        ${!isTop ? `<div class="card-expand-hint">Tap to see recommendation</div>` : `<div class="card-pitch">${xe(pitchLine)}</div>`}
+        ${isTop ? `
+        <div class="card-actions">
+            <button class="btn-say-this" onclick="event.stopPropagation(); toggleSayThis('${xe(p.id)}')">Say This</button>
+            <button class="rec-btn" id="rec-${xe(p.id)}" onclick="event.stopPropagation(); markSold(this,'${xe(p.id)}',${idx + 1})">Sold</button>
+        </div>` : ''}
     </div>
     <div class="say-this-drawer" id="say-${xe(p.id)}">
         <div class="say-this-label">Say this</div>
         <div class="say-this-opening">${xe(openingLine)}</div>
         <div class="say-this-bullets">${bulletHtml}</div>
-        ${nextQ ? `<div class="say-this-next-label">NEXT</div><div class="say-this-next">"Ask: ${xe(nextQ)}"</div>` : ''}
+        ${nextQ ? `<div class="say-this-next-label">NEXT</div><div class="say-this-next">"${xe(nextQ)}"</div>` : ''}
+        <div class="card-meta-strip">${xe(metaStrip)}</div>
+        ${!isTop ? `
+        <div class="card-actions card-actions-inline">
+            <button class="btn-say-this" onclick="event.stopPropagation(); toggleSayThis('${xe(p.id)}')">Close</button>
+            <button class="rec-btn" id="rec-${xe(p.id)}" onclick="event.stopPropagation(); markSold(this,'${xe(p.id)}',${idx + 1})">Sold</button>
+        </div>` : ''}
         ${detailsHtml ? `<button class="btn-details-link" onclick="toggleDetails('${xe(p.id)}')">Details ↓</button>` : ''}
     </div>
     ${detailsHtml ? `<div class="details-drawer" id="det-${xe(p.id)}">${detailsHtml}</div>` : ''}
@@ -2783,15 +2892,22 @@ function loadQRCustomer() {
     const goal = row.goal || 'relax';
 
     // Restore full filter state from QR session
-    let qFilters = {};
-    try { qFilters = JSON.parse(row.experience || '{}'); } catch(e) {}
+    // QR sends { answers: { goal, experience, format, intensity, priceSpec, ageRange }, filters: {...} }
+    let qParsed = {};
+    try { qParsed = JSON.parse(row.experience || '{}'); } catch(e) {}
+
+    const qAnswers = qParsed.answers || qParsed; // backwards compat with old flat format
+    const qFilters = qParsed.filters  || {};
+
+    // Store full customer answers so buildCustomerContext() can send them to Claude
+    window._qrCustomerAnswers = qAnswers;
 
     // Tag the session so results can show "From QR" on the matching product
     window._qrActiveProductId = row.product_id || null;
 
     dismissQRSession();
 
-    // Navigate with customer's preferences pre-loaded
+    // Navigate with customer's preferences pre-loaded (use the filters subset for scoring)
     filters      = qFilters;
     selectedGoal = null;
     selectGoal(goal);
