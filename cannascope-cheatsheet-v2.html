@@ -1758,9 +1758,10 @@ function goToGoal() {
     showScreen('screenGoal');
 }
 
-function selectGoal(goal) {
+// preserveFilters: true when called from QR load — don't wipe customer preferences
+function selectGoal(goal, preserveFilters) {
     selectedGoal = goal;
-    filters = {};
+    if (!preserveFilters) filters = {};
     document.getElementById('goalPill').textContent = GOAL_LABELS[goal];
     buildRefineTray(goal);
     showScreen('screenResults');
@@ -1816,20 +1817,26 @@ function toggleRefineChip(btn) {
 }
 
 // ── HARD FILTERS ──────────────────────────────────────────────────────────────
+// Merges chip filters with QR customer answers so both paths drive the scoring engine.
 function passesHardFilters(p) {
     if (p.in_stock === false) return false;
 
-    // Format
-    if (filters.format) {
-        if ((p.category || '').toLowerCase() !== filters.format) return false;
+    const qa = window._qrCustomerAnswers || {};
+
+    // Format — chip filter takes priority, then QR answer
+    const activeFormat = filters.format || qa.format || null;
+    if (activeFormat) {
+        if ((p.category || '').toLowerCase() !== activeFormat) return false;
     }
-    // No smoking
-    if (filters.avoidSmoke === 'yes') {
+    // No smoking — chip or QR avoidSmoke answer
+    const avoidSmoke = filters.avoidSmoke || (qa.avoidSmoke === 'yes' ? 'yes' : null);
+    if (avoidSmoke === 'yes') {
         const cat = (p.category || '').toLowerCase();
         if (['flower', 'preroll', 'concentrate'].includes(cat)) return false;
     }
-    // First-timer THC gate
-    if (filters.experience === 'new') {
+    // First-timer THC gate — chip or QR experience answer
+    const activeExperience = filters.experience || qa.experience || null;
+    if (activeExperience === 'new') {
         if ((parseFloat(p.thc) || 0) > 20) return false;
     }
     // Price (standard ranges from filter screen)
@@ -1837,11 +1844,12 @@ function passesHardFilters(p) {
         const price = parseFloat(p.price) || 0;
         if (!priceMatches(price, filters.price)) return false;
     }
-    // Price spec (refine chips)
-    if (filters.priceSpec) {
+    // Price spec — chip or QR priceSpec answer
+    const activePriceSpec = filters.priceSpec || qa.priceSpec || null;
+    if (activePriceSpec) {
         const price = parseFloat(p.price) || 0;
-        if (filters.priceSpec === 'budget'  && price > 40)  return false;
-        if (filters.priceSpec === 'premium' && price < 50)  return false;
+        if (activePriceSpec === 'budget'  && price > 40)  return false;
+        if (activePriceSpec === 'premium' && price < 50)  return false;
     }
 
     return true;
@@ -1933,11 +1941,13 @@ function scoreProduct(p, eff) {
     // 3. INTENSITY (20 pts)
     const thc = parseFloat(p.thc) || 0;
     let intensityEarned = 0;
-    if (filters.intensity) {
+    // Use QR intensity answer as fallback when no chip is selected
+    const activeIntensity = filters.intensity || (window._qrCustomerAnswers || {}).intensity || null;
+    if (activeIntensity) {
         possible += 20;
-        const inRange = (filters.intensity === 'mild'     && thc <  15) ||
-                        (filters.intensity === 'moderate'  && thc >= 15 && thc <= 22) ||
-                        (filters.intensity === 'strong'    && thc >  22);
+        const inRange = (activeIntensity === 'mild'     && thc <  15) ||
+                        (activeIntensity === 'moderate'  && thc >= 15 && thc <= 22) ||
+                        (activeIntensity === 'strong'    && thc >  22);
         if (inRange) { intensityEarned = 20; reasons.push(`THC ${thc}% fits preference`); }
         earned += intensityEarned;
         dbg.intensity = `${intensityEarned}/20`;
@@ -3066,10 +3076,11 @@ function loadQRCustomer() {
 
     dismissQRSession();
 
-    // Navigate with customer's preferences pre-loaded (use the filters subset for scoring)
+    // Navigate with customer's preferences pre-loaded — pass preserveFilters=true
+    // so selectGoal() doesn't wipe the QR filters before scoring runs
     filters      = qFilters;
     selectedGoal = null;
-    selectGoal(goal);
+    selectGoal(goal, true);
 }
 
 function updateQRBadge() {
