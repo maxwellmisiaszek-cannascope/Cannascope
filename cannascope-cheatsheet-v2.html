@@ -916,6 +916,54 @@
             margin-bottom: 4px;
         }
 
+        /* ── UPSELL BLOCK ─────────────────────────────────── */
+        .say-this-upsell {
+            margin-top: 12px;
+            padding: 10px 12px;
+            background: var(--amber-bg);
+            border: 1px solid var(--amber-border);
+            border-radius: 8px;
+        }
+        .say-this-upsell-label {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--amber);
+            margin-bottom: 4px;
+        }
+        .say-this-upsell-text {
+            font-size: 12px;
+            color: var(--amber);
+            line-height: 1.5;
+        }
+
+        /* ── SHELF LOCATION PROMINENT ─────────────────────── */
+        .card-shelf-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: var(--accent-light);
+            border: 1px solid var(--accent-border);
+            border-radius: 5px;
+            padding: 2px 8px;
+            margin-bottom: 6px;
+        }
+
+        /* ── STALE WARNING ────────────────────────────────── */
+        .inventory-badge.stale {
+            color: var(--red) !important;
+            background: var(--red-bg) !important;
+            border-color: var(--red-border) !important;
+        }
+
+        /* ── SOLD COUNTER ─────────────────────────────────── */
+        .rec-btn.sold-once { background: #1a4532; }
+        .rec-btn.sold-once:hover { background: #1a4532; }
+
         /* ── RESPONSIVE ───────────────────────────────────── */
         @media (max-width: 400px) {
             .goal-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1301,6 +1349,7 @@ let selectedGoal  = null;
 let filters       = {};
 let debugMode     = false;
 let _orgScoreWeights = {}; // { goal: { format: multiplier } } — loaded from org_score_weights
+let _lastSyncTime = null;  // timestamp of last product load — used for staleness indicator
 
 const SESSION_ID = crypto.randomUUID();
 let _lastRecommendedIds = [];
@@ -1324,11 +1373,15 @@ async function logDemandEvent(event_type, options = {}) {
 
 // ── MARK SOLD ─────────────────────────────────────────────────────────────────
 let _salesToday = parseInt(sessionStorage.getItem('cs_sales_today') || '0');
+const _productSaleCounts = new Map(); // productId → count for this session
 
 function markSold(btn, productId, rank) {
-    btn.textContent = '✓ Sold';
-    btn.style.background = '#1a4532';
-    btn.disabled = true;
+    const prev  = _productSaleCounts.get(productId) || 0;
+    const count = prev + 1;
+    _productSaleCounts.set(productId, count);
+
+    btn.textContent = count === 1 ? '✓ Sold' : `✓ Sold ×${count}`;
+    btn.classList.add('sold-once');
 
     // Increment daily counter
     _salesToday++;
@@ -1341,11 +1394,12 @@ function markSold(btn, productId, rank) {
         recommendations: _lastRecommendedIds
     });
 
-    // Clear QR context after a sale — next customer starts fresh
-    window._qrCustomerAnswers  = null;
-    window._qrActiveProductId  = null;
-
-    setTimeout(() => newCustomer(), 1000);
+    // Only clear QR context on the first sale — subsequent taps are re-sells
+    if (count === 1) {
+        window._qrCustomerAnswers  = null;
+        window._qrActiveProductId  = null;
+    }
+    // No auto-navigate — budtender taps New Customer when ready
 }
 
 function _showSaleFlash(count) {
@@ -1525,6 +1579,7 @@ async function loadOrg(key) {
             .select('*').eq('organization_id', orgId);
         if (prodErr) console.error('[Cannascope] products error:', prodErr);
         allProducts = (prods || []).filter(p => p.in_stock !== false).map(normalizeProduct);
+        _lastSyncTime = Date.now();
         const el = document.getElementById('productCount');
         el.textContent = allProducts.length + ' products';
         el.classList.add('loaded');
@@ -1638,6 +1693,26 @@ function updateTaglineCount(n) {
     if (el) el.textContent = n;
 }
 
+// Staleness indicator — runs every minute to show how fresh the inventory is
+function updateStalenessIndicator() {
+    if (!_lastSyncTime) return;
+    const el = document.getElementById('productCount');
+    if (!el) return;
+    const minsAgo = Math.floor((Date.now() - _lastSyncTime) / 60000);
+    const count   = allProducts.length;
+    const isStale = minsAgo > 30;
+    if (minsAgo < 2) {
+        el.textContent = count + ' products';
+    } else if (isStale) {
+        el.textContent = count + ' products · ⚠ ' + minsAgo + 'm ago';
+        el.classList.add('stale');
+    } else {
+        el.textContent = count + ' products · ' + minsAgo + 'm ago';
+        el.classList.remove('stale');
+    }
+}
+setInterval(updateStalenessIndicator, 60000);
+
 // ── TICKER ────────────────────────────────────────────────────────────────────
 (function buildTicker() {
     const items = [
@@ -1696,6 +1771,7 @@ function selectGoal(goal) {
 function newCustomer() {
     selectedGoal = null;
     filters = {};
+    _productSaleCounts.clear();
     document.querySelectorAll('.refine-chip').forEach(c => c.classList.remove('active'));
     showScreen('screenGoal');
     const flash = document.getElementById('servedFlash');
@@ -2468,6 +2544,73 @@ function expandCard(cardId) {
     }
 }
 
+// ── UPSELL LINE GENERATOR ─────────────────────────────────────────────────────
+// Generates a format-specific add-on or upgrade angle for every product.
+// Shown in the Say This drawer so budtenders always have a natural upsell.
+function generateUpsellLine(p, goal) {
+    const cat = (p.category || 'flower').toLowerCase();
+    const map = {
+        flower: {
+            sleep:    'For customers who wake mid-night: add a low-dose edible — flower gets them down fast, edible carries them through.',
+            relax:    'Pair with a low-dose edible for a full evening. Flower is the starter, edible is the anchor.',
+            focus:    'A 1:1 CBD tincture alongside keeps the focus cleaner at higher THC. Good if they mention any anxiety.',
+            social:   'Vape is a clean add-on for events — discreet top-ups without committing to another bowl.',
+            relief:   'Stack with a topical on any specific spots — dual-action covers more ground than either alone.',
+            beginner: 'A CBD tincture is the ideal backup. If they overshoot, CBD moderates the effect within 15 minutes.',
+        },
+        vape: {
+            sleep:    'Add a low-dose edible so the effect carries through the night — vape handles the fall, edible handles the stay.',
+            relax:    'A 1:1 tincture pairs well if they want longer, more sustained effect alongside the vape.',
+            focus:    'A lower-dose flower option is worth flagging for customers who want sustained focus without multiple pulls.',
+            social:   'Pre-roll or flower for sharing — vapes are personal. If they\'re with a group, flower is more social.',
+            relief:   'Topical for localized spots — vape handles systemic relief, topical targets the exact area.',
+            beginner: '1:1 tincture as a backup. If the vape feels like too much, a dropper of 1:1 brings it back to center.',
+        },
+        edible: {
+            sleep:    'If they want fast onset too: add a vape or pre-roll as a bridge while the edible builds.',
+            relax:    'Mention a low-dose vape for on-demand control alongside the steady edible.',
+            focus:    'A focused strain vape pairs well for quick bursts during the long edible window.',
+            social:   'Vape for fast top-ups at events — edible handles the baseline, vape handles the moments.',
+            relief:   'Topical for localized areas alongside — edible is systemic, topical is targeted.',
+            beginner: 'CBD tincture as a safety net. They can take a dropper if the edible comes on stronger than expected.',
+        },
+        tincture: {
+            sleep:    'Add a pre-roll or low-dose flower if they want faster initial onset while the tincture builds.',
+            relax:    'Low-THC vape for on-demand top-ups between tincture doses.',
+            focus:    'A focused strain flower gives a faster kick alongside the steady tincture baseline.',
+            social:   'Discreet vape is a clean companion — quick pull for top-ups, tincture handles the baseline.',
+            relief:   'Stack with a topical for direct coverage — tincture handles systemic, topical handles the specific spot.',
+            beginner: 'CBD-only tincture from the same brand if they want a THC-free backup option.',
+        },
+        topical: {
+            sleep:    'Add a tincture or low-dose edible if they want full-body effect alongside local relief.',
+            relax:    'Pair with a tincture or low-dose vape for systemic effect alongside local coverage.',
+            focus:    'CBD tincture if they want systemic support — topical handles the area, tincture handles the system.',
+            social:   'Low-dose tincture if they want systemic ease alongside — topical is standalone by design.',
+            relief:   'Add a tincture or edible for systemic coverage — topical handles the specific area, tincture handles everything else.',
+            beginner: 'This is a safe solo product. CBD tincture is a natural next step if they want to try something systemic.',
+        },
+        preroll: {
+            sleep:    'Low-dose edible as a follow-up — pre-roll for fast onset, edible carries the effect through the night.',
+            relax:    'Low-dose edible for a longer evening. Pre-roll gets them there, edible keeps them there.',
+            focus:    'Clean vape is a better repeat-use format for focus — less commitment per session, more control.',
+            social:   'Vape for events where smoking isn\'t ideal — discreet and portable.',
+            relief:   'Stack with a topical for direct area coverage alongside the pre-roll\'s systemic effect.',
+            beginner: '1:1 tincture as backup — if the pre-roll is more than expected, CBD moderates it fast.',
+        },
+        concentrate: {
+            sleep:    'Only for experienced consumers. Low-dose edible is more appropriate if they\'re not concentrate users.',
+            relax:    'Pair with a 1:1 tincture for a more balanced experience — concentrates can run hot.',
+            focus:    'Low-dose vape is the cleaner option for most focus customers — same fast onset, safer dose.',
+            social:   'Flower is more social — concentrates are personal and easy to overdo in a group.',
+            relief:   'Topical for specific spots alongside. Concentrate handles systemic, topical handles the target area.',
+            beginner: 'Not the right format for a first-timer. Steer toward flower, pre-roll, or 1:1 tincture instead.',
+        },
+    };
+    const catMap = map[cat] || map['flower'];
+    return catMap[goal] || 'Ask if they want something to pair — most goals benefit from a complementary format.';
+}
+
 // ── CARD RENDERING ────────────────────────────────────────────────────────────
 function renderCard(p, idx, backupLabel) {
     const isTop   = idx === 0;
@@ -2542,6 +2685,9 @@ function renderCard(p, idx, backupLabel) {
     // Next question — format-specific, not generic per-goal
     const nextQ = getNextQuestion(p, goal);
 
+    // Upsell line — format × goal specific
+    const upsellLine = generateUpsellLine(p, goal);
+
     // Details content
     const mechanism = (parsed?.why && !isBoilerplate(parsed.why)) ? parsed.why : '';
     const sig       = livePotencySignal(thc, cbd, cat);
@@ -2611,8 +2757,13 @@ function renderCard(p, idx, backupLabel) {
     </div>
     <div class="say-this-drawer" id="say-${xe(p.id)}">
         <div class="say-this-label">Say this</div>
+        ${p.shelf ? `<div class="card-shelf-badge">📍 Shelf ${xe(p.shelf)}</div>` : ''}
         <div class="say-this-opening">${xe(openingLine)}</div>
         <div class="say-this-bullets">${bulletHtml}</div>
+        <div class="say-this-upsell">
+            <div class="say-this-upsell-label">Upsell</div>
+            <div class="say-this-upsell-text">${xe(upsellLine)}</div>
+        </div>
         ${nextQ ? `<div class="say-this-next-label">NEXT</div><div class="say-this-next">"${xe(nextQ)}"</div>` : ''}
         <div class="card-meta-strip">${xe(metaStrip)}</div>
         ${!isTop ? `
@@ -2726,6 +2877,14 @@ async function findProducts() {
     const allWeak  = topPicks.every(p => p._result.confidence === 'LOW') && maxScore < 55;
 
     let html = '';
+
+    // Thin inventory banner — fewer than 3 matching products
+    if (topPicks.length < 3 && !allWeak) {
+        html += `<div class="fallback-banner">
+            <strong>LIMITED IN STOCK</strong>
+            Only ${topPicks.length} ${label} product${topPicks.length !== 1 ? 's' : ''} available right now${filters && Object.keys(filters).length ? ' with these filters' : ''}. Showing best options.
+        </div>`;
+    }
 
     // Soft fallback banner (only if genuinely weak)
     if (allWeak) {
