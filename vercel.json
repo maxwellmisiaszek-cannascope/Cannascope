@@ -3,21 +3,17 @@
     "api/dutchie.js":         { "maxDuration": 30 },
     "api/dutchie-resolve.js": { "maxDuration": 10 }
   },
-  "redirects": [
+  "rewrites": [
     {
-      "source": "/",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "whatshouldigetatthedispensary.com" }],
-      "destination": "/quiz",
-      "permanent": false
+      "destination": "/cannascope-quiz.html"
     },
     {
-      "source": "/",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "www.whatshouldigetatthedispensary.com" }],
-      "destination": "/quiz",
-      "permanent": false
-    }
-  ],
-  "rewrites": [
+      "destination": "/cannascope-quiz.html"
+    },
     { "source": "/budtender", "destination": "/cannascope-cheatsheet-v2.html" },
     { "source": "/admin",     "destination": "/cannascope-admin.html" },
     { "source": "/login",     "destination": "/cannascope-login.html" },
