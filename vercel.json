@@ -4,6 +4,16 @@
     "api/dutchie-resolve.js": { "maxDuration": 10 }
   },
   "rewrites": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "whatshouldigetatthedispensary.com" }],
+      "destination": "/cannascope-quiz.html"
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "www.whatshouldigetatthedispensary.com" }],
+      "destination": "/cannascope-quiz.html"
+    },
     { "source": "/budtender", "destination": "/cannascope-cheatsheet-v2.html" },
     { "source": "/admin",     "destination": "/cannascope-admin.html" },
     { "source": "/login",     "destination": "/cannascope-login.html" },
