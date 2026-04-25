@@ -10,6 +10,7 @@
     { "source": "/signup",    "destination": "/cannascope-signup.html" },
     { "source": "/qr-deploy", "destination": "/cannascope-qr-deploy.html" },
     { "source": "/qr",        "destination": "/cannascope-qr.html" },
-    { "source": "/onboarding","destination": "/cannascope-onboarding.html" }
+    { "source": "/onboarding","destination": "/cannascope-onboarding.html" },
+    { "source": "/quiz",      "destination": "/cannascope-quiz.html" }
   ]
 }
