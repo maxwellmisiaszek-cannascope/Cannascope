@@ -1,7 +1,8 @@
 {
   "functions": {
     "api/dutchie.js":         { "maxDuration": 30 },
-    "api/dutchie-resolve.js": { "maxDuration": 10 }
+    "api/dutchie-resolve.js": { "maxDuration": 10 },
+    "api/send-quiz-email.js": { "maxDuration": 10 }
   },
   "headers": [
     {
