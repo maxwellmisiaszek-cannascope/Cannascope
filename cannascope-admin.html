@@ -354,6 +354,11 @@ th.row-cb .cb{margin-top:1px}
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
     Import
   </button>
+  <button class="tab-btn" onclick="switchTab('quiz')" id="tb-quiz">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    Quiz Stats
+    <span class="t-badge" id="quizBadge" style="display:none"></span>
+  </button>
 </div>
 
 <!-- INVENTORY TAB -->
@@ -400,6 +405,9 @@ th.row-cb .cb{margin-top:1px}
 
 <!-- DEMAND INSIGHTS TAB -->
 <div class="tab-pane pad" id="tp-ins"><div id="insContent"><div style="text-align:center;padding:80px 20px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:16px">📊</div><div style="font-size:16px;color:var(--txt2);font-weight:600;margin-bottom:8px">Loading demand data…</div></div></div></div>
+
+<!-- QUIZ STATS TAB -->
+<div class="tab-pane pad" id="tp-quiz"><div id="quizContent"><div style="text-align:center;padding:80px 20px;color:var(--txt3)"><div style="font-size:40px;margin-bottom:16px">📋</div><div style="font-size:16px;color:var(--txt2);font-weight:600;margin-bottom:8px">Loading quiz data…</div></div></div></div>
 
 <!-- INTEGRATIONS TAB -->
 <div class="tab-pane pad" id="tp-dtc">
@@ -1208,6 +1216,7 @@ function switchTab(tab){
   if(tab==='anl'&&!anlDone){renderAnalytics();anlDone=true;}
   if(tab==='ins'){loadDemandInsights();}
   if(tab==='dtc'){dtcInit();}
+  if(tab==='quiz'){loadQuizStats();}
 }
 
 async function loadDemandInsights(){
@@ -2263,6 +2272,173 @@ const DTC_CATS = ['Flower','Concentrate','Vaporizers','Edible','Tincture','Topic
 
 let dtcInitDone = false;
 let dtcMappedProducts = [];
+// ── QUIZ STATS ────────────────────────────────────────────────────────────────
+async function loadQuizStats() {
+  const el = document.getElementById('quizContent');
+  el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--txt3);font-size:14px">Loading…</div>';
+  try {
+    const since30 = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+    const { data: rows, error } = await sb
+      .from('demand_events')
+      .select('event_type,goal,experience,created_at,session_id')
+      .eq('source', 'consumer_quiz')
+      .is('organization_id', null)
+      .gte('created_at', since30)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const completions = rows.filter(r => r.event_type === 'quiz_complete');
+    const captures   = rows.filter(r => r.event_type === 'email_capture');
+    const today      = new Date(); today.setHours(0,0,0,0);
+    const todayC     = completions.filter(r => new Date(r.created_at) >= today);
+
+    // Parse archetype from experience JSON
+    const archetypeCounts = {};
+    const goalCounts = {};
+    const formatCounts = {};
+    completions.forEach(r => {
+      try {
+        const exp = JSON.parse(r.experience || '{}');
+        const arch = exp.archetype || 'unknown';
+        archetypeCounts[arch] = (archetypeCounts[arch]||0) + 1;
+        const g = exp.goal || r.goal || 'unknown';
+        goalCounts[g] = (goalCounts[g]||0) + 1;
+        const f = exp.format || 'unknown';
+        formatCounts[f] = (formatCounts[f]||0) + 1;
+      } catch(e) {}
+    });
+
+    const topArchetypes = Object.entries(archetypeCounts).sort((a,b)=>b[1]-a[1]);
+    const topGoals      = Object.entries(goalCounts).sort((a,b)=>b[1]-a[1]);
+
+    const captureRate = completions.length > 0
+      ? Math.round(captures.length / completions.length * 100)
+      : 0;
+
+    const archLabels = {
+      sleeper:'The Deep Sleeper',sharpener:'The Sharpener',social:'The Social Spark',
+      healer:'The Healer',unwinder:'The Unwinder',explorer:'The Explorer',microdose:'The Micro-Doser'
+    };
+
+    // Update badge
+    const badge = document.getElementById('quizBadge');
+    if (completions.length > 0) {
+      badge.textContent = completions.length;
+      badge.style.display = '';
+    }
+
+    el.innerHTML = `
+      <div style="max-width:860px">
+        <div style="margin-bottom:24px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:4px">Consumer Quiz</div>
+          <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--txt)">Quiz Completions</div>
+          <div style="font-size:13px;color:var(--txt3);margin-top:4px">Last 30 days · whatshouldigetatthedispensary.com</div>
+        </div>
+
+        <!-- KPI row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+          ${[
+            ['Completions', completions.length, 'last 30d'],
+            ['Today', todayC.length, 'quiz completions'],
+            ['Emails captured', captures.length, `${captureRate}% capture rate`],
+            ['Unique sessions', new Set(completions.map(r=>r.session_id)).size, 'unique visitors'],
+          ].map(([label,val,sub])=>`
+            <div class="a-card" style="padding:16px 20px;margin:0">
+              <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);margin-bottom:6px">${label}</div>
+              <div style="font-size:32px;font-weight:700;color:var(--txt);letter-spacing:-.02em;line-height:1">${val}</div>
+              <div style="font-size:11px;color:var(--txt3);margin-top:4px">${sub}</div>
+            </div>`).join('')}
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+          <!-- Archetype breakdown -->
+          <div class="a-card" style="margin:0">
+            <div class="a-head"><div><div class="a-title">Archetypes</div><div class="a-sub">What people are looking for</div></div></div>
+            <div style="padding:16px">
+              ${topArchetypes.length === 0
+                ? '<div style="color:var(--txt3);font-size:13px;text-align:center;padding:20px">No data yet</div>'
+                : topArchetypes.map(([k,n])=>{
+                    const pct = Math.round(n/completions.length*100);
+                    return `<div style="margin-bottom:12px">
+                      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                        <span style="color:var(--txt2)">${archLabels[k]||k}</span>
+                        <span style="font-weight:600;color:var(--txt)">${n} <span style="color:var(--txt3);font-weight:400">(${pct}%)</span></span>
+                      </div>
+                      <div style="height:4px;background:var(--border);border-radius:4px">
+                        <div style="height:4px;width:${pct}%;background:var(--green);border-radius:4px"></div>
+                      </div>
+                    </div>`;
+                  }).join('')}
+            </div>
+          </div>
+
+          <!-- Goal breakdown -->
+          <div class="a-card" style="margin:0">
+            <div class="a-head"><div><div class="a-title">Goals</div><div class="a-sub">Why they walked in</div></div></div>
+            <div style="padding:16px">
+              ${topGoals.length === 0
+                ? '<div style="color:var(--txt3);font-size:13px;text-align:center;padding:20px">No data yet</div>'
+                : topGoals.map(([k,n])=>{
+                    const pct = Math.round(n/completions.length*100);
+                    const emoji = {sleep:'😴',relax:'🌿',focus:'🎯',social:'🎉',relief:'💊',beginner:'👋'}[k]||'•';
+                    return `<div style="margin-bottom:12px">
+                      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                        <span style="color:var(--txt2)">${emoji} ${k.charAt(0).toUpperCase()+k.slice(1)}</span>
+                        <span style="font-weight:600;color:var(--txt)">${n} <span style="color:var(--txt3);font-weight:400">(${pct}%)</span></span>
+                      </div>
+                      <div style="height:4px;background:var(--border);border-radius:4px">
+                        <div style="height:4px;width:${pct}%;background:var(--green-mid);border-radius:4px"></div>
+                      </div>
+                    </div>`;
+                  }).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent completions table -->
+        <div class="a-card" style="margin:0">
+          <div class="a-head"><div><div class="a-title">Recent Completions</div><div class="a-sub">Last 20 quiz takers</div></div></div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
+              <thead><tr style="border-bottom:1px solid var(--border)">
+                <th style="text-align:left;padding:10px 16px;color:var(--txt3);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase">Time</th>
+                <th style="text-align:left;padding:10px 16px;color:var(--txt3);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase">Goal</th>
+                <th style="text-align:left;padding:10px 16px;color:var(--txt3);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase">Experience</th>
+                <th style="text-align:left;padding:10px 16px;color:var(--txt3);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase">Format</th>
+                <th style="text-align:left;padding:10px 16px;color:var(--txt3);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase">Archetype</th>
+                <th style="text-align:left;padding:10px 16px;color:var(--txt3);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase">Email</th>
+              </tr></thead>
+              <tbody>
+                ${completions.slice(0,20).map(r=>{
+                  let exp={};
+                  try{exp=JSON.parse(r.experience||'{}');}catch(e){}
+                  const hasEmail = captures.some(c=>c.session_id===r.session_id);
+                  const d = new Date(r.created_at);
+                  const timeStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+                  return `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:10px 16px;color:var(--txt3)">${timeStr}</td>
+                    <td style="padding:10px 16px;color:var(--txt2);font-weight:500">${exp.goal||r.goal||'—'}</td>
+                    <td style="padding:10px 16px;color:var(--txt3)">${exp.experience||'—'}</td>
+                    <td style="padding:10px 16px;color:var(--txt3)">${exp.format||'—'}</td>
+                    <td style="padding:10px 16px"><span style="background:var(--green-pale);color:var(--green);padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600">${exp.archetype||'—'}</span></td>
+                    <td style="padding:10px 16px">${hasEmail?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--txt3)">—</span>'}</td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+            ${completions.length===0?'<div style="text-align:center;padding:40px;color:var(--txt3);font-size:13px">No quiz completions yet. Share the poster and check back soon.</div>':''}
+          </div>
+        </div>
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--txt3)">
+      <div style="font-size:15px;font-weight:600;color:var(--txt);margin-bottom:8px">Couldn't load quiz data</div>
+      <div style="font-size:13px">${e.message}</div>
+    </div>`;
+  }
+}
+
 let dtcDispensaryId = null;
 
 function dtcInit() {
