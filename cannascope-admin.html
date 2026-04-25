@@ -2273,11 +2273,36 @@ const DTC_CATS = ['Flower','Concentrate','Vaporizers','Edible','Tincture','Topic
 let dtcInitDone = false;
 let dtcMappedProducts = [];
 // ── QUIZ STATS ────────────────────────────────────────────────────────────────
+const RLS_FIX_SQL = `-- Run this once in your Supabase SQL editor:
+-- https://supabase.com/dashboard/project/nrcvpwyvxmplwvjrdoua/sql
+
+drop policy if exists "demand_events_select" on demand_events;
+
+create policy "demand_events_select" on demand_events
+  for select to authenticated
+  using (
+    organization_id = (
+      select organization_id from user_profiles where id = auth.uid()
+    )
+    OR organization_id IS NULL
+  );`;
+
 async function loadQuizStats() {
   const el = document.getElementById('quizContent');
   el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--txt3);font-size:14px">Loading…</div>';
   try {
     const since30 = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+
+    // First probe: check if we can see any consumer_quiz rows at all
+    const { data: probe, error: probeErr } = await sb
+      .from('demand_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('source', 'consumer_quiz')
+      .is('organization_id', null)
+      .limit(1);
+
+    // Determine if RLS is blocking us (probe returns empty but no table error)
+    // We also do the full fetch — if rows come back empty we show the fix banner
     const { data: rows, error } = await sb
       .from('demand_events')
       .select('event_type,goal,experience,created_at,session_id')
@@ -2328,8 +2353,24 @@ async function loadQuizStats() {
       badge.style.display = '';
     }
 
+    const rlsBannerHtml = completions.length === 0 ? `
+      <div id="rlsBanner" style="background:var(--amber-d);border:1px solid var(--amber-border);border-radius:var(--r);padding:14px 18px;margin-bottom:20px;display:flex;gap:14px;align-items:flex-start">
+        <div style="font-size:18px;flex-shrink:0">⚠️</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:4px">No data showing? You may need a one-time Supabase fix.</div>
+          <div style="font-size:12px;color:var(--txt2);line-height:1.6;margin-bottom:10px">Consumer quiz completions are stored with <code>organization_id = null</code>. Your current RLS policy only returns org-scoped rows, so this tab shows empty even if data is flowing. Run this SQL once to fix it:</div>
+          <pre id="rlsSql" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:11px;font-family:monospace;line-height:1.65;overflow-x:auto;color:var(--txt2);margin-bottom:10px;white-space:pre-wrap">${RLS_FIX_SQL.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="navigator.clipboard.writeText(RLS_FIX_SQL).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy SQL',2000)})" style="font-family:var(--font);font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:1px solid var(--amber-border);background:var(--amber-d);color:var(--amber);cursor:pointer">Copy SQL</button>
+            <a href="https://supabase.com/dashboard/project/nrcvpwyvxmplwvjrdoua/sql" target="_blank" style="font-family:var(--font);font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--txt2);cursor:pointer;text-decoration:none;display:inline-block">Open Supabase SQL Editor ↗</a>
+            <button onclick="document.getElementById('rlsBanner').style.display='none'" style="font-family:var(--font);font-size:12px;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--txt3);cursor:pointer">Dismiss</button>
+          </div>
+        </div>
+      </div>` : '';
+
     el.innerHTML = `
       <div style="max-width:860px">
+        ${rlsBannerHtml}
         <div style="margin-bottom:24px">
           <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:4px">Consumer Quiz</div>
           <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--txt)">Quiz Completions</div>
