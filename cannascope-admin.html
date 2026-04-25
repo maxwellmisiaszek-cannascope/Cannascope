@@ -2276,14 +2276,20 @@ let dtcMappedProducts = [];
 const RLS_FIX_SQL = `-- Run this once in your Supabase SQL editor:
 -- https://supabase.com/dashboard/project/nrcvpwyvxmplwvjrdoua/sql
 
-drop policy if exists "demand_events_select" on demand_events;
+-- Allow anon (quiz) to insert
+drop policy if exists "demand_events_insert" on demand_events;
+create policy "demand_events_insert" on demand_events
+  for insert to anon with check (true);
 
+-- Allow admin to read org rows + consumer quiz rows
+drop policy if exists "demand_events_select" on demand_events;
 create policy "demand_events_select" on demand_events
   for select to authenticated
   using (
     organization_id = (
       select organization_id from user_profiles where id = auth.uid()
     )
+    OR source = 'whatshouldigetatthedispensary.com'
     OR organization_id IS NULL
   );`;
 
@@ -2293,21 +2299,10 @@ async function loadQuizStats() {
   try {
     const since30 = new Date(Date.now() - 30*24*60*60*1000).toISOString();
 
-    // First probe: check if we can see any consumer_quiz rows at all
-    const { data: probe, error: probeErr } = await sb
-      .from('demand_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('source', 'consumer_quiz')
-      .is('organization_id', null)
-      .limit(1);
-
-    // Determine if RLS is blocking us (probe returns empty but no table error)
-    // We also do the full fetch — if rows come back empty we show the fix banner
     const { data: rows, error } = await sb
       .from('demand_events')
       .select('event_type,goal,experience,created_at,session_id')
-      .eq('source', 'consumer_quiz')
-      .is('organization_id', null)
+      .eq('source', 'whatshouldigetatthedispensary.com')
       .gte('created_at', since30)
       .order('created_at', { ascending: false });
 
