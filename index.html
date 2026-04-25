@@ -6,6 +6,13 @@
   <title>Cannascope</title>
 </head>
 <body>
-  <script>window.location.replace('cannascope-landing.html');</script>
+  <script>
+    if (location.hostname === 'whatshouldigetatthedispensary.com' ||
+        location.hostname === 'www.whatshouldigetatthedispensary.com') {
+      window.location.replace('/quiz');
+    } else {
+      window.location.replace('cannascope-landing.html');
+    }
+  </script>
 </body>
 </html>
