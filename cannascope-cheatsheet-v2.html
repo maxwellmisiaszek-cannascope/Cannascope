@@ -2990,7 +2990,7 @@ async function pollQRSessions() {
     if (!orgId) return;
     const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     try {
-        const { data } = await sb
+        const { data, error } = await sb
             .from('demand_events')
             .select('*')
             .eq('organization_id', orgId)
@@ -2998,8 +2998,15 @@ async function pollQRSessions() {
             .eq('event_type', 'qr_session_ready')
             .gte('created_at', since)
             .order('created_at', { ascending: true });
-        if (data) data.forEach(enqueueQRSession);
-    } catch(e) { /* silent */ }
+        if (error) {
+            console.warn('[Cannascope QR poll] Supabase error:', error.message, '— check demand_events RLS or table permissions');
+        } else {
+            console.log('[Cannascope QR poll] rows found:', data?.length ?? 0);
+            if (data) data.forEach(enqueueQRSession);
+        }
+    } catch(e) {
+        console.warn('[Cannascope QR poll] network error:', e.message);
+    }
 }
 
 function enqueueQRSession(row) {
@@ -3020,17 +3027,21 @@ function showNextQRSession() {
     const goal      = row.goal || 'relax';
     const goalLabel = GOAL_LABELS[goal] || cap(goal);
 
-    // Parse stored filters
-    let qFilters = {};
-    try { qFilters = JSON.parse(row.experience || '{}'); } catch(e) {}
+    // Parse stored payload — QR page stores { answers: {...}, filters: {...} }
+    let qParsed = {};
+    try { qParsed = JSON.parse(row.experience || '{}'); } catch(e) {}
+    const qAnswers = qParsed.answers || qParsed;   // backwards compat with old flat format
+    const qFilters = qParsed.filters  || {};
 
-    // Build filter summary line
+    // Build filter summary line from answers (richer) with filter fallback
     const parts = [];
-    if (qFilters.format)                 parts.push(formatLabel(qFilters.format));
-    if (qFilters.avoidSmoke === 'yes')   parts.push('No smoke');
-    if (qFilters.priceSpec === 'budget') parts.push('Under $40');
-    if (qFilters.wantsCbd === 'yes')     parts.push('High CBD');
-    if (qFilters.experience === 'new')   parts.push('First timer');
+    const fmt = qAnswers.format || qFilters.format;
+    if (fmt)                                         parts.push(formatLabel(fmt));
+    if (qAnswers.avoidSmoke === 'yes')               parts.push('No smoke');
+    if (qAnswers.priceSpec === 'budget' || qFilters.priceSpec === 'budget') parts.push('Under $40');
+    if (qAnswers.wantsCbd  === 'yes')                parts.push('High CBD');
+    if (qAnswers.experience === 'new')               parts.push('First timer');
+    if (qAnswers.intensity  === 'light')             parts.push('Light dose');
     const summary = parts.length ? parts.join(' · ') : null;
 
     // Find top product name from live inventory
@@ -3093,6 +3104,27 @@ function updateQRBadge() {
         badge.classList.remove('visible');
     }
 }
+
+// ── QR BANNER TEST TRIGGER ────────────────────────────────────────────────────
+// Run in browser console: __testQRBanner() to fire a fake QR session
+// Useful for verifying the banner UI works independently of Supabase
+window.__testQRBanner = function(goal = 'relax') {
+    const fakeRow = {
+        session_id:  'test-' + Date.now(),
+        organization_id: orgId,
+        source:      'qr',
+        event_type:  'qr_session_ready',
+        goal,
+        product_id:  allProducts[0]?.id || null,
+        experience:  JSON.stringify({
+            answers: { goal, experience: 'casual', format: 'vape', intensity: 'moderate' },
+            filters: { format: 'vape', experience: 'casual' }
+        }),
+        created_at:  new Date().toISOString(),
+    };
+    enqueueQRSession(fakeRow);
+    console.log('[Cannascope] Test QR banner fired. If nothing appears, check DOM for #qrIncoming.');
+};
 
 // ── TEST HARNESS ──────────────────────────────────────────────────────────────
 window.__runTests = function() {
