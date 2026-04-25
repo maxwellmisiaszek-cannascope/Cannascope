@@ -11,20 +11,6 @@
       ]
     }
   ],
-  "redirects": [
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "whatshouldigetatthedispensary.com" }],
-      "destination": "/quiz",
-      "permanent": false
-    },
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "www.whatshouldigetatthedispensary.com" }],
-      "destination": "/quiz",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",
