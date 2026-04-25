@@ -12,38 +12,30 @@
       ]
     }
   ],
-  "rewrites": {
-    "beforeFiles": [
-      {
-        "source": "/",
-        "has": [{ "type": "host", "value": "whatshouldigetatthedispensary.com" }],
-        "destination": "/cannascope-quiz.html"
-      },
-      {
-        "source": "/",
-        "has": [{ "type": "host", "value": "www.whatshouldigetatthedispensary.com" }],
-        "destination": "/cannascope-quiz.html"
-      },
-      {
-        "source": "/(.*)",
-        "has": [{ "type": "host", "value": "whatshouldigetatthedispensary.com" }],
-        "destination": "/cannascope-quiz.html"
-      },
-      {
-        "source": "/(.*)",
-        "has": [{ "type": "host", "value": "www.whatshouldigetatthedispensary.com" }],
-        "destination": "/cannascope-quiz.html"
-      }
-    ],
-    "afterFiles": [
-      { "source": "/budtender", "destination": "/cannascope-cheatsheet-v2.html" },
-      { "source": "/admin",     "destination": "/cannascope-admin.html" },
-      { "source": "/login",     "destination": "/cannascope-login.html" },
-      { "source": "/signup",    "destination": "/cannascope-signup.html" },
-      { "source": "/qr-deploy", "destination": "/cannascope-qr-deploy.html" },
-      { "source": "/qr",        "destination": "/cannascope-qr.html" },
-      { "source": "/onboarding","destination": "/cannascope-onboarding.html" },
-      { "source": "/quiz",      "destination": "/cannascope-quiz.html" }
-    ]
-  }
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "whatshouldigetatthedispensary.com" }],
+      "destination": "https://whatshouldigetatthedispensary.com/quiz",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "www.whatshouldigetatthedispensary.com" }],
+      "destination": "https://www.whatshouldigetatthedispensary.com/quiz",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "whatshouldigetatthedispensary.com" }],     "destination": "/cannascope-quiz.html" },
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "www.whatshouldigetatthedispensary.com" }], "destination": "/cannascope-quiz.html" },
+    { "source": "/budtender", "destination": "/cannascope-cheatsheet-v2.html" },
+    { "source": "/admin",     "destination": "/cannascope-admin.html" },
+    { "source": "/login",     "destination": "/cannascope-login.html" },
+    { "source": "/signup",    "destination": "/cannascope-signup.html" },
+    { "source": "/qr-deploy", "destination": "/cannascope-qr-deploy.html" },
+    { "source": "/qr",        "destination": "/cannascope-qr.html" },
+    { "source": "/onboarding","destination": "/cannascope-onboarding.html" },
+    { "source": "/quiz",      "destination": "/cannascope-quiz.html" }
+  ]
 }
