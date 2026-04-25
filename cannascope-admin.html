@@ -2301,9 +2301,9 @@ async function loadQuizStats() {
 
     const { data: rows, error } = await sb
       .from('demand_events')
-      .select('event_type,goal,experience,created_at,session_id')
+      .select('event_type,goal,experience,created_at,session_id,source')
       .eq('organization_id', 'c78449ac-deee-4ad3-83dd-6633ee187063')
-      .eq('source', 'whatshouldigetatthedispensary.com')
+      .in('event_type', ['quiz_complete', 'email_capture'])
       .gte('created_at', since30)
       .order('created_at', { ascending: false });
 
