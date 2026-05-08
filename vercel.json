@@ -1,7 +1,5 @@
 {
   "functions": {
-    "api/dutchie.js":         { "maxDuration": 30 },
-    "api/dutchie-resolve.js": { "maxDuration": 10 },
     "api/send-quiz-email.js": { "maxDuration": 10 },
     "api/send-quiz-sms.js":   { "maxDuration": 10 },
     "api/admin-stats.js":     { "maxDuration": 15 }
@@ -31,14 +29,7 @@
   "rewrites": [
     { "source": "/cannascope-dashboard", "destination": "/cannascope-dashboard.html" },
     { "source": "/dashboard",            "destination": "/cannascope-dashboard.html" },
-    { "source": "/budtender", "destination": "/cannascope-cheatsheet-v2.html" },
-    { "source": "/admin",     "destination": "/cannascope-admin.html" },
-    { "source": "/login",     "destination": "/cannascope-login.html" },
-    { "source": "/signup",    "destination": "/cannascope-signup.html" },
-    { "source": "/qr-deploy", "destination": "/cannascope-qr-deploy.html" },
-    { "source": "/qr",        "destination": "/cannascope-qr.html" },
-    { "source": "/onboarding","destination": "/cannascope-onboarding.html" },
-    { "source": "/quiz",      "destination": "/cannascope-quiz.html" },
+    { "source": "/quiz",                 "destination": "/cannascope-quiz.html" },
     { "source": "/(.*)", "has": [{ "type": "host", "value": "whatshouldigetatthedispensary.com" }],     "destination": "/cannascope-quiz.html" },
     { "source": "/(.*)", "has": [{ "type": "host", "value": "www.whatshouldigetatthedispensary.com" }], "destination": "/cannascope-quiz.html" }
   ]

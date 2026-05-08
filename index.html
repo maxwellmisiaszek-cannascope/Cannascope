@@ -1,17 +1,941 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Cannascope</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cannascope — Be the dispensary they were already coming to</title>
+<meta name="description" content="Cannascope is the consumer brand that sends qualified, intent-tagged customers into partner dispensaries — and turns every walk-in into a segmented SMS list that drives repeat visits.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.cannascope.us/">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.cannascope.us/">
+<meta property="og:title" content="Cannascope — Be the dispensary they were already coming to">
+<meta property="og:description" content="Customers find their match on Cannascope. Then they find your store. We're the consumer brand that turns walk-ins into a segmented retention layer.">
+<meta property="og:site_name" content="Cannascope">
+<meta property="og:image" content="https://www.cannascope.us/og-image.png">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cannascope — Be the dispensary they were already coming to">
+<meta name="twitter:description" content="Customers find their match on Cannascope. Then they find your store.">
+<meta name="twitter:image" content="https://www.cannascope.us/og-image.png">
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Cannascope",
+  "url": "https://www.cannascope.us",
+  "description": "Consumer-driven retail layer for cannabis dispensaries. Cannascope captures customer intent at the search, matches them to a partner dispensary nearby, and turns walk-ins into a segmented SMS retention list.",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "maxwell@cannascope.us",
+    "contactType": "Sales"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:        #2D6A4F;
+  --green-deep:   #1F4E38;
+  --green-mid:    #40916C;
+  --green-light:  #52B788;
+  --green-pale:   #D8EFE3;
+  --green-bg:     #F0F7F3;
+  --green-border: #C2DDD1;
+  --bg:           #FAFAF8;
+  --white:        #FFFFFF;
+  --surface:      #F5F5F2;
+  --text:         #18191A;
+  --text-2:       #4A4D46;
+  --text-3:       #8A8D84;
+  --border:       #E4EAE0;
+  --border-2:     #D0D8CC;
+  --gold:         #B89A56;
+  --shadow:       0 1px 2px rgba(45,106,79,.04), 0 8px 32px rgba(45,106,79,.10);
+}
+
+html, body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg); color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body { overflow-x: hidden; }
+
+/* ── NAV ──────────────────────────────────────────────────────────── */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(250,250,248,0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.brand-mark {
+  width: 28px; height: 28px;
+  border-radius: 50%; background: var(--green);
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-mark svg { width: 14px; height: 14px; color: white; }
+.brand-name {
+  font-family: 'Fraunces', serif;
+  font-size: 18px; font-weight: 400;
+  color: var(--text); letter-spacing: -0.015em;
+}
+.nav-links { display: flex; align-items: center; gap: 22px; }
+.nav-link {
+  font-size: 13px; font-weight: 500;
+  color: var(--text-2); text-decoration: none;
+  transition: color 0.15s;
+}
+.nav-link:hover { color: var(--green); }
+.nav-cta {
+  background: var(--green); color: white;
+  padding: 9px 18px; border-radius: 100px;
+  font-size: 13px; font-weight: 600;
+  text-decoration: none;
+  transition: background 0.18s;
+}
+.nav-cta:hover { background: var(--green-deep); }
+
+@media (max-width: 720px) {
+  .nav { padding: 12px 18px; }
+  .nav-links { gap: 14px; }
+  .nav-link.optional { display: none; }
+}
+
+/* ── HERO ─────────────────────────────────────────────────────────── */
+.hero {
+  max-width: 920px; margin: 0 auto;
+  padding: 88px 28px 72px;
+  text-align: center;
+}
+.hero-eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--green-mid); margin-bottom: 28px;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.hero-eyebrow::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green-light);
+}
+.hero-h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(38px, 7vw, 64px);
+  font-weight: 300; line-height: 1.06;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 26px;
+}
+.hero-h1 em { color: var(--green); font-style: italic; }
+.hero-sub {
+  font-size: clamp(17px, 1.6vw, 19px);
+  line-height: 1.6;
+  color: var(--text-2);
+  font-weight: 300;
+  max-width: 640px;
+  margin: 0 auto 38px;
+}
+.hero-ctas {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.btn-primary {
+  background: var(--green); color: white;
+  padding: 16px 32px; border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px; font-weight: 500;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background 0.18s, transform 0.12s;
+  box-shadow: 0 4px 20px rgba(45,106,79,0.18);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-primary:hover  { background: var(--green-deep); }
+.btn-primary:active { transform: scale(0.985); }
+.btn-secondary {
+  background: var(--white); color: var(--text);
+  padding: 16px 28px; border-radius: 100px;
+  border: 1.5px solid var(--border-2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px; font-weight: 500;
+  text-decoration: none; cursor: pointer;
+  transition: all 0.18s;
+}
+.btn-secondary:hover { border-color: var(--green-mid); color: var(--green); }
+
+.hero-meta {
+  font-size: 12px; color: var(--text-3);
+  display: flex; gap: 22px; justify-content: center; flex-wrap: wrap;
+  margin-top: 18px;
+}
+.hero-meta span {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.hero-meta span::before {
+  content: ''; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--green-light);
+}
+
+/* ── CONSUMER PROOF STRIP ─────────────────────────────────────────── */
+.proof {
+  background: var(--green);
+  color: white;
+  padding: 28px 28px;
+  margin-top: -8px;
+}
+.proof-inner {
+  max-width: 1080px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  text-align: center;
+}
+.proof-item {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.proof-stat {
+  font-family: 'Fraunces', serif;
+  font-size: 28px; font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.proof-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+}
+@media (max-width: 720px) {
+  .proof-inner { grid-template-columns: repeat(2, 1fr); gap: 22px; }
+  .proof-stat { font-size: 24px; }
+}
+
+/* ── SECTION ──────────────────────────────────────────────────────── */
+.section {
+  max-width: 1080px; margin: 0 auto;
+  padding: 96px 28px;
+}
+.section-eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--green-mid); margin-bottom: 16px;
+}
+.section-h {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 300; line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  margin-bottom: 18px;
+  max-width: 720px;
+}
+.section-h em { color: var(--green); font-style: italic; }
+.section-sub {
+  font-size: 17px; line-height: 1.65;
+  color: var(--text-2);
+  font-weight: 300;
+  max-width: 640px;
+  margin-bottom: 56px;
+}
+
+@media (max-width: 720px) {
+  .section { padding: 64px 22px; }
+  .section-sub { margin-bottom: 36px; }
+}
+
+/* ── HOW IT WORKS ─────────────────────────────────────────────────── */
+.steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+@media (max-width: 880px) { .steps { grid-template-columns: 1fr; } }
+
+.step {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 26px;
+  position: relative;
+}
+.step-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  color: var(--green);
+  font-family: 'Fraunces', serif;
+  font-size: 16px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+}
+.step-h {
+  font-family: 'Fraunces', serif;
+  font-size: 21px; font-weight: 400;
+  color: var(--text); letter-spacing: -0.015em;
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+.step-p {
+  font-size: 14px; line-height: 1.65;
+  color: var(--text-2);
+}
+.step-mini {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-3);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* ── PROBLEM ──────────────────────────────────────────────────────── */
+.problem-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 56px; align-items: center;
+}
+@media (max-width: 880px) {
+  .problem-grid { grid-template-columns: 1fr; gap: 32px; }
+}
+.problem-list { display: flex; flex-direction: column; gap: 18px; }
+.problem-item {
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.problem-x {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
+}
+.problem-x svg { width: 11px; height: 11px; }
+.problem-text {
+  font-size: 14px; color: var(--text-2);
+  line-height: 1.55;
+}
+.problem-text strong { color: var(--text); font-weight: 500; }
+
+.solution-card {
+  background: var(--green);
+  color: white;
+  border-radius: 22px;
+  padding: 36px 32px;
+  position: relative; overflow: hidden;
+}
+.solution-card::after {
+  content: ''; position: absolute;
+  top: -60px; right: -60px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.06), rgba(255,255,255,0));
+}
+.solution-eyebrow {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.65); margin-bottom: 12px;
+}
+.solution-h {
+  font-family: 'Fraunces', serif;
+  font-size: 26px; font-weight: 300;
+  line-height: 1.25; letter-spacing: -0.015em;
+  margin-bottom: 14px;
+}
+.solution-p {
+  font-size: 14px; line-height: 1.6;
+  color: rgba(255,255,255,0.85);
+  font-weight: 300;
+}
+
+/* ── FEATURES / WHAT YOU GET ──────────────────────────────────────── */
+.features {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+@media (max-width: 720px) { .features { grid-template-columns: 1fr; } }
+
+.feature {
+  display: flex; gap: 16px;
+  padding: 24px 22px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: border-color 0.18s, transform 0.18s;
+}
+.feature:hover { border-color: var(--green-mid); transform: translateY(-2px); }
+.feature-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--green-bg);
+  color: var(--green);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.feature-icon svg { width: 18px; height: 18px; }
+.feature-h {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  color: var(--text); margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.feature-p {
+  font-size: 13px; line-height: 1.55;
+  color: var(--text-2);
+}
+
+/* ── PRICING ──────────────────────────────────────────────────────── */
+.pricing {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 44px 36px;
+  text-align: center;
+}
+.pricing-eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 14px;
+}
+.pricing-h {
+  font-family: 'Fraunces', serif;
+  font-size: 30px; font-weight: 300;
+  color: var(--text); letter-spacing: -0.02em;
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+.pricing-p {
+  font-size: 15px; line-height: 1.6;
+  color: var(--text-2); margin-bottom: 28px;
+  max-width: 520px; margin-left: auto; margin-right: auto;
+  font-weight: 300;
+}
+.pricing-bullets {
+  display: flex; gap: 26px; justify-content: center; flex-wrap: wrap;
+  margin-top: 20px; margin-bottom: 28px;
+  font-size: 13px; color: var(--text-2);
+}
+.pricing-bullets span {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.pricing-bullets svg {
+  width: 14px; height: 14px; color: var(--green);
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────────── */
+.faq {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden;
+  background: var(--white);
+}
+.faq details {
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.faq details:last-child { border-bottom: none; }
+.faq summary {
+  font-size: 15px; font-weight: 500;
+  color: var(--text); cursor: pointer;
+  list-style: none;
+  display: flex; align-items: center; justify-content: space-between;
+  letter-spacing: -0.005em;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: '+';
+  color: var(--text-3);
+  font-weight: 300; font-size: 22px;
+  transition: transform 0.2s;
+}
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq p {
+  margin-top: 12px;
+  font-size: 14px; line-height: 1.65;
+  color: var(--text-2);
+}
+
+/* ── CTA / FORM ───────────────────────────────────────────────────── */
+.cta-wrap {
+  background: var(--green);
+  border-radius: 24px;
+  padding: 56px 40px;
+  color: white;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-wrap::after {
+  content: ''; position: absolute;
+  top: -100px; right: -100px;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.06), rgba(255,255,255,0));
+  pointer-events: none;
+}
+.cta-eyebrow {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.65); margin-bottom: 16px;
+}
+.cta-h {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 300; line-height: 1.18;
+  letter-spacing: -0.025em;
+  margin-bottom: 16px;
+}
+.cta-p {
+  font-size: 16px; line-height: 1.55;
+  color: rgba(255,255,255,0.85);
+  max-width: 540px;
+  margin: 0 auto 32px;
+  font-weight: 300;
+}
+.form {
+  max-width: 520px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 10px;
+  position: relative; z-index: 2;
+}
+.form-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+@media (max-width: 520px) { .form-row { grid-template-columns: 1fr; } }
+.form-input {
+  width: 100%; height: 52px;
+  border: 1px solid rgba(255,255,255,0.20);
+  background: rgba(255,255,255,0.10);
+  border-radius: 12px;
+  padding: 0 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  color: white;
+  outline: none;
+  transition: all 0.18s;
+}
+.form-input::placeholder { color: rgba(255,255,255,0.55); }
+.form-input:focus {
+  background: rgba(255,255,255,0.16);
+  border-color: rgba(255,255,255,0.4);
+}
+.form-submit {
+  height: 52px;
+  background: white; color: var(--green);
+  border: none; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.form-submit:hover { background: var(--green-pale); }
+.form-submit:disabled { opacity: 0.6; cursor: wait; }
+.form-status {
+  font-size: 13px; margin-top: 6px;
+  color: rgba(255,255,255,0.85);
+  min-height: 18px;
+}
+.form-tcpa {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.55;
+  margin-top: 10px;
+}
+
+/* ── FOOTER ───────────────────────────────────────────────────────── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 28px;
+  text-align: center;
+}
+.footer-brand {
+  font-family: 'Fraunces', serif;
+  font-size: 18px; color: var(--text);
+  margin-bottom: 6px;
+}
+.footer-tag {
+  font-size: 12px; color: var(--text-3);
+  margin-bottom: 18px;
+}
+.footer-links {
+  display: flex; gap: 22px; justify-content: center;
+  font-size: 12px; color: var(--text-3);
+  flex-wrap: wrap;
+}
+.footer-links a {
+  color: var(--text-3); text-decoration: none;
+}
+.footer-links a:hover { color: var(--green); }
+.footer-fine {
+  margin-top: 18px;
+  font-size: 11px; color: var(--text-3);
+}
+</style>
 </head>
 <body>
-  <script>
-    if (location.hostname === 'whatshouldigetatthedispensary.com' ||
-        location.hostname === 'www.whatshouldigetatthedispensary.com') {
-      window.location.replace('/quiz');
-    } else {
-      window.location.replace('/cannascope-landing.html');
-    }
-  </script>
+
+<!-- ══ NAV ════════════════════════════════════════════════════════════ -->
+<nav class="nav">
+  <a href="/" class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3 C9 3 6 6 6 12 C6 18 9 21 12 21 C15 21 18 18 18 12 C18 6 15 3 12 3 Z"/>
+        <path d="M12 8 L12 16"/><path d="M9 11 L12 13 L15 11"/>
+      </svg>
+    </div>
+    <div class="brand-name">Cannascope</div>
+  </a>
+  <div class="nav-links">
+    <a href="#how" class="nav-link optional">How it works</a>
+    <a href="#what" class="nav-link optional">What you get</a>
+    <a href="#faq" class="nav-link optional">FAQ</a>
+    <a href="#claim" class="nav-cta">Claim your territory</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ═══════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-eyebrow">Cannascope · for dispensaries</div>
+  <h1 class="hero-h1">Be the dispensary they were already <em>coming to.</em></h1>
+  <p class="hero-sub">
+    Customers searching "what should I get at the dispensary" find their match on Cannascope. We capture their phone, segment them by what they actually came in for, and route them to the partner store nearest them — yours.
+  </p>
+  <div class="hero-ctas">
+    <a href="#claim" class="btn-primary">
+      Claim your territory
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </a>
+    <a href="#how" class="btn-secondary">See how it works</a>
+  </div>
+  <div class="hero-meta">
+    <span>Live SMS retention</span>
+    <span>Intent-segmented lists</span>
+    <span>Exclusive territory</span>
+  </div>
+</section>
+
+<!-- ══ PROOF STRIP ════════════════════════════════════════════════════ -->
+<section class="proof">
+  <div class="proof-inner">
+    <div class="proof-item">
+      <div class="proof-stat">10K+</div>
+      <div class="proof-label">US dispensaries</div>
+    </div>
+    <div class="proof-item">
+      <div class="proof-stat">50%</div>
+      <div class="proof-label">Avg. budtender turnover</div>
+    </div>
+    <div class="proof-item">
+      <div class="proof-stat">7</div>
+      <div class="proof-label">Goal-tagged archetypes</div>
+    </div>
+    <div class="proof-item">
+      <div class="proof-stat">90s</div>
+      <div class="proof-label">From quiz to walk-in</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ HOW IT WORKS ═══════════════════════════════════════════════════ -->
+<section class="section" id="how">
+  <div class="section-eyebrow">How it works</div>
+  <h2 class="section-h">Consumer-pull, not <em>cold push.</em></h2>
+  <p class="section-sub">
+    The cannabis retail funnel is broken at the search step. Customers ask Google what to get. They don't ask your budtender. We meet them at the search, hand them a Cannascope card, and walk them into your store — already opted in.
+  </p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-h">Customer searches</div>
+      <div class="step-p">A first-time or curious customer Googles "what should I get at the dispensary." They land on our quiz and answer six questions about their goal, format, and tolerance.</div>
+      <div class="step-mini">whatshouldigetatthedispensary.com — already ranking, already converting.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-h">They get matched</div>
+      <div class="step-p">Our scoring engine assigns one of seven Cannascope archetypes — Deep Sleeper, Sharpener, Healer, etc. — and produces a personalized card with strain, terpene, and format guidance.</div>
+      <div class="step-mini">Phone + SMS opt-in captured at the end. Their intent stays tagged to them.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-h">They walk into your store</div>
+      <div class="step-p">If you're our partner in their zip, they get routed to you. The card tells them what to ask for. You text them about new drops in their goal — sleep customers see sleep deals, not coupons-for-everything.</div>
+      <div class="step-mini">Repeat visits go up. Lists open at 60%+, not 22%.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROBLEM / SOLUTION ════════════════════════════════════════════ -->
+<section class="section" style="padding-top:32px;">
+  <div class="section-eyebrow">Why this works</div>
+  <h2 class="section-h">Loyalty SMS is dying. Intent <em>SMS isn't.</em></h2>
+  <p class="section-sub">
+    The reason your text blasts get a 22% open rate is that the same coupon goes to every customer. Cannascope sends customers grouped by what they actually want — and when you message them about it, they show up.
+  </p>
+
+  <div class="problem-grid">
+    <div class="problem-list">
+      <div class="problem-item">
+        <div class="problem-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></div>
+        <div class="problem-text"><strong>Budtender churn (40–60% / yr)</strong> wipes out the recommendation knowledge. Customers walk in to a different person every visit.</div>
+      </div>
+      <div class="problem-item">
+        <div class="problem-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></div>
+        <div class="problem-text"><strong>Flat SMS lists.</strong> One blast goes to 5,000 people who want different things. Open rates collapse, customers tune out.</div>
+      </div>
+      <div class="problem-item">
+        <div class="problem-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></div>
+        <div class="problem-text"><strong>No paid acquisition channel.</strong> Meta and Google block cannabis ads. The only working channels are SEO and word of mouth — both slow.</div>
+      </div>
+      <div class="problem-item">
+        <div class="problem-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></div>
+        <div class="problem-text"><strong>You don't actually own your customer.</strong> Dutchie does. Springbig does. Your loyalty list is rented.</div>
+      </div>
+    </div>
+
+    <div class="solution-card">
+      <div class="solution-eyebrow">The Cannascope wedge</div>
+      <div class="solution-h">A consumer brand that walks customers into your store.</div>
+      <div class="solution-p">
+        We're indexing for high-intent search. We're capturing their phone with consent. We're tagging them by what they came in for — sleep, focus, pain, social. And we're routing them to the matched dispensary in their zip. That's you.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ WHAT YOU GET ═══════════════════════════════════════════════════ -->
+<section class="section" id="what">
+  <div class="section-eyebrow">What partners get</div>
+  <h2 class="section-h">A retention layer, <em>not a tool.</em></h2>
+  <p class="section-sub">
+    No software for your staff to learn. No new POS to integrate. We do the consumer work, you get the customer.
+  </p>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </div>
+      <div>
+        <div class="feature-h">Exclusive territory</div>
+        <div class="feature-p">One partner per zip code or radius. Customers in your area are routed to you, not your competitor down the street.</div>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 8.5-8.5 8.5 8.5 0 0 1 8.5 8.5z"/></svg>
+      </div>
+      <div>
+        <div class="feature-h">Intent-segmented SMS</div>
+        <div class="feature-p">Your list grouped by goal — sleep, focus, pain, social, beginner. Send one message, hit the right person.</div>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      </div>
+      <div>
+        <div class="feature-h">Custom QR for in-store</div>
+        <div class="feature-p">A printable card with your store's QR. Walk-ins who scan get routed back to your SMS list. Your staff doesn't have to do anything.</div>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 12l4-4 4 6 5-7"/></svg>
+      </div>
+      <div>
+        <div class="feature-h">Attribution dashboard</div>
+        <div class="feature-p">See which consumers Cannascope sent you, what they came in for, and which ones came back. Real numbers — no fluff.</div>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div>
+        <div class="feature-h">Daily digest</div>
+        <div class="feature-p">A morning email with new matches in your zip, what they wanted, and which ones haven't visited yet. Easy to act on.</div>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <div>
+        <div class="feature-h">Compliance handled</div>
+        <div class="feature-p">TCPA-compliant SMS consent, opt-out flows, and 10DLC carrier registration are on us. You don't have to learn cannabis SMS law.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRICING ════════════════════════════════════════════════════════ -->
+<section class="section" id="pricing" style="padding-top:32px;">
+  <div class="pricing">
+    <div class="pricing-eyebrow">Early partner pricing</div>
+    <div class="pricing-h">Pay for results, not for software.</div>
+    <p class="pricing-p">
+      We're onboarding our first 10 partner dispensaries with founding pricing — territory access plus a per-attributed-visit fee, capped monthly. No setup fee, no contract. If we're not driving customers, you don't pay.
+    </p>
+    <div class="pricing-bullets">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>No setup fee</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Month-to-month</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Locked founding rate</span>
+    </div>
+    <a href="#claim" class="btn-primary">Claim your territory</a>
+  </div>
+</section>
+
+<!-- ══ FAQ ════════════════════════════════════════════════════════════ -->
+<section class="section" id="faq">
+  <div class="section-eyebrow">FAQ</div>
+  <h2 class="section-h">The questions everyone <em>asks first.</em></h2>
+
+  <div class="faq">
+    <details>
+      <summary>Do you compete with Springbig or Alpine IQ?</summary>
+      <p>No. They're SMS delivery + loyalty platforms — they manage your existing customers. We're a customer acquisition + intent-tagging layer that brings new customers in. You can run us alongside whatever you already use, or use us as your primary retention channel. The data is yours either way.</p>
+    </details>
+    <details>
+      <summary>How does territory exclusivity work?</summary>
+      <p>Each partner gets one or more zip codes. Consumers searching for cannabis recommendations in those zips are routed to you — not your competitor across the street. We sell territories, not seats. If a market is already claimed when you sign up, we'll talk about adjacent zips or a waitlist.</p>
+    </details>
+    <details>
+      <summary>What if my POS isn't Dutchie?</summary>
+      <p>It doesn't matter. Cannascope doesn't sync to your POS. We're a parallel acquisition + retention layer. Your menu, your inventory, your operations — all unchanged.</p>
+    </details>
+    <details>
+      <summary>Is the SMS we send TCPA-compliant?</summary>
+      <p>Yes. We capture explicit double opt-in at the consumer level, every message includes STOP/HELP instructions, and we're set up on a registered 10DLC campaign for higher cannabis-specific carrier delivery rates. Compliance documentation is included with onboarding.</p>
+    </details>
+    <details>
+      <summary>How long until I see results?</summary>
+      <p>Depends on your zip's search volume. Major metros see matches in their first week; smaller markets ramp over 30–60 days as we capture more consumers searching. We'll show you the search volume in your area before you sign so you know what to expect.</p>
+    </details>
+    <details>
+      <summary>Are you a tech vendor or a media partner?</summary>
+      <p>Honestly, both. Mechanically you're paying for technology. Strategically you're paying for customer attention we earned and routed to you. Think of us as the cannabis-specific equivalent of OpenTable for restaurants — we own the consumer search relationship, you own the actual visit.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ══ CTA / FORM ═════════════════════════════════════════════════════ -->
+<section class="section" id="claim" style="padding-top:32px;">
+  <div class="cta-wrap">
+    <div class="cta-eyebrow">Founding partners — limited spots</div>
+    <h2 class="cta-h">Claim your territory.</h2>
+    <p class="cta-p">Tell us about your store. We'll show you the consumer search volume in your zip, walk you through the partner program, and get you live in under a week if it's a fit.</p>
+
+    <form class="form" id="partnerForm" onsubmit="submitPartner(event)">
+      <div class="form-row">
+        <input class="form-input" id="pName"  type="text"  placeholder="Your name"      required autocomplete="name">
+        <input class="form-input" id="pStore" type="text"  placeholder="Dispensary name" required>
+      </div>
+      <div class="form-row">
+        <input class="form-input" id="pZip"   type="text"  placeholder="Primary ZIP"     maxlength="5" inputmode="numeric" required>
+        <input class="form-input" id="pState" type="text"  placeholder="State (e.g. NY)" maxlength="2"  required>
+      </div>
+      <input class="form-input" id="pEmail" type="email" placeholder="Work email" required autocomplete="email">
+      <input class="form-input" id="pPhone" type="tel"   placeholder="Phone (optional)" autocomplete="tel">
+      <button class="form-submit" id="pSubmit" type="submit">Request my territory</button>
+      <div class="form-status" id="pStatus"></div>
+      <div class="form-tcpa">
+        We'll only contact you about partnership. No spam, no list-sharing, easy unsubscribe. By submitting, you agree to our <a href="/privacy" style="color:rgba(255,255,255,0.7);">Privacy Policy</a>.
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ══ FOOTER ═════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-brand">Cannascope</div>
+  <div class="footer-tag">The consumer-driven retail layer for cannabis.</div>
+  <div class="footer-links">
+    <a href="https://whatshouldigetatthedispensary.com" target="_blank" rel="noopener">Try the consumer quiz</a>
+    <a href="#how">How it works</a>
+    <a href="#faq">FAQ</a>
+    <a href="mailto:maxwell@cannascope.us">Contact</a>
+  </div>
+  <div class="footer-fine">© 2026 Cannascope. For licensed cannabis retail only. 21+.</div>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════
+// Partner inquiry — writes to demand_events with event_type "partner_inquiry"
+// ══════════════════════════════════════════════════════════════════════
+const SB_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
+const CANNASCOPE_ORG_ID = 'c78449ac-deee-4ad3-83dd-6633ee187063';
+
+function genUUID() {
+  try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch(e) {}
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+async function submitPartner(e) {
+  e.preventDefault();
+  const btn    = document.getElementById('pSubmit');
+  const status = document.getElementById('pStatus');
+  const data = {
+    name:  document.getElementById('pName').value.trim(),
+    store: document.getElementById('pStore').value.trim(),
+    zip:   document.getElementById('pZip').value.trim(),
+    state: document.getElementById('pState').value.trim().toUpperCase(),
+    email: document.getElementById('pEmail').value.trim(),
+    phone: document.getElementById('pPhone').value.trim().replace(/\D/g, ''),
+  };
+
+  if (!data.email.includes('@'))      { status.textContent = 'Please enter a valid work email.'; return; }
+  if (!/^\d{5}$/.test(data.zip))      { status.textContent = 'Please enter a valid 5-digit ZIP.'; return; }
+
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  status.textContent = '';
+
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/demand_events`, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json', 'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        session_id:      genUUID(),
+        organization_id: CANNASCOPE_ORG_ID,
+        source:          window.location.hostname,
+        event_type:      'partner_inquiry',
+        goal:            null,
+        experience:      JSON.stringify(data),
+        recommendations: null,
+        product_id:      null,
+        product_rank:    null,
+      }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    btn.textContent = 'Sent ✓';
+    status.textContent = "Got it. Max will reach out within one business day.";
+    document.getElementById('partnerForm').reset();
+  } catch(err) {
+    console.error('[Cannascope] partner inquiry error:', err);
+    btn.textContent = 'Try again'; btn.disabled = false;
+    status.textContent = 'Network error — try again or email maxwell@cannascope.us directly.';
+  }
+}
+
+// ZIP — digits only
+document.getElementById('pZip').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5);
+});
+// State — letters only, uppercase
+document.getElementById('pState').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase();
+});
+</script>
 </body>
 </html>
