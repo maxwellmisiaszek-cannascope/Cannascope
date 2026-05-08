@@ -17,9 +17,11 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST')    return res.status(405).json({ error: 'Method not allowed' });
 
-  const pass = req.headers['x-admin-pass'] || (req.body && req.body.pass);
-  const expected = process.env.ADMIN_PASSPHRASE;
-  if (!expected) return res.status(500).json({ error: 'ADMIN_PASSPHRASE not configured on server' });
+  const passRaw     = req.headers['x-admin-pass'] || (req.body && req.body.pass) || '';
+  const expectedRaw = process.env.ADMIN_PASSPHRASE || '';
+  const pass        = String(passRaw).trim();
+  const expected    = String(expectedRaw).trim();
+  if (!expected)              return res.status(500).json({ error: 'ADMIN_PASSPHRASE not configured on server' });
   if (!pass || pass !== expected) return res.status(401).json({ error: 'Unauthorized' });
 
   const SR_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
