@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Find Your Match — Cannascope</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg:       #0D0D0A;
+      --surface:  #161610;
+      --surface2: #1E1E18;
+      --border:   #2A2A20;
+      --border2:  #3A3A2E;
+      --accent:   #2D6A4F;
+      --accent-b: #38876A;
+      --accent-t: #4CAF80;
+      --text:     #EDE9DF;
+      --text2:    #8A8A72;
+      --text3:    #4A4A3A;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .app {
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── SCREENS ── */
+    .screen { display: none; flex-direction: column; min-height: 100vh; }
+    .screen.active { display: flex; }
+
+    /* ── WORDMARK ── */
+    .wm {
+      font-size: 13px; font-weight: 700;
+      color: var(--text2);
+      padding: 16px 20px 0;
+      letter-spacing: -0.01em;
+      flex-shrink: 0;
+    }
+    .wm em { color: var(--accent-t); font-style: normal; }
+
+    /* ══════════════════════════════════════════
+       FIXED PROGRESS BAR — shown on Q screens
+       ══════════════════════════════════════════ */
+    .q-prog-wrap {
+      position: fixed;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      padding: 10px 20px;
+      display: none;
+      flex-direction: row;
+      gap: 5px;
+      background: var(--bg);
+      z-index: 200;
+    }
+    .q-prog-wrap.visible { display: flex; }
+    .q-pip {
+      height: 3px; border-radius: 2px; flex: 1;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+    .q-pip.done   { background: var(--accent-t); }
+    .q-pip.active { background: var(--accent); }
+
+    /* ══════════════════════════════════════════
+       QUESTION SCREENS — shared layout
+       ══════════════════════════════════════════ */
+    .q-screen { padding-top: 23px; padding-bottom: 32px; }
+
+    .q-nav {
+      padding: 4px 20px 0;
+      flex-shrink: 0;
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+    }
+    .q-back {
+      background: none; border: none;
+      color: var(--text3); font-family: inherit;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; padding: 4px 0;
+      letter-spacing: -0.01em;
+    }
+    .q-back:hover { color: var(--text2); }
+
+    .q-body {
+      padding: 10px 20px 0;
+      flex-shrink: 0;
+    }
+    .q-eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 7px;
+    }
+    .q-headline {
+      font-size: 26px; font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: 4px;
+    }
+    .q-sub { font-size: 14px; color: var(--text2); }
+
+    /* 2-col grid (Q1, Q6) */
+    .q-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      padding: 16px 20px 0;
+    }
+    .q-tile {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 17px 14px;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: border-color 0.1s, background 0.1s, transform 0.1s;
+      -webkit-user-select: none; user-select: none;
+      min-height: 88px;
+    }
+    .q-tile:active { transform: scale(0.96); background: var(--surface2); border-color: var(--accent-t); }
+    .q-tile-icon  { font-size: 20px; margin-bottom: 2px; }
+    .q-tile-label { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .q-tile-desc  { font-size: 12px; color: var(--text2); line-height: 1.4; }
+
+    /* Age-range tiles: centered, larger number */
+    .q-tile-age {
+      align-items: center; justify-content: center;
+      text-align: center; min-height: 72px;
+    }
+    .q-tile-age .q-tile-label { font-size: 18px; }
+
+    /* Vertical option list (Q2–Q5) */
+    .q-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      padding: 16px 20px 0;
+      flex: 1;
+    }
+    .q-opt {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 15px 18px;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.1s, background 0.1s, transform 0.1s;
+      -webkit-user-select: none; user-select: none;
+    }
+    .q-opt:active { transform: scale(0.97); background: var(--surface2); border-color: var(--accent-t); }
+    .q-opt-icon   { font-size: 20px; flex-shrink: 0; width: 26px; text-align: center; }
+    .q-opt-text   { flex: 1; }
+    .q-opt-label  { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .q-opt-desc   { font-size: 12px; color: var(--text2); line-height: 1.4; margin-top: 1px; }
+    .q-opt-arrow  { font-size: 16px; color: var(--text3); flex-shrink: 0; }
+
+    .q-skip-row {
+      padding: 14px 20px 0;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .q-skip-btn {
+      background: none; border: none;
+      color: var(--text3); font-family: inherit;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; padding: 6px 14px;
+      letter-spacing: -0.01em;
+    }
+    .q-skip-btn:hover { color: var(--text2); }
+
+    /* ══════════════════════════════════════════
+       LOADING SCREEN
+       ══════════════════════════════════════════ */
+    #sLoading {
+      align-items: center; justify-content: center;
+      text-align: center; padding: 48px 32px; gap: 18px;
+    }
+    .loading-ring {
+      width: 40px; height: 40px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent-t);
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+    .loading-sub  { font-size: 14px; color: var(--text2); }
+
+    /* ══════════════════════════════════════════
+       RESULTS SCREEN
+       ══════════════════════════════════════════ */
+    #sResults { padding-bottom: 40px; }
+
+    .results-sub-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 20px 11px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .btn-back {
+      background: none; border: none;
+      color: var(--text2);
+      font-family: inherit; font-size: 13px; font-weight: 500;
+      cursor: pointer; padding: 4px 0;
+      letter-spacing: -0.01em;
+      flex-shrink: 0;
+    }
+    .btn-back:hover { color: var(--text); }
+    .results-goal-pill {
+      background: rgba(45,106,79,0.15);
+      border: 1px solid rgba(76,175,128,0.3);
+      border-radius: 20px;
+      padding: 4px 11px;
+      font-size: 12px; font-weight: 600;
+      color: var(--accent-t);
+      letter-spacing: -0.01em;
+    }
+    .res-spacer { flex: 1; }
+    .results-count { font-size: 11px; color: var(--text3); font-weight: 500; }
+
+    /* Profile summary chips */
+    .results-profile {
+      padding: 9px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .profile-chip {
+      font-size: 11px; font-weight: 600;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 3px 10px;
+      color: var(--text2);
+      white-space: nowrap;
+    }
+
+    .results-body {
+      padding: 14px 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .prod-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 17px;
+      transition: border-color 0.15s;
+    }
+    .prod-card.rank-1 { border-color: rgba(76,175,128,0.35); }
+
+    .card-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 9px;
+    }
+    .card-rank-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--text3);
+    }
+    .rank-1 .card-rank-label { color: var(--accent-t); }
+    .card-match-pct {
+      font-size: 11px; font-weight: 700;
+      color: var(--accent-t);
+    }
+    .card-main-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 3px;
+    }
+    .card-name {
+      font-size: 16px; font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .card-price {
+      font-size: 16px; font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .card-meta {
+      font-size: 12px; color: var(--text2);
+      margin-bottom: 11px;
+    }
+    .card-why {
+      font-size: 13px; color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+
+    /* Per-card CTA button */
+    .card-cta {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border2);
+      color: var(--text2);
+      font-family: inherit;
+      font-size: 13px; font-weight: 700;
+      padding: 12px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.1s;
+    }
+    .card-cta:active { transform: scale(0.98); }
+    .card-cta:hover  { border-color: var(--accent); color: var(--accent-t); }
+    .rank-1 .card-cta {
+      background: rgba(45,106,79,0.18);
+      border-color: rgba(76,175,128,0.4);
+      color: var(--accent-t);
+    }
+    .rank-1 .card-cta:hover { background: rgba(45,106,79,0.28); }
+
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+      color: var(--text2); font-size: 14px; line-height: 1.65;
+    }
+
+    /* ══════════════════════════════════════════
+       BUDTENDER OVERLAY
+       ══════════════════════════════════════════ */
+    #sBudtender {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 28px 56px;
+      text-align: center;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    #sBudtender.open { display: flex; }
+
+    .bt-badge {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent-t);
+      margin-bottom: 48px;
+    }
+    .bt-label {
+      font-size: 13px; font-weight: 500;
+      color: var(--text2);
+      margin-bottom: 14px;
+      letter-spacing: 0.01em;
+    }
+    .bt-name {
+      font-size: 34px; font-weight: 700;
+      letter-spacing: -0.035em;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .bt-meta {
+      font-size: 15px;
+      color: var(--text2);
+      margin-bottom: 48px;
+    }
+    .bt-div {
+      width: 48px; height: 1px;
+      background: var(--border);
+      margin: 0 auto 32px;
+    }
+    .bt-alts-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 12px;
+    }
+    .bt-alts {
+      display: flex; flex-direction: column;
+      gap: 8px;
+      margin-bottom: 44px;
+      width: 100%;
+    }
+    .bt-alt {
+      font-size: 14px; color: var(--text2);
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+    .btn-close-bt {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      font-family: inherit;
+      font-size: 14px; font-weight: 500;
+      padding: 11px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.12s, color 0.12s;
+    }
+    .btn-close-bt:hover { border-color: var(--border2); color: var(--text); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ FIXED PROGRESS BAR ══ -->
+  <div class="q-prog-wrap" id="qProgWrap">
+    <div class="q-pip" id="qp1"></div>
+    <div class="q-pip" id="qp2"></div>
+    <div class="q-pip" id="qp3"></div>
+    <div class="q-pip" id="qp4"></div>
+    <div class="q-pip" id="qp5"></div>
+    <div class="q-pip" id="qp6"></div>
+  </div>
+
+  <!-- ══════════════════ Q1: GOAL ══════════════════ -->
+  <div class="screen q-screen active" id="sQ1">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav"><!-- no back on Q1 --></div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 1 of 6</div>
+      <div class="q-headline">What are you after?</div>
+      <div class="q-sub">We'll match you to what's in stock.</div>
+    </div>
+    <div class="q-grid">
+      <button class="q-tile" onclick="answerQ1('sleep')">
+        <span class="q-tile-icon">🌙</span>
+        <span class="q-tile-label">Sleep</span>
+        <span class="q-tile-desc">Rest &amp; recovery</span>
+      </button>
+      <button class="q-tile" onclick="answerQ1('relax')">
+        <span class="q-tile-icon">☁️</span>
+        <span class="q-tile-label">Relax</span>
+        <span class="q-tile-desc">Unwind &amp; decompress</span>
+      </button>
+      <button class="q-tile" onclick="answerQ1('social')">
+        <span class="q-tile-icon">⚡</span>
+        <span class="q-tile-label">Social</span>
+        <span class="q-tile-desc">Energy &amp; mood lift</span>
+      </button>
+      <button class="q-tile" onclick="answerQ1('focus')">
+        <span class="q-tile-icon">🎯</span>
+        <span class="q-tile-label">Focus</span>
+        <span class="q-tile-desc">Clarity &amp; creativity</span>
+      </button>
+      <button class="q-tile" onclick="answerQ1('relief')">
+        <span class="q-tile-icon">💚</span>
+        <span class="q-tile-label">Relief</span>
+        <span class="q-tile-desc">Pain &amp; inflammation</span>
+      </button>
+      <button class="q-tile" onclick="answerQ1('beginner')">
+        <span class="q-tile-icon">✦</span>
+        <span class="q-tile-label">Not Sure</span>
+        <span class="q-tile-desc">Show me the best picks</span>
+      </button>
+    </div>
+    <div id="goalNote" style="padding:12px 20px 0;font-size:11px;color:var(--text3);text-align:center;flex-shrink:0;"></div>
+  </div>
+
+  <!-- ══════════════════ Q2: EXPERIENCE ══════════════════ -->
+  <div class="screen q-screen" id="sQ2">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav">
+      <button class="q-back" onclick="prevStep()">← Back</button>
+    </div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 2 of 6</div>
+      <div class="q-headline">How much experience do you have?</div>
+      <div class="q-sub">Helps us calibrate the potency.</div>
+    </div>
+    <div class="q-list">
+      <button class="q-opt" onclick="answerQ2('new')">
+        <span class="q-opt-icon">🌱</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">First timer</div>
+          <div class="q-opt-desc">Never tried before — go easy on me</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ2('casual')">
+        <span class="q-opt-icon">☀️</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Occasional</div>
+          <div class="q-opt-desc">A few times a year</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ2('regular')">
+        <span class="q-opt-icon">🌿</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Regular</div>
+          <div class="q-opt-desc">A few times a week</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ2('daily')">
+        <span class="q-opt-icon">⚡</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Daily user</div>
+          <div class="q-opt-desc">High tolerance, part of my routine</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ Q3: FORMAT ══════════════════ -->
+  <div class="screen q-screen" id="sQ3">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav">
+      <button class="q-back" onclick="prevStep()">← Back</button>
+    </div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 3 of 6</div>
+      <div class="q-headline">How do you prefer to use it?</div>
+      <div class="q-sub">We'll prioritize your format.</div>
+    </div>
+    <div class="q-list">
+      <button class="q-opt" onclick="answerQ3('flower')">
+        <span class="q-opt-icon">🌿</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Flower</div>
+          <div class="q-opt-desc">Smoke or vaporize the plant</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ3('vape')">
+        <span class="q-opt-icon">💨</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Vape</div>
+          <div class="q-opt-desc">Cartridge or disposable pen</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ3('edible')">
+        <span class="q-opt-icon">🍬</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Edible</div>
+          <div class="q-opt-desc">Gummies, chocolates, drinks</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ3('preroll')">
+        <span class="q-opt-icon">🌀</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Pre-roll</div>
+          <div class="q-opt-desc">Ready to light, no setup</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ3('tincture')">
+        <span class="q-opt-icon">🫧</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Tincture / Drops</div>
+          <div class="q-opt-desc">Under-the-tongue, precise dosing</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+    </div>
+    <div class="q-skip-row">
+      <button class="q-skip-btn" onclick="answerQ3(null)">No preference — show me everything</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ Q4: INTENSITY ══════════════════ -->
+  <div class="screen q-screen" id="sQ4">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav">
+      <button class="q-back" onclick="prevStep()">← Back</button>
+    </div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 4 of 6</div>
+      <div class="q-headline">How strong do you want it?</div>
+      <div class="q-sub">We'll match the THC level to your preference.</div>
+    </div>
+    <div class="q-list">
+      <button class="q-opt" onclick="answerQ4('light')">
+        <span class="q-opt-icon">🌤</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Light</div>
+          <div class="q-opt-desc">Subtle, lower THC — under 15%</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ4('moderate')">
+        <span class="q-opt-icon">⚖️</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Moderate</div>
+          <div class="q-opt-desc">Balanced effect — 15–22%</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ4('strong')">
+        <span class="q-opt-icon">🔥</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Strong</div>
+          <div class="q-opt-desc">High potency — 22% and above</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+    </div>
+    <div class="q-skip-row">
+      <button class="q-skip-btn" onclick="answerQ4(null)">No preference</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ Q5: BUDGET ══════════════════ -->
+  <div class="screen q-screen" id="sQ5">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav">
+      <button class="q-back" onclick="prevStep()">← Back</button>
+    </div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 5 of 6</div>
+      <div class="q-headline">What's your budget?</div>
+      <div class="q-sub">Per item, approximately.</div>
+    </div>
+    <div class="q-list">
+      <button class="q-opt" onclick="answerQ5('low')">
+        <span class="q-opt-icon">💵</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">Under $30</div>
+          <div class="q-opt-desc">Keep it budget-friendly</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ5('budget')">
+        <span class="q-opt-icon">💳</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">$30 – $50</div>
+          <div class="q-opt-desc">Mid-range, solid value</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+      <button class="q-opt" onclick="answerQ5('premium')">
+        <span class="q-opt-icon">✦</span>
+        <div class="q-opt-text">
+          <div class="q-opt-label">$50+</div>
+          <div class="q-opt-desc">Show me the best of the best</div>
+        </div>
+        <span class="q-opt-arrow">›</span>
+      </button>
+    </div>
+    <div class="q-skip-row">
+      <button class="q-skip-btn" onclick="answerQ5(null)">No preference</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ Q6: AGE RANGE (demographic only) ══════════════════ -->
+  <div class="screen q-screen" id="sQ6">
+    <div class="wm">Canna<em>scope</em></div>
+    <div class="q-nav">
+      <button class="q-back" onclick="prevStep()">← Back</button>
+    </div>
+    <div class="q-body">
+      <div class="q-eyebrow">Step 6 of 6 · Anonymous &amp; optional</div>
+      <div class="q-headline">One last thing.</div>
+      <div class="q-sub">Not used in your recommendations — helps the store understand its customers.</div>
+    </div>
+    <div class="q-grid" style="flex:0; align-content:start;">
+      <button class="q-tile q-tile-age" onclick="answerQ6('21-25')">
+        <span class="q-tile-label">21–25</span>
+      </button>
+      <button class="q-tile q-tile-age" onclick="answerQ6('26-35')">
+        <span class="q-tile-label">26–35</span>
+      </button>
+      <button class="q-tile q-tile-age" onclick="answerQ6('36-50')">
+        <span class="q-tile-label">36–50</span>
+      </button>
+      <button class="q-tile q-tile-age" onclick="answerQ6('51+')">
+        <span class="q-tile-label">51+</span>
+      </button>
+    </div>
+    <div class="q-skip-row">
+      <button class="q-skip-btn" onclick="answerQ6(null)">Prefer not to say — skip to results</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ LOADING ══════════════════ -->
+  <div class="screen" id="sLoading">
+    <div class="loading-ring"></div>
+    <div class="loading-text">Finding your best matches…</div>
+    <div class="loading-sub">Just a moment.</div>
+  </div>
+
+  <!-- ══════════════════ RESULTS ══════════════════ -->
+  <div class="screen" id="sResults">
+    <div class="results-sub-header">
+      <button class="btn-back" onclick="goBack()">← Start over</button>
+      <div class="results-goal-pill" id="resGoalPill">Sleep</div>
+      <div class="res-spacer"></div>
+      <div class="results-count" id="resCount"></div>
+    </div>
+    <div class="results-profile" id="resProfile"></div>
+    <div class="results-body" id="resCards"></div>
+  </div>
+
+</div>
+
+<!-- ══════════════════ BUDTENDER OVERLAY ══════════════════ -->
+<div id="sBudtender">
+  <div class="bt-badge">✦ Cannascope Match</div>
+  <div class="bt-label">Ask your budtender for:</div>
+  <div class="bt-name" id="btName">—</div>
+  <div class="bt-meta" id="btMeta">—</div>
+  <div class="bt-div"></div>
+  <div class="bt-alts-label">Also great</div>
+  <div class="bt-alts" id="btAlts"></div>
+  <button class="btn-close-bt" onclick="closeBudtender()">← Back to results</button>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
+
+// Only safe, customer-facing columns — no internal fields ever selected.
+const SAFE_COLS = [
+  'id','name','brand','category','price','thc','cbd','in_stock',
+  'score_sleep','score_relax','score_focus','score_social','score_relief','score_beginner'
+].join(',');
+
+const GOAL_LABELS = {
+  sleep:'Sleep', relax:'Relax', focus:'Focus',
+  social:'Social', relief:'Relief', beginner:'Best Picks'
+};
+
+const FORMAT_LABELS = {
+  flower:'Flower', vape:'Vape', edible:'Edible',
+  preroll:'Pre-roll', tincture:'Tincture', concentrate:'Concentrate',
+  topical:'Topical', capsule:'Capsule'
+};
+
+const EXP_LABELS      = { new:'First timer', casual:'Occasional', regular:'Regular', daily:'Daily user' };
+const INTENSITY_LABELS = { light:'Light potency', moderate:'Moderate', strong:'Strong potency' };
+const PRICE_LABELS     = { low:'Under $30', budget:'$30–$50', premium:'$50+' };
+
+// ── STATE ─────────────────────────────────────────────────────────
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const SESSION_ID = crypto.randomUUID();
+
+let orgId = null, allProducts = [];
+let selectedGoal  = null;
+let activeFilters = {};
+let answers       = {};   // full 6-question record including demographic
+let lastRanked    = [];
+let _floorSynced  = false;
+
+// ── QUESTION STATE MACHINE ────────────────────────────────────────
+const STEPS = ['sQ1','sQ2','sQ3','sQ4','sQ5','sQ6'];
+let stepIdx = 0;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  window.scrollTo(0, 0);
+
+  const isQ  = STEPS.includes(id);
+  const prog = document.getElementById('qProgWrap');
+  if (prog) {
+    if (isQ) { prog.classList.add('visible'); updateProgressBar(STEPS.indexOf(id)); }
+    else      { prog.classList.remove('visible'); }
+  }
+}
+
+function updateProgressBar(activeIdx) {
+  for (let i = 0; i < 6; i++) {
+    const pip = document.getElementById('qp' + (i + 1));
+    if (!pip) continue;
+    pip.className = 'q-pip';
+    if (i < activeIdx)   pip.classList.add('done');
+    if (i === activeIdx) pip.classList.add('active');
+  }
+}
+
+function prevStep() {
+  if (stepIdx <= 0) return;
+  stepIdx--;
+  showScreen(STEPS[stepIdx]);
+}
+
+function goBack() {
+  closeBudtender();
+  selectedGoal  = null;
+  activeFilters = {};
+  answers       = {};
+  _floorSynced  = false;
+  stepIdx = 0;
+  showScreen('sQ1');
+}
+
+// ── ANSWER HANDLERS ───────────────────────────────────────────────
+function answerQ1(goal) {
+  selectedGoal = goal;
+  answers.goal = goal;
+  stepIdx = 1;
+  showScreen(STEPS[stepIdx]);
+}
+
+function answerQ2(exp) {
+  answers.experience = exp;
+  if (exp) activeFilters.experience = exp;
+  else delete activeFilters.experience;
+  stepIdx = 2;
+  showScreen(STEPS[stepIdx]);
+}
+
+function answerQ3(format) {
+  answers.format = format;
+  if (format) activeFilters.format = format;
+  else delete activeFilters.format;
+  stepIdx = 3;
+  showScreen(STEPS[stepIdx]);
+}
+
+function answerQ4(intensity) {
+  answers.intensity = intensity;
+  if (intensity) activeFilters.intensity = intensity;
+  else delete activeFilters.intensity;
+  stepIdx = 4;
+  showScreen(STEPS[stepIdx]);
+}
+
+function answerQ5(priceSpec) {
+  answers.priceSpec = priceSpec;
+  if (priceSpec) activeFilters.priceSpec = priceSpec;
+  else delete activeFilters.priceSpec;
+  stepIdx = 5;
+  showScreen(STEPS[stepIdx]);
+}
+
+function answerQ6(ageRange) {
+  answers.ageRange = ageRange;   // demographic only — never affects scoring
+  logProfileComplete();           // fire & forget — silent
+  runMatch();
+}
+
+// ── DEMOGRAPHIC / PROFILE EVENT ───────────────────────────────────
+// Fires once when the customer finishes all 6 questions.
+// The full answer set (including age range) goes to demand_events
+// and surfaces in the admin dashboard analytics.
+async function logProfileComplete() {
+  if (!orgId) return;
+  try {
+    await sb.from('demand_events').insert({
+      session_id:      SESSION_ID,
+      organization_id: orgId,
+      source:          'qr',
+      event_type:      'qr_profile_complete',
+      goal:            answers.goal    || null,
+      format_pref:     answers.format  || null,
+      // JSON blob: { goal, experience, format, intensity, priceSpec, ageRange }
+      experience:      JSON.stringify(answers),
+      recommendations: [],
+      product_id:      null,
+      product_rank:    null
+    });
+  } catch(e) { /* always silent */ }
+}
+
+// ── FLOOR SYNC ────────────────────────────────────────────────────
+// Silently pushes the customer's full profile + top pick to the
+// budtender cheatsheet via demand_events. Never blocks the customer.
+async function syncToFloor(topProduct) {
+  if (!orgId || !selectedGoal) return;
+  try {
+    await sb.from('demand_events').insert({
+      session_id:      SESSION_ID,
+      organization_id: orgId,
+      source:          'qr',
+      event_type:      'qr_session_ready',
+      goal:            selectedGoal,
+      format_pref:     activeFilters.format || null,
+      // Richer payload: includes all 6 answers so budtender sees full context
+      experience:      JSON.stringify({ answers, filters: activeFilters }),
+      recommendations: lastRanked.slice(0, 3).map(p => p.id),
+      product_id:      topProduct?.id || null,
+      product_rank:    -1   // sentinel: from QR, not a live scored rank
+    });
+  } catch(e) { /* silent */ }
+}
+
+// ── DEMAND EVENT LOGGER ───────────────────────────────────────────
+function logDemandEvent(event_type, opts = {}) {
+  if (!orgId) return;
+  sb.from('demand_events').insert({
+    session_id:      SESSION_ID,
+    organization_id: orgId,
+    source:          'customer_qr',
+    goal:            selectedGoal || null,
+    format_pref:     activeFilters.format     || null,
+    experience:      activeFilters.experience || null,
+    event_type,
+    recommendations: opts.recommendations || [],
+    product_id:      opts.product_id      || null,
+    product_rank:    opts.product_rank    || null
+  }).then(({ error }) => {
+    if (error) console.error('[Cannascope] demand_events:', error.message);
+  }).catch(e => console.error('[Cannascope] demand_events network:', e));
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+(async () => {
+  const params = new URLSearchParams(location.search);
+  const key    = params.get('key');
+  const did    = params.get('did');
+
+  if (key) {
+    const { data: org } = await sb
+      .from('organizations').select('id,name')
+      .eq('public_key', key).single();
+
+    if (org) {
+      orgId = org.id;
+      if (did) {
+        try {
+          const resp = await fetch('/api/dutchie?dispensaryId=' + encodeURIComponent(did));
+          if (resp.ok) {
+            const { products } = await resp.json();
+            allProducts = (products || []).filter(p => p.in_stock !== false);
+          } else throw new Error('HTTP ' + resp.status);
+        } catch (e) {
+          console.warn('[Cannascope QR] Dutchie fallback:', e.message);
+          const { data: prods } = await sb.from('products').select(SAFE_COLS)
+            .eq('organization_id', orgId).eq('in_stock', true);
+          allProducts = prods || [];
+        }
+      } else {
+        const { data: prods } = await sb.from('products').select(SAFE_COLS)
+          .eq('organization_id', orgId).eq('in_stock', true);
+        allProducts = prods || [];
+      }
+      const n = allProducts.length;
+      if (n > 0) setGoalNote(`Scoring ${n} live product${n !== 1 ? 's' : ''} in real time`);
+    } else {
+      useDemoMode();
+    }
+  } else {
+    useDemoMode();
+  }
+})();
+
+function useDemoMode() {
+  allProducts = DEMO_PRODUCTS;
+  setGoalNote(`Demo · ${DEMO_PRODUCTS.length} products scored`);
+}
+function setGoalNote(txt) {
+  const el = document.getElementById('goalNote');
+  if (el) el.textContent = txt;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+function xe(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Deterministic hash from product id+name+brand → stable variant selection.
+// Same product always picks the same copy variant.
+function productHash(p) {
+  const str = (p.id || '') + (p.name || '') + (p.brand || '');
+  let h = 0;
+  for (let i = 0; i < str.length; i++) { h = Math.imul(31, h) + str.charCodeAt(i) | 0; }
+  return Math.abs(h);
+}
+function pickV(arr, p) { return arr[productHash(p) % arr.length]; }
+
+// ── NAME KEYWORD SCORING ──────────────────────────────────────────
+function computeNameScore(name, brand, eff) {
+  const n = ((name || '') + ' ' + (brand || '')).toLowerCase();
+  const map = {
+    sleep:    ['sleep','night','cbn','dream','rest ','slumber','bedtime',' pm','knockout','nite'],
+    relax:    ['relax','calm','chill','unwind','ease','mellow','serene','stress','soothe'],
+    focus:    ['focus','day','clarity','uplift','energy','morning','alert','productive','sativa'],
+    social:   ['social','party','euphori','happy','uplift','laugh','joy','creative','vibe'],
+    relief:   ['relief','pain','recover','inflammation','ache','sore','therapy','cbg','ratio'],
+    beginner: ['micro','light','gentle','easy','mild','1:1','1mg','2.5mg','5mg','intro'],
+  };
+  const hits = (map[eff] || []).filter(kw => n.includes(kw)).length;
+  return Math.min(0.90, hits * 0.35);
+}
+
+// ── SCORING ───────────────────────────────────────────────────────
+function scoreProduct(p, eff) {
+  const rawScore  = parseFloat(p['score_' + eff]) || 0.35;
+  const nameBonus = computeNameScore(p.name, p.brand || '', eff);
+  const normBase  = Math.max(0, Math.min(1.0, (rawScore - 0.20) / 0.45));
+  const combined  = Math.min(1.0, normBase + nameBonus * 0.40);
+  let total = combined * 40;
+
+  // Experience → THC fit bonus (+18 pts)
+  if (activeFilters.experience) {
+    const thc = parseFloat(p.thc) || 0;
+    const hit = (activeFilters.experience === 'new'     && thc < 15)
+             || (activeFilters.experience === 'casual'  && thc >= 12 && thc <= 22)
+             || (activeFilters.experience === 'regular' && thc >= 15 && thc <= 25)
+             || (activeFilters.experience === 'daily'   && thc > 20);
+    if (hit) total += 18;
+  }
+
+  // Intensity preference → THC fit bonus (+15 pts, separate from experience)
+  if (activeFilters.intensity) {
+    const thc = parseFloat(p.thc) || 0;
+    const hit = (activeFilters.intensity === 'light'    && thc < 15)
+             || (activeFilters.intensity === 'moderate' && thc >= 15 && thc <= 22)
+             || (activeFilters.intensity === 'strong'   && thc > 22);
+    if (hit) total += 15;
+  }
+
+  return total;
+}
+
+// ── COPY GENERATOR ────────────────────────────────────────────────
+function buildWhyCopy(p, eff) {
+  const thc = parseFloat(p.thc) || 0;
+  const cbd = parseFloat(p.cbd) || 0;
+  const cat = (p.category || 'flower').toLowerCase();
+
+  if (cbd > thc && cbd > 3) {
+    const v = {
+      sleep:    ['CBD-dominant — eases you toward rest without heavy sedation or morning grogginess.',
+                 'The high CBD ratio helps the body wind down without a strong psychoactive effect.',
+                 'A softer sleep approach — CBD does most of the work, THC stays minimal.'],
+      relax:    ['High CBD keeps the experience calm, clear, and manageable throughout.',
+                 'CBD-forward means real relief without feeling locked to the couch.',
+                 'Good if you want to decompress without losing mental clarity.'],
+      relief:   ['Strong CBD profile — one of the more effective options for physical comfort.',
+                 'CBD is a powerful anti-inflammatory. This ratio puts it front and center.',
+                 'CBD-to-THC balance that targets physical relief without heavy psychoactivity.'],
+      focus:    ['CBD keeps the head clear while THC adds a gentle motivational nudge.',
+                 'CBD tempers any psychoactive edge — you stay functional and present.',
+                 'Well-balanced. On-task without feeling too far gone.'],
+      social:   ['Light and approachable — CBD keeps things grounded and conversational.',
+                 'The CBD softens any edge. Relaxed, comfortable, easy to be around.',
+                 'Good for settings where you want presence without intensity.'],
+      beginner: ['One of the safest first options — CBD creates a ceiling on how intense it gets.',
+                 'Very forgiving. High CBD makes overconsumption much less likely.',
+                 'Start here if you\'re nervous. The CBD cushions the experience significantly.'],
+    };
+    return pickV(v[eff] || v.relax, p);
+  }
+
+  const intensity = thc < 15 ? 'light' : thc <= 22 ? 'moderate' : 'strong';
+
+  const m = {
+    sleep: {
+      flower: {
+        light:    ['Enough to take the edge off and let the mind settle — lighter than most sleep options.',
+                   'A gentler starting point for sleep. More forgiving than high-THC options.',
+                   'Low-key potency. A few draws before bed and let it do the work.'],
+        moderate: ['A calming flower that relaxes the body and quiets the mind before bed.',
+                   'Consistent, smooth, and reliable. Good for staying asleep as much as falling asleep.',
+                   'Settles in slowly and holds. One of the better everyday sleep flowers.'],
+        strong:   ['Higher potency — best if you need something with real weight to it at night.',
+                   'Expect a pronounced body feel and a short path to sleep.',
+                   'Not subtle. This one puts you down and keeps you there.'],
+      },
+      vape:     ['Fast-acting — a few draws before bed and the wind-down begins in minutes.',
+                 'Onset in 5–10 minutes. Good for nights when you can\'t switch your brain off.',
+                 'Quick and controllable. Start with 1–2 draws, wait a few minutes, add if needed.',
+                 'One of the fastest paths to sleep. Immediate, precise, and easy to manage.'],
+      edible:   ['Takes about 90 minutes to build, then carries you through the whole night.',
+                 'Best taken an hour and a half before bed. The sustained release keeps you asleep.',
+                 'The slow onset usually means you\'re already drifting by the time it peaks.',
+                 'Consistent all-night coverage. One of the most reliable sleep formats available.'],
+      tincture: ['Absorbed under the tongue in 20–30 minutes — more controlled than flower.',
+                 'Faster than an edible, more precise than smoking. A good middle-ground for sleep.',
+                 'Dose 30 minutes before bed. Once you find your amount, the timing is very predictable.',
+                 'Easy to start small and dial in. The most adjustable sleep format in the store.'],
+      preroll:  ['Ready to go. A clean way to end the night without any setup.',
+                 'Sit with it for a few minutes before deciding if you need more.',
+                 'Small puffs, spaced a few minutes apart. You\'ll land where you need to.'],
+    },
+    relax: {
+      flower: {
+        light:    ['Takes the edge off without putting you on the couch. A good after-work option.',
+                   'Mild and functional — still feels good, just doesn\'t demand much.',
+                   'A lighter unwind option for people who want to stay somewhat present.'],
+        moderate: ['A reliable everyday unwind. Consistent, smooth, and hard to overthink.',
+                   'Balanced profile that doesn\'t lean too heavy in any direction. Just relaxing.',
+                   'Lets you decompress without locking you to a chair.'],
+        strong:   ['Best for experienced users who want a noticeable full-body effect.',
+                   'A more potent option for when you really need to shut the day off.',
+                   'High potency — expect a quieter mind and a heavy body feel.'],
+      },
+      vape:     ['Fast onset — a puff or two and the tension starts to lift.',
+                 'One of the best formats for controlled relaxation. Dose, wait, add if needed.',
+                 'The effect is immediate enough that you\'re not left wondering if it\'s working.',
+                 'Good "on-demand" relaxation. Easy to use when you need it, easy to stop.'],
+      edible:   ['Long-lasting and smooth. Effects build gradually and stay balanced for hours.',
+                 'Slow to start, satisfying result. Give it a full 90 minutes before judging.',
+                 'Sustained release makes edibles one of the best options for long evenings.',
+                 'Take it, forget about it for an hour, and enjoy the rest of your night.'],
+      tincture: ['Easy to dial in — start small, find what works, don\'t overshoot.',
+                 'Moderate onset, easy to dose. More precise than flower or a preroll.',
+                 'Sublingual means you feel it in 20–30 minutes. Predictable and clean.',
+                 'A reliable option if you don\'t want to smoke but still want real relaxation.'],
+      preroll:  ['No setup. A few puffs and put it down.',
+                 'Simple format for simple nights. Light up and let the day go.',
+                 'Smoke a little, put it down, and see where you land.'],
+    },
+    focus: {
+      flower: {
+        light:    ['Clear-headed and alert without the anxious edge of higher-THC options.',
+                   'Low enough THC to keep you functional without going sideways.',
+                   'A gentle motivational lift — good for steady, distraction-free work.'],
+        moderate: ['A functional, balanced flower — energizing without tipping into anxiety.',
+                   'A smooth sativa effect. You feel the clarity without being spun out.',
+                   'One of the better focus options if you\'re sensitive to strong THC.'],
+        strong:   ['Higher-potency sativa energy — best if you handle THC well.',
+                   'For experienced users: sharp, alert, and creative.',
+                   'Not for the casual user. This one hits with real energy and momentum.'],
+      },
+      vape:     ['Instant clarity, easy to dose one puff at a time.',
+                 'The fastest format for cutting through brain fog — one draw and you\'re there.',
+                 'Precise control means you don\'t overshoot. Get to focus and stay there.',
+                 'Good for work blocks where you need to get in and stay in the zone.'],
+      edible:   ['Slow onset but long-lasting clarity — good for extended sessions.',
+                 'Take it 90 minutes before you need to be on. Let it carry you.',
+                 'Once it kicks in, the sustained effect means no redosing every hour.',
+                 'More of a slow-build clarity than a burst. Better for longer tasks.'],
+      tincture: ['Moderate onset with a steady, functional effect.',
+                 'Sublingual means you\'re feeling it in 20 minutes, not 90.',
+                 'A clean option that keeps the head clear without pushing too hard.',
+                 'Dose before starting a work session, wait 20 minutes, and go.'],
+      preroll:  ['A quick focus session. Light it, take a little, and get into the zone.',
+                 'Better than a full smoke for micro-sessions — stub it and come back.',
+                 'The classic one-puff-before-creating format. Easy and reliable.'],
+    },
+    social: {
+      flower: {
+        light:    ['Easy and approachable — won\'t override your personality.',
+                   'A gentle mood lift that keeps you talkative and present.',
+                   'Low-pressure. A little goes a long way when you\'re around people.'],
+        moderate: ['Uplifting and mood-forward. Keeps energy up and conversation flowing.',
+                   'A classic social option — you feel good, the people around you feel it too.',
+                   'The right amount to be great company without getting weird about it.'],
+        strong:   ['A bold sativa effect — for those who know what they\'re doing.',
+                   'Best for experienced users who can handle a strong mood lift socially.',
+                   'High-energy. A popular choice for festivals or active social settings.'],
+      },
+      vape:     ['Quick and discreet — a puff is all you need to feel elevated and present.',
+                 'Good for social settings where you don\'t want to make a production of it.',
+                 'Fast onset, easy to put away. Dose and blend right in.',
+                 'Pocket-sized and odor-minimal — the cleanest social format.'],
+      edible:   ['Slow to start but great for long events — once it kicks, it stays for hours.',
+                 'Take it early. Give it 90 minutes and the effect carries you through the night.',
+                 'A popular event pick: dose once and forget about redosing.',
+                 'Best when you\'re not in a hurry. Let it build and enjoy.'],
+      tincture: ['Relaxed, social effect with a moderate and predictable onset.',
+                 'Good for staying comfortable and present without going too deep.',
+                 'Dose it before you go and it kicks in right when you arrive.',
+                 'Easy to manage. Won\'t catch you off guard.'],
+      preroll:  ['No setup. Light it, enjoy it, that\'s it.',
+                 'Easy to share. Easy to control how much you take.',
+                 'A casual, no-fuss pick for social settings.'],
+    },
+    relief: {
+      flower: {
+        light:    ['A gentler relief option — good for mild discomfort or THC sensitivity.',
+                   'Anti-inflammatory benefit without the heavy body effect.',
+                   'Light enough to use during the day without impairing function.'],
+        moderate: ['A reliable daily driver for physical discomfort — consistent and predictable.',
+                   'Balanced potency for relief without being couch-locked.',
+                   'Potent enough to do the job, manageable enough for everyday use.'],
+        strong:   ['Higher potency relief — better for serious discomfort when lower doses haven\'t worked.',
+                   'A heavy option for heavy relief. Expect a pronounced body feel.',
+                   'Best for chronic or intense discomfort. Not a starting point for new users.'],
+      },
+      vape:     ['Fast-acting — relief starts in 5–10 minutes, not 90.',
+                 'The go-to format for on-demand relief. Quick, precise, easy to control.',
+                 'No waiting around. Immediate onset is the main advantage here.',
+                 'A few draws and you\'re there. One of the fastest formats in the store.'],
+      edible:   ['Long-lasting body relief — effects can run 6–8 hours once they settle in.',
+                 'Slow to start but excellent for sustained relief throughout the day.',
+                 'Dose once, get hours of coverage. Best for chronic or recurring pain.',
+                 'The long duration makes edibles the preferred format for all-day relief.'],
+      tincture: ['Versatile and easy to dose — good for managing ongoing discomfort.',
+                 'Start low and work up. More control than most formats.',
+                 'Kicks in around 20 minutes. More predictable than edibles for dosing.',
+                 'Good for building a consistent daily routine. Half a dropper is a solid start.'],
+      topical:  ['Applied directly — no psychoactive effect, just targeted physical relief.',
+                 'The best option if you want localized relief without any head effect.',
+                 'Non-intoxicating: put it on, get the relief, keep functioning.',
+                 'Good for joints or muscles — CBD absorbs transdermally and works right at the source.'],
+      preroll:  ['Relatively fast onset for pain and tension relief.',
+                 'Take a few draws, wait 10 minutes, gauge before taking more.',
+                 'A solid option when you need relief quickly without a full session.'],
+    },
+    beginner: {
+      flower: {
+        light:    ['A lighter potency option — more forgiving than high-THC products.',
+                   'Low enough to get a feel for the experience without it overwhelming you.',
+                   'A safe starting point. Small amount, wait 15 minutes, decide from there.'],
+        moderate: ['Take it slow. A small amount to start, then wait before you take more.',
+                   'One puff, 10–15 minutes, then gauge. Don\'t rush it.',
+                   'Approachable if you go carefully — start low and give it time.'],
+        strong:   ['Proceed with caution — this is more potent than beginner-friendly options.',
+                   'Better suited for someone returning after a long break.',
+                   'Start with a very small amount if you\'re new. This is strong.'],
+      },
+      vape:     ['One puff at a time. Start slow — you can always take more.',
+                 'The most controllable format. One draw, wait 5 minutes, see how you feel.',
+                 'Easy to stop exactly where you want to be.',
+                 'Take a very short first draw. Vapes are potent — a little goes a long way.'],
+      edible:   ['Take half. Wait 90 minutes. Don\'t dose again until you\'ve waited the full time.',
+                 'Most beginner mistakes happen from dosing too early. The 90-minute onset is real.',
+                 'Start at 5mg or less. You can always take more — you can\'t undo what you already took.',
+                 'Slow and forgiving if you go carefully. Wait for it.'],
+      tincture: ['The most approachable format. Start with a quarter dropper and build from there.',
+                 'Easy to micro-dose in a way nothing else allows.',
+                 'Faster than edibles, easier to control. A great first-time format.',
+                 'Best beginner option: predictable timing, adjustable dosing, no smoke.'],
+      preroll:  ['Classic first format. One small puff, wait 10 minutes, gauge from there.',
+                 'You don\'t need to finish it. One draw and wait is the right approach.',
+                 'Light it, take one small puff, put it down. There\'s no rush.'],
+    },
+  };
+
+  const effCopy = m[eff] || m.relax;
+  let variants = effCopy[cat];
+  if (!variants) variants = effCopy['flower'];
+  if (!variants) return 'A solid match for what you\'re looking for.';
+  if (!Array.isArray(variants)) {
+    variants = variants[intensity] || variants['moderate'] || ['A solid match.'];
+  }
+  return pickV(variants, p);
+}
+
+// ── RUN MATCH ─────────────────────────────────────────────────────
+async function runMatch() {
+  showScreen('sLoading');
+  await new Promise(r => setTimeout(r, 700));
+
+  const eff = selectedGoal || 'relax';
+  let eligible = allProducts.filter(p => p.in_stock !== false);
+
+  // Hard filter: format (fall back to all if no results)
+  if (activeFilters.format) {
+    const f = eligible.filter(p => (p.category || '').toLowerCase() === activeFilters.format);
+    if (f.length > 0) eligible = f;
+  }
+
+  // Hard filter: price range (fall back to all if no results)
+  if (activeFilters.priceSpec) {
+    const f = eligible.filter(p => {
+      const pr = parseFloat(p.price) || 0;
+      if (activeFilters.priceSpec === 'low'     && pr >= 30) return false;
+      if (activeFilters.priceSpec === 'budget'  && (pr < 30 || pr > 50)) return false;
+      if (activeFilters.priceSpec === 'premium' && pr <= 50) return false;
+      return true;
+    });
+    if (f.length > 0) eligible = f;
+  }
+
+  const scored = eligible
+    .map(p => ({ ...p, _total: scoreProduct(p, eff) }))
+    .sort((a, b) => b._total - a._total);
+
+  lastRanked = scored.slice(0, 3);
+
+  document.getElementById('resGoalPill').textContent = GOAL_LABELS[eff] || cap(eff);
+  document.getElementById('resCount').textContent =
+    eligible.length ? `${eligible.length} matched` : '';
+
+  buildProfileStrip();
+  renderResults(lastRanked);
+  showScreen('sResults');
+
+  logDemandEvent('results_shown', { recommendations: lastRanked.map(p => p.id) });
+
+  // Sync to budtender floor tool — once per session
+  if (!_floorSynced && lastRanked.length > 0) {
+    _floorSynced = true;
+    syncToFloor(lastRanked[0]);
+  }
+}
+
+// ── PROFILE SUMMARY STRIP ─────────────────────────────────────────
+function buildProfileStrip() {
+  const chips = [];
+  if (answers.experience) chips.push(EXP_LABELS[answers.experience]       || answers.experience);
+  if (answers.format)     chips.push(FORMAT_LABELS[answers.format]         || cap(answers.format));
+  if (answers.intensity)  chips.push(INTENSITY_LABELS[answers.intensity]   || answers.intensity);
+  if (answers.priceSpec)  chips.push(PRICE_LABELS[answers.priceSpec]       || answers.priceSpec);
+
+  const el = document.getElementById('resProfile');
+  if (!el) return;
+  if (!chips.length) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = chips.map(c => `<span class="profile-chip">${xe(c)}</span>`).join('');
+}
+
+// ── RENDER RESULTS ────────────────────────────────────────────────
+function renderResults(ranked) {
+  if (!ranked.length) {
+    document.getElementById('resCards').innerHTML =
+      '<div class="empty-state">No products matched your filters.<br>Try starting over with different preferences.</div>';
+    return;
+  }
+
+  const eff        = selectedGoal || 'relax';
+  const maxTotal   = ranked[0]?._total || 1;
+  const rankLabels = ['Best Match', 'Runner Up', 'Third Pick'];
+
+  // Deterministic match % display — strictly descending, anchored ranges
+  const pcts = ranked.map((p, i) => {
+    if (i === 0) return 100;
+    const ranges = [[100,100],[79,91],[68,78]];
+    const [lo, hi] = ranges[i] || [65, 75];
+    const raw = Math.round(lo + (p._total / maxTotal) * (hi - lo));
+    return Math.max(lo, Math.min(hi, raw - (productHash(p) % 7)));
+  });
+  for (let i = 1; i < pcts.length; i++) {
+    if (pcts[i] >= pcts[i-1]) pcts[i] = pcts[i-1] - (5 + productHash(ranked[i]) % 6);
+    pcts[i] = Math.max(65, pcts[i]);
+  }
+
+  document.getElementById('resCards').innerHTML = ranked.map((p, i) => {
+    const cat    = FORMAT_LABELS[(p.category||'').toLowerCase()] || cap(p.category || '');
+    const price  = p.price  ? `$${Number(p.price).toFixed(0)}`  : null;
+    const thcTxt = p.thc   != null ? `THC ${p.thc}%`            : null;
+    const cbdTxt = (p.cbd && p.cbd > 0.5) ? `CBD ${p.cbd}%`    : null;
+    const meta   = [p.brand, cat, thcTxt, cbdTxt].filter(Boolean).join(' · ');
+    const why    = buildWhyCopy(p, eff);
+    const ctaLabel = i === 0 ? 'Show my budtender' : 'Choose this one instead';
+
+    return `
+    <div class="prod-card${i === 0 ? ' rank-1' : ''}">
+      <div class="card-top-row">
+        <div class="card-rank-label">${rankLabels[i] || ''}</div>
+        <div class="card-match-pct">${pcts[i]}% match</div>
+      </div>
+      <div class="card-main-row">
+        <div class="card-name">${xe(p.name)}</div>
+        ${price ? `<div class="card-price">${price}</div>` : ''}
+      </div>
+      <div class="card-meta">${xe(meta)}</div>
+      <div class="card-why">${xe(why)}</div>
+      <button class="card-cta" onclick="openBudtender('${xe(p.id)}')">
+        <span>${ctaLabel}</span>
+        <span>→</span>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+// ── BUDTENDER OVERLAY ─────────────────────────────────────────────
+// Accepts any product from lastRanked by ID — not just the top pick.
+function openBudtender(productId) {
+  let product = lastRanked.find(p => p.id === productId);
+  if (!product && lastRanked.length > 0) product = lastRanked[0];
+  if (!product) return;
+
+  const cat   = FORMAT_LABELS[(product.category||'').toLowerCase()] || cap(product.category || '');
+  const price = product.price ? `$${Number(product.price).toFixed(0)}` : '';
+
+  document.getElementById('btName').textContent = product.name;
+  document.getElementById('btMeta').textContent =
+    [product.brand, cat, price].filter(Boolean).join(' · ');
+
+  const others = lastRanked.filter(p => p.id !== product.id);
+  document.getElementById('btAlts').innerHTML = others.length
+    ? others.map(p => {
+        const c  = FORMAT_LABELS[(p.category||'').toLowerCase()] || '';
+        const pr = p.price ? ` · $${Number(p.price).toFixed(0)}` : '';
+        return `<div class="bt-alt">${xe(p.name)} · ${xe(c)}${xe(pr)}</div>`;
+      }).join('')
+    : '';
+
+  document.getElementById('sBudtender').classList.add('open');
+  window.scrollTo(0, 0);
+
+  logDemandEvent('budtender_shown', {
+    product_id:   product.id,
+    product_rank: lastRanked.indexOf(product) + 1
+  });
+}
+
+function closeBudtender() {
+  document.getElementById('sBudtender').classList.remove('open');
+}
+
+// ── DEMO PRODUCTS ─────────────────────────────────────────────────
+// Customer-safe fields only — no internal data, shelf info, or talking points.
+const DEMO_PRODUCTS = [
+  { id:'d1',  name:'Granddaddy Purple',   brand:'Royal Gardens',  category:'flower',   price:45, thc:23, cbd:0,   in_stock:true, score_sleep:0.82, score_relax:0.42, score_focus:0.10, score_social:0.12, score_relief:0.38, score_beginner:0.22 },
+  { id:'d2',  name:'Northern Lights',     brand:'Emerald Fields', category:'flower',   price:40, thc:18, cbd:0,   in_stock:true, score_sleep:0.74, score_relax:0.50, score_focus:0.12, score_social:0.14, score_relief:0.32, score_beginner:0.35 },
+  { id:'d3',  name:'Purple Punch Gummies',brand:'Green Peak',     category:'edible',   price:25, thc:10, cbd:0,   in_stock:true, score_sleep:0.68, score_relax:0.46, score_focus:0.08, score_social:0.10, score_relief:0.28, score_beginner:0.55 },
+  { id:'d4',  name:'Dream Tincture',      brand:'Bloom Select',   category:'tincture', price:38, thc:5,  cbd:10,  in_stock:true, score_sleep:0.71, score_relax:0.55, score_focus:0.10, score_social:0.08, score_relief:0.44, score_beginner:0.62 },
+  { id:'d5',  name:'Blue Dream',          brand:'Canopy Co',      category:'flower',   price:42, thc:22, cbd:0,   in_stock:true, score_sleep:0.38, score_relax:0.78, score_focus:0.40, score_social:0.44, score_relief:0.30, score_beginner:0.28 },
+  { id:'d6',  name:'OG Kush',             brand:'Canopy Co',      category:'flower',   price:48, thc:21, cbd:0,   in_stock:true, score_sleep:0.44, score_relax:0.72, score_focus:0.22, score_social:0.28, score_relief:0.38, score_beginner:0.24 },
+  { id:'d7',  name:'Wedding Cake Vape',   brand:'Summit Select',  category:'vape',     price:55, thc:25, cbd:0,   in_stock:true, score_sleep:0.30, score_relax:0.65, score_focus:0.38, score_social:0.50, score_relief:0.22, score_beginner:0.15 },
+  { id:'d8',  name:'Sour Diesel',         brand:'Green Peak',     category:'flower',   price:46, thc:24, cbd:0,   in_stock:true, score_sleep:0.10, score_relax:0.38, score_focus:0.80, score_social:0.55, score_relief:0.18, score_beginner:0.20 },
+  { id:'d9',  name:'Jack Herer',          brand:'Harvest Gold',   category:'flower',   price:44, thc:19, cbd:1,   in_stock:true, score_sleep:0.12, score_relax:0.42, score_focus:0.74, score_social:0.52, score_relief:0.20, score_beginner:0.32 },
+  { id:'d10', name:'Green Crack Vape',    brand:'Summit Select',  category:'vape',     price:50, thc:21, cbd:0,   in_stock:true, score_sleep:0.08, score_relax:0.30, score_focus:0.70, score_social:0.60, score_relief:0.15, score_beginner:0.18 },
+  { id:'d11', name:'Pineapple Express',   brand:'Coastal Farms',  category:'flower',   price:43, thc:20, cbd:0,   in_stock:true, score_sleep:0.15, score_relax:0.48, score_focus:0.46, score_social:0.78, score_relief:0.20, score_beginner:0.30 },
+  { id:'d12', name:'Tangie Vape',         brand:'Summit Select',  category:'vape',     price:52, thc:22, cbd:0,   in_stock:true, score_sleep:0.08, score_relax:0.35, score_focus:0.48, score_social:0.75, score_relief:0.14, score_beginner:0.22 },
+  { id:'d13', name:'Mimosa',              brand:'Canopy Co',      category:'flower',   price:48, thc:22, cbd:0,   in_stock:true, score_sleep:0.10, score_relax:0.42, score_focus:0.50, score_social:0.72, score_relief:0.16, score_beginner:0.28 },
+  { id:'d14', name:'ACDC',               brand:'Remedy Farms',   category:'flower',   price:50, thc:2,  cbd:14,  in_stock:true, score_sleep:0.38, score_relax:0.60, score_focus:0.30, score_social:0.20, score_relief:0.88, score_beginner:0.72 },
+  { id:'d15', name:'Harlequin',           brand:'Remedy Farms',   category:'flower',   price:46, thc:6,  cbd:10,  in_stock:true, score_sleep:0.42, score_relax:0.62, score_focus:0.35, score_social:0.22, score_relief:0.82, score_beginner:0.68 },
+  { id:'d16', name:'Relief Topical',      brand:'Bloom Select',   category:'topical',  price:35, thc:0,  cbd:500, in_stock:true, score_sleep:0.10, score_relax:0.30, score_focus:0.10, score_social:0.05, score_relief:0.76, score_beginner:0.80 },
+  { id:'d17', name:'Harlequin 1:1',       brand:'Remedy Farms',   category:'tincture', price:40, thc:5,  cbd:5,   in_stock:true, score_sleep:0.42, score_relax:0.62, score_focus:0.38, score_social:0.30, score_relief:0.58, score_beginner:0.84 },
+  { id:'d18', name:"Charlotte's Web",     brand:'Green Gate',     category:'edible',   price:28, thc:5,  cbd:5,   in_stock:true, score_sleep:0.48, score_relax:0.58, score_focus:0.32, score_social:0.28, score_relief:0.52, score_beginner:0.78 },
+  { id:'d19', name:'Northern Lights Low', brand:'Emerald Fields', category:'preroll',  price:22, thc:12, cbd:2,   in_stock:true, score_sleep:0.55, score_relax:0.50, score_focus:0.28, score_social:0.32, score_relief:0.35, score_beginner:0.75 },
+];
+
+/* ── ADMIN DASHBOARD QUERY REFERENCE ─────────────────────────────────
+   All 6 answers land in demand_events automatically. Sample queries:
+
+   -- Age range breakdown
+   SELECT experience::json->>'ageRange' as age, count(*)
+   FROM demand_events
+   WHERE event_type = 'qr_profile_complete'
+   GROUP BY 1 ORDER BY 2 DESC;
+
+   -- Experience level by goal
+   SELECT goal, experience::json->>'experience' as exp_level, count(*)
+   FROM demand_events
+   WHERE event_type = 'qr_profile_complete'
+   GROUP BY 1, 2 ORDER BY 1, 3 DESC;
+
+   -- Format preference distribution
+   SELECT experience::json->>'format' as format, count(*)
+   FROM demand_events
+   WHERE event_type = 'qr_profile_complete'
+   GROUP BY 1 ORDER BY 2 DESC;
+
+   -- Which product was actually shown to the budtender (customer choice)
+   SELECT product_id, product_rank, count(*) as chosen
+   FROM demand_events
+   WHERE event_type = 'budtender_shown'
+   GROUP BY 1, 2 ORDER BY 3 DESC;
+   ──────────────────────────────────────────────────────────────── */
+</script>
+</body>
+</html>

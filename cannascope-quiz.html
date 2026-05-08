@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>What Should I Get at the Dispensary? | Cannabis Quiz</title>
+<meta name="description" content="Not sure what to buy at the dispensary? Answer 6 quick questions and get a personalized cannabis recommendation — strain, format, and effect — backed by terpene science. Free and takes 90 seconds.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://whatshouldigetatthedispensary.com/">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://whatshouldigetatthedispensary.com/">
+<meta property="og:title" content="What Should I Get at the Dispensary?">
+<meta property="og:description" content="Answer 6 questions. Get a personalized cannabis recommendation you can bring straight to your budtender. Free, 90 seconds, science-backed.">
+<meta property="og:site_name" content="Cannascope">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="What Should I Get at the Dispensary?">
+<meta name="twitter:description" content="Answer 6 questions. Get a personalized cannabis recommendation you can bring straight to your budtender. Free, 90 seconds, science-backed.">
+<!-- FAQ Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What should I get at the dispensary?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It depends on your goal — sleep, relaxation, focus, pain relief, or socializing — as well as your experience level and preferred format (flower, edibles, vape, tincture). Answer 6 quick questions and get a personalized recommendation you can bring straight to your budtender."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I choose the right cannabis strain?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Start with your desired effect: indica-leaning strains are typically best for sleep and relaxation, while sativa-leaning strains are better for energy and focus. Terpenes like myrcene (calming), limonene (uplifting), and pinene (focus) play a key role. Our quiz walks you through the decision in 90 seconds."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What's the best cannabis format for beginners?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Tinctures and low-dose edibles are best for beginners because effects are controlled and forgiving. Start with 5mg THC or less, wait at least 2 hours before taking more. Our quiz recommends beginner-appropriate formats based on your experience level."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What cannabis product is best for sleep?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For sleep, look for products high in myrcene and linalool terpenes, with a 1:1 THC:CBD ratio or pure indica strains like Granddaddy Purple or Northern Lights. Edibles taken 1-2 hours before bed tend to provide the longest-lasting effect."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is this cannabis recommendation quiz free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes — completely free. Takes about 90 seconds. No account required. You'll get a personalized archetype, recommended strains, preferred formats, and talking points you can bring to any budtender."
+      }
+    }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:       #2D6A4F;
+  --green-mid:   #40916C;
+  --green-light: #52B788;
+  --green-pale:  #D8EFE3;
+  --green-bg:    #F0F7F3;
+  --green-border:#C2DDD1;
+  --bg:          #FAFAF8;
+  --white:       #FFFFFF;
+  --surface:     #F5F5F2;
+  --text:        #18191A;
+  --text-2:      #4A4D46;
+  --text-3:      #8A8D84;
+  --border:      #E4EAE0;
+  --border-2:    #D0D8CC;
+  --red:         #C0392B;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── PROGRESS ─────────────────────────────────────────────────────── */
+.progress-bar {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--border); z-index: 200;
+}
+.progress-fill {
+  height: 100%; background: var(--green);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 0%;
+}
+
+/* ── SCREENS ──────────────────────────────────────────────────────── */
+.screen {
+  display: none;
+  width: 100%; max-width: 480px;
+  min-height: 100vh; min-height: 100dvh;
+  padding: 0 24px;
+  flex-direction: column;
+  animation: fadeUp 0.35s ease both;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── LANDING ──────────────────────────────────────────────────────── */
+.landing {
+  justify-content: center;
+  padding-top: 72px;
+  padding-bottom: 60px;
+  text-align: center;
+  gap: 0;
+}
+
+.landing-eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--green-mid); margin-bottom: 32px;
+}
+
+.landing-h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(36px, 9vw, 48px);
+  font-weight: 300; line-height: 1.12;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+.landing-h1 em { font-style: italic; color: var(--green); }
+
+.landing-sub {
+  font-size: 16px; line-height: 1.65;
+  color: var(--text-2); margin-bottom: 44px;
+  font-weight: 300;
+}
+
+.btn-start {
+  width: 100%; height: 58px;
+  background: var(--green); color: white;
+  border: none; border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 17px; font-weight: 500;
+  cursor: pointer; letter-spacing: -0.01em;
+  transition: background 0.18s, transform 0.12s;
+  box-shadow: 0 4px 20px rgba(45, 106, 79, 0.22);
+}
+.btn-start:hover  { background: #255C43; }
+.btn-start:active { transform: scale(0.985); }
+
+.trust-row {
+  display: flex; justify-content: center; gap: 22px;
+  margin-top: 28px;
+}
+.trust-item {
+  font-size: 12px; color: var(--text-3);
+  display: flex; align-items: center; gap: 6px; font-weight: 400;
+}
+.trust-pip {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--green-light); flex-shrink: 0;
+}
+
+/* ── QUESTION ─────────────────────────────────────────────────────── */
+.q-screen {
+  padding-top: 72px; padding-bottom: 40px;
+  justify-content: space-between;
+}
+
+.q-top { flex: 1; }
+
+.q-meta {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-3);
+  margin-bottom: 22px;
+}
+
+.q-text {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(26px, 7vw, 34px);
+  font-weight: 300; line-height: 1.22;
+  letter-spacing: -0.02em;
+  color: var(--text); margin-bottom: 32px;
+}
+
+.answers { display: flex; flex-direction: column; gap: 9px; }
+
+.answer {
+  width: 100%; min-height: 62px;
+  padding: 14px 18px; background: var(--white);
+  border: 1.5px solid var(--border); border-radius: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 400; color: var(--text);
+  cursor: pointer; text-align: left;
+  display: flex; align-items: flex-start; gap: 13px;
+  transition: border-color 0.14s, background 0.14s;
+  line-height: 1.35;
+}
+.answer:hover { border-color: var(--green-mid); background: var(--green-bg); }
+.answer.sel   { border-color: var(--green); background: var(--green-bg); }
+.answer.sel .a-letter {
+  background: var(--green); color: white; border-color: var(--green);
+}
+
+.a-letter {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 1.5px solid var(--border-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: var(--text-3);
+  flex-shrink: 0; margin-top: 1px;
+  transition: all 0.14s; letter-spacing: 0;
+}
+
+.a-text { flex: 1; }
+.a-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; font-weight: 300; }
+
+.q-bottom { padding-top: 20px; }
+
+.btn-next {
+  width: 100%; height: 54px;
+  background: var(--green); color: white;
+  border: none; border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px; font-weight: 500;
+  cursor: pointer; transition: all 0.18s;
+  opacity: 0; pointer-events: none;
+  transform: translateY(6px);
+}
+.btn-next.show { opacity: 1; pointer-events: all; transform: translateY(0); }
+.btn-next:hover { background: #255C43; }
+
+/* ── PROCESSING ───────────────────────────────────────────────────── */
+.processing {
+  justify-content: center; align-items: center;
+  text-align: center; gap: 24px;
+}
+
+.processing-ring {
+  width: 64px; height: 64px;
+  border: 2.5px solid var(--green-pale);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.processing-h {
+  font-family: 'Fraunces', serif;
+  font-size: 28px; font-weight: 300;
+  color: var(--text); letter-spacing: -0.015em;
+}
+.processing-sub { font-size: 14px; color: var(--text-3); line-height: 1.6; }
+
+/* ── RESULTS ──────────────────────────────────────────────────────── */
+.results {
+  padding-top: 56px; padding-bottom: 64px;
+  justify-content: flex-start; gap: 0;
+}
+
+.results-pre { text-align: center; margin-bottom: 28px; }
+.results-eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 10px;
+}
+.results-h {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(30px, 8vw, 38px);
+  font-weight: 300; letter-spacing: -0.02em;
+  color: var(--text); line-height: 1.15;
+}
+.results-h em { color: var(--green); font-style: italic; }
+
+/* ── THE CARD ─────────────────────────────────────────────────────── */
+.card {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 24px rgba(45, 106, 79, 0.10), 0 0 0 1px rgba(45, 106, 79, 0.04);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.card-head {
+  background: var(--green);
+  padding: 22px 24px;
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 12px;
+}
+.card-head-left {}
+.card-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.16em;
+  text-transform: uppercase; color: rgba(255,255,255,0.55);
+  margin-bottom: 5px;
+}
+.card-name {
+  font-family: 'Fraunces', serif;
+  font-size: 26px; font-weight: 300;
+  color: white; letter-spacing: -0.015em;
+}
+.card-archetype {
+  font-size: 10px; font-weight: 600;
+  color: rgba(255,255,255,0.65);
+  background: rgba(255,255,255,0.14);
+  padding: 5px 12px; border-radius: 100px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  white-space: nowrap; flex-shrink: 0; margin-top: 4px;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.card-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+.card-row {}
+.card-row-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;
+}
+.card-row-val { font-size: 14px; color: var(--text-2); line-height: 1.5; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.tag {
+  font-size: 12px; font-weight: 500;
+  color: var(--green); background: var(--green-pale);
+  padding: 5px 12px; border-radius: 100px;
+  border: 1px solid var(--green-border);
+  letter-spacing: -0.01em;
+}
+
+.product-list { display: flex; flex-direction: column; gap: 7px; }
+.product-item {
+  font-size: 13px; color: var(--text-2); line-height: 1.45;
+  padding-left: 12px;
+  border-left: 2px solid var(--green-light);
+}
+
+.card-tip {
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  border-radius: 10px;
+  padding: 13px 15px;
+  font-size: 13px; color: var(--text-2);
+  line-height: 1.65; font-style: italic;
+}
+
+.card-foot {
+  border-top: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-foot-brand {
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--green);
+}
+.card-foot-label { font-size: 11px; color: var(--text-3); }
+
+/* ── EMAIL BLOCK ──────────────────────────────────────────────────── */
+.email-block {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.email-h {
+  font-family: 'Fraunces', serif;
+  font-size: 20px; font-weight: 300;
+  color: var(--text); margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.email-sub { font-size: 13px; color: var(--text-3); margin-bottom: 16px; line-height: 1.55; }
+
+.email-row { display: flex; gap: 8px; }
+.email-input {
+  flex: 1; height: 48px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 0 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; color: var(--text); background: var(--bg);
+  outline: none; transition: border-color 0.18s;
+  min-width: 0;
+}
+.email-input::placeholder { color: var(--text-3); }
+.email-input:focus { border-color: var(--green); }
+.email-input.err { border-color: var(--red); }
+
+.btn-email {
+  height: 48px; padding: 0 18px;
+  background: var(--green); color: white;
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: background 0.18s;
+  flex-shrink: 0;
+}
+.btn-email:hover { background: #255C43; }
+.btn-email:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.email-sent {
+  display: none; text-align: center;
+  color: var(--green); font-size: 14px;
+  font-weight: 500; margin-top: 10px;
+}
+
+.retake {
+  text-align: center; font-size: 13px;
+  color: var(--text-3); cursor: pointer;
+  padding: 10px; transition: color 0.15s;
+}
+.retake:hover { color: var(--green); }
+
+/* ── DIVIDER ──────────────────────────────────────────────────────── */
+.divider {
+  height: 1px; background: var(--border);
+  margin: 20px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+
+<div class="app">
+
+<!-- ══ LANDING ══════════════════════════════════════════════════════ -->
+<div class="screen landing active" id="sLanding">
+  <div class="landing-eyebrow">Powered by Cannascope</div>
+  <h1 class="landing-h1">What should you get<br>at the <em>dispensary?</em></h1>
+  <p class="landing-sub">Answer 6 questions. Get a personalized recommendation backed by terpene science — yours to bring straight to your budtender.</p>
+  <button class="btn-start" onclick="startQuiz()">Get my recommendation</button>
+  <div class="trust-row">
+    <div class="trust-item"><div class="trust-pip"></div>90 seconds</div>
+    <div class="trust-item"><div class="trust-pip"></div>Science-backed</div>
+    <div class="trust-item"><div class="trust-pip"></div>Free</div>
+  </div>
+</div>
+
+<!-- SEO content — crawlable by Google, visually below the fold -->
+<section style="width:100%;max-width:480px;margin:0 auto;padding:60px 24px 80px;color:var(--text-2);">
+  <h2 style="font-family:'Fraunces',serif;font-size:22px;font-weight:300;color:var(--text);letter-spacing:-0.02em;margin-bottom:24px;line-height:1.3">Not sure what to get at the dispensary?</h2>
+  <p style="font-size:14px;line-height:1.7;margin-bottom:20px">Walking into a dispensary without a plan can be overwhelming — hundreds of products, different strains, formats, and potencies. This free cannabis quiz helps you figure out exactly what to ask for, in about 90 seconds.</p>
+  <p style="font-size:14px;line-height:1.7;margin-bottom:32px">Answer 6 questions about your goal (sleep, relaxation, focus, pain relief, creativity, or socializing), your experience level, and preferred format. You'll get a personalized recommendation — including specific strains, terpenes to look for, and talking points to bring to your budtender.</p>
+
+  <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:14px;overflow:hidden">
+    <details style="padding:16px 18px;border-bottom:1px solid var(--border);background:var(--white)">
+      <summary style="font-size:14px;font-weight:500;color:var(--text);cursor:pointer;list-style:none">What should I buy at the dispensary if I want to sleep better?</summary>
+      <p style="font-size:13px;line-height:1.65;color:var(--text-2);margin-top:10px">Look for strains high in myrcene and linalool — these terpenes are associated with sedation and relaxation. Indica-dominant strains like Granddaddy Purple, Northern Lights, or Wedding Cake are popular for sleep. Edibles taken 1–2 hours before bed give the longest-lasting effect. Start with 5mg THC and see how you feel.</p>
+    </details>
+    <details style="padding:16px 18px;border-bottom:1px solid var(--border);background:var(--white)">
+      <summary style="font-size:14px;font-weight:500;color:var(--text);cursor:pointer;list-style:none">I'm a beginner — what cannabis product should I get?</summary>
+      <p style="font-size:13px;line-height:1.65;color:var(--text-2);margin-top:10px">Start with a tincture or a low-dose edible (2.5–5mg THC). These are forgiving — you can dose precisely and the effects come on slowly. Avoid high-THC flower or concentrates your first time. A 1:1 THC:CBD ratio is also a great starting point since CBD tempers the intensity of THC.</p>
+    </details>
+    <details style="padding:16px 18px;border-bottom:1px solid var(--border);background:var(--white)">
+      <summary style="font-size:14px;font-weight:500;color:var(--text);cursor:pointer;list-style:none">What's the difference between indica, sativa, and hybrid?</summary>
+      <p style="font-size:13px;line-height:1.65;color:var(--text-2);margin-top:10px">The indica/sativa distinction is more about marketing than science — what actually determines effects are terpenes and cannabinoid ratios. That said: indica-leaning strains tend to be more body-focused and calming, sativa-leaning strains tend to be more cerebral and energizing, and hybrids fall in between. Our quiz focuses on terpene profiles, not just labels.</p>
+    </details>
+    <details style="padding:16px 18px;background:var(--white)">
+      <summary style="font-size:14px;font-weight:500;color:var(--text);cursor:pointer;list-style:none">How is this recommendation made?</summary>
+      <p style="font-size:13px;line-height:1.65;color:var(--text-2);margin-top:10px">Your answers are matched against seven consumer archetypes — The Deep Sleeper, The Sharpener, The Social Spark, The Healer, The Unwinder, The Explorer, and The Micro-Doser. Each archetype has a curated set of strains, terpene profiles, and formats selected based on reported effects and cannabinoid science. The result is a recommendation you can hand directly to your budtender.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ══ QUESTION ══════════════════════════════════════════════════════ -->
+<div class="screen q-screen" id="sQuestion">
+  <div class="q-top">
+    <div class="q-meta" id="qMeta">Question 1 of 6</div>
+    <div class="q-text" id="qText"></div>
+    <div class="answers" id="qAnswers"></div>
+  </div>
+  <div class="q-bottom">
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Continue</button>
+  </div>
+</div>
+
+<!-- ══ PROCESSING ════════════════════════════════════════════════════ -->
+<div class="screen processing" id="sProcessing">
+  <div class="processing-ring"></div>
+  <div class="processing-h">Building your Cannascope</div>
+  <div class="processing-sub">Matching your profile to what actually works.</div>
+</div>
+
+<!-- ══ RESULTS ═══════════════════════════════════════════════════════ -->
+<div class="screen results" id="sResults">
+  <div class="results-pre">
+    <div class="results-eyebrow">Your recommendation is ready</div>
+    <div class="results-h">Here's your <em>Cannascope</em></div>
+  </div>
+
+  <div class="card" id="theCard">
+    <div class="card-head">
+      <div class="card-head-left">
+        <div class="card-eyebrow">Your Cannascope</div>
+        <div class="card-name">Cannascope</div>
+      </div>
+      <div class="card-archetype" id="cArchetype"></div>
+    </div>
+    <div class="card-body">
+      <div class="card-row">
+        <div class="card-row-label">What to ask for</div>
+        <div class="card-row-val" id="cCategory"></div>
+      </div>
+      <div class="card-row">
+        <div class="card-row-label">Strains that tend to work well</div>
+        <div class="tags" id="cStrains"></div>
+      </div>
+      <div class="card-row">
+        <div class="card-row-label">Products to look for</div>
+        <div class="product-list" id="cProducts"></div>
+      </div>
+      <div class="card-row">
+        <div class="card-row-label">Terpenes to ask about</div>
+        <div class="tags" id="cTerpenes"></div>
+      </div>
+      <div class="card-tip" id="cTip"></div>
+    </div>
+    <div class="card-foot">
+      <div class="card-foot-brand">Cannascope</div>
+      <div class="card-foot-label">Show this to your budtender</div>
+    </div>
+  </div>
+
+  <div class="email-block">
+    <div class="email-h">Send your Cannascope to your inbox</div>
+    <div class="email-sub">Pull it up at the dispensary. No spam, ever.</div>
+    <div class="email-row">
+      <input class="email-input" type="email" id="emailIn" placeholder="your@email.com">
+      <button class="btn-email" id="btnEmail" onclick="sendEmail()">Send it</button>
+    </div>
+    <div class="email-sent" id="emailSent">Sent. Check your inbox.</div>
+  </div>
+
+  <div class="retake" onclick="retake()">Take it again for a different goal</div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ── UUID HELPER ───────────────────────────────────────────────────────────────
+function genUUID() {
+  try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch(e) {}
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+// ── SUPABASE (direct REST — no SDK needed) ────────────────────────────────────
+const SB_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
+
+// ── YOUR CANNASCOPE ORGANIZATION ID ───────────────────────────────────────────
+// Find this in Supabase → Table Editor → organizations → copy the id column value
+const CANNASCOPE_ORG_ID = 'c78449ac-deee-4ad3-83dd-6633ee187063';
+
+async function sbInsert(table, data) {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`,
+        'Content-Type': 'application/json', 'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('[Cannascope] Supabase insert failed:', res.status, err);
+    }
+  } catch(e) {
+    console.error('[Cannascope] Supabase network error:', e);
+  }
+}
+
+// ── QUESTIONS ─────────────────────────────────────────────────────────────────
+const QS = [
+  { key:'goal', text:'What are you trying to feel?',
+    opts:[
+      { v:'relax',    l:'Wind down and decompress',     s:'After a long day' },
+      { v:'sleep',    l:'Get a deep night of sleep',    s:'Fall asleep and stay there' },
+      { v:'focus',    l:'Stay sharp and creative',      s:'Clear head, good energy' },
+      { v:'social',   l:'Be present and social',        s:'Good mood, relaxed nerves' },
+      { v:'relief',   l:'Ease pain or physical tension',s:'Body relief' },
+      { v:'beginner', l:"I'm not sure yet",             s:'Help me figure it out' },
+    ]},
+  { key:'experience', text:'How familiar are you with cannabis?',
+    opts:[
+      { v:'new',     l:'First time — or first in a long time' },
+      { v:'casual',  l:"I've tried it a handful of times" },
+      { v:'regular', l:'I use it regularly' },
+      { v:'daily',   l:'Daily — I know what I like' },
+    ]},
+  { key:'format', text:'How do you prefer to consume?',
+    opts:[
+      { v:'edible',   l:'Edibles or gummies',         s:'No smoke, slow and long-lasting' },
+      { v:'vape',     l:'Vape',                        s:'Fast, controlled, discreet' },
+      { v:'flower',   l:'Flower or pre-rolls',         s:'Classic, immediate' },
+      { v:'tincture', l:'Tincture or capsule',         s:'Precise, forgiving' },
+      { v:'any',      l:'Open to anything',            s:'Whatever works best' },
+    ]},
+  { key:'intensity', text:'How strong of an effect are you looking for?',
+    opts:[
+      { v:'light',    l:'Subtle — just take the edge off',        s:'Functional and clear-headed' },
+      { v:'moderate', l:'Balanced — noticeable but in control',   s:'Feels good without going too far' },
+      { v:'strong',   l:'Full effect — I can handle it',          s:'I know my tolerance' },
+    ]},
+  { key:'priority', text:'Any priorities for your experience?',
+    opts:[
+      { v:'thc',      l:'Classic THC experience' },
+      { v:'cbd',      l:'More CBD, less high',     s:'Therapeutic without the intoxication' },
+      { v:'balanced', l:'Balanced THC and CBD' },
+      { v:'none',     l:'Whatever gives the best result' },
+    ]},
+  { key:'budget', text:"What's your budget today?",
+    opts:[
+      { v:'low',  l:'Under $30' },
+      { v:'mid',  l:'$30 to $50' },
+      { v:'high', l:'$50 or more' },
+      { v:'any',  l:"Budget isn't a concern" },
+    ]},
+];
+
+// ── ARCHETYPES ────────────────────────────────────────────────────────────────
+const ARCHETYPES = {
+  sleeper: {
+    label: 'The Deep Sleeper',
+    category: 'Heavy indica — sedating, body-focused, built for sleep',
+    strains: ['Granddaddy Purple','Northern Lights','Purple Punch','Do-Si-Dos','Zkittlez'],
+    productsByFormat: {
+      flower:   [
+        'Indica or indica-dom hybrid flower — ask for anything heavy or "nighttime"',
+        'Granddaddy Purple, Northern Lights, or Purple Punch if they carry it',
+        'Indica pre-roll — grab two for the week',
+      ],
+      vape:     [
+        'Indica vape cartridge — look for "nighttime" or "sleep" on the label',
+        'Live resin indica cart — fuller, more complete effect than distillate',
+        'Disposable indica vape — no setup, ready to go',
+      ],
+      edible:   [
+        '10mg THC gummy or "nighttime" formula — take it 90 minutes before bed',
+        'Edible with CBN added — most sleep formulas include it',
+        'Higher-dose indica edible (10–25mg) if your tolerance is established',
+      ],
+      tincture: [
+        'CBN + THC sleep tincture — sublingual kicks in faster than edibles',
+        'High-dose indica tincture or capsule',
+        '1:1 THC:CBD tincture with CBN — the full sleep stack',
+      ],
+      any:      [
+        '10mg indica gummy or "nighttime" formula — easiest starting point',
+        'Indica flower or pre-roll — anything heavy and myrcene-dominant',
+        'Indica vape cartridge — for when you want something right before bed',
+      ],
+    },
+    terpenes: ['Myrcene','Linalool','Caryophyllene'],
+    tip: 'Ask for something high in myrcene — it\'s the terpene most directly linked to sedation and body heaviness. One word and your budtender knows exactly what to grab.',
+  },
+  unwinder: {
+    label: 'The Unwinder',
+    category: 'Indica-leaning hybrid — decompress without checking out',
+    strains: ['Blue Dream','Wedding Cake','Gelato','Banana Kush','Runtz'],
+    productsByFormat: {
+      flower:   [
+        'Indica-leaning hybrid flower — Blue Dream, Gelato, or Wedding Cake',
+        'Hybrid pre-roll — not too heavy, not too energizing',
+        'Any "relaxing" or "evening" hybrid on their menu',
+      ],
+      vape:     [
+        'Hybrid or indica-leaning vape cart — something labeled "relaxing" or "balanced"',
+        'Live resin hybrid cart — smoother and more nuanced effect',
+        'Disposable indica-hybrid vape — controlled and easy',
+      ],
+      edible:   [
+        '5–10mg hybrid gummy — noticeable but you\'re still in control',
+        'Indica-leaning low-dose edible — 5mg is a solid starting point',
+        '"Evening" or "relax" formula gummy if they carry one',
+      ],
+      tincture: [
+        '1:1 THC:CBD tincture — the most adjustable, forgiving option',
+        'Low-dose indica tincture or capsule',
+        'Balanced blend tincture — look for equal THC and CBD',
+      ],
+      any:      [
+        '5–10mg hybrid gummy — felt but controlled, easy to gauge',
+        'Indica-leaning hybrid vape cart — put it down the moment you feel right',
+        'Hybrid flower or pre-roll — Blue Dream or Gelato are great here',
+      ],
+    },
+    terpenes: ['Myrcene','Caryophyllene','Linalool'],
+    tip: 'You want to decompress without disappearing. Ask for an indica-leaning hybrid — not full indica. That one phrase tells your budtender exactly what you\'re after.',
+  },
+  sharpener: {
+    label: 'The Sharpener',
+    category: 'Sativa — uplifting, clear-headed, good for creative work',
+    strains: ['Jack Herer','Sour Diesel','Green Crack','Durban Poison','Trainwreck'],
+    productsByFormat: {
+      flower:   [
+        'Sativa flower — Jack Herer, Sour Diesel, or Green Crack',
+        'Sativa pre-roll — great for a creative session',
+        'Any "energizing" or "daytime" sativa on their menu',
+      ],
+      vape:     [
+        'Sativa vape cartridge — fast, clean, easy to put down',
+        'Limonene-dominant live resin sativa cart — ask for it specifically',
+        'Sativa disposable vape — controlled and consistent',
+      ],
+      edible:   [
+        '2.5mg microdose THC gummy — sub-perceptual lift, no buzz',
+        '5mg sativa edible max — higher and you risk losing the clarity',
+        'Microdose capsule if they carry a dedicated low-dose line',
+      ],
+      tincture: [
+        '2.5–5mg microdose THC capsule — precise, same effect every time',
+        '4:1 THC:CBD low-dose tincture — functional and calm',
+        'Sublingual sativa tincture — fast onset and easy to control',
+      ],
+      any:      [
+        'Sativa flower or pre-roll — the most reliable option for focus',
+        'Sativa vape cartridge — fast and easy to dial in',
+        '2.5mg microdose gummy — for daytime use where clarity matters',
+      ],
+    },
+    terpenes: ['Limonene','Pinene','Terpinolene'],
+    tip: 'Ask for something high in limonene or pinene — the terpenes associated with clarity and elevated mood. Tell them you want "daytime" and nothing sedating. They\'ll know.',
+  },
+  social: {
+    label: 'The Social Spark',
+    category: 'Uplifting sativa or hybrid — present, warm, good energy',
+    strains: ['Pineapple Express','Strawberry Cough','Super Lemon Haze','Blue Dream','Cherry Pie'],
+    productsByFormat: {
+      flower:   [
+        'Uplifting sativa pre-roll — Strawberry Cough or Pineapple Express',
+        'Sativa or bright hybrid flower — something described as "happy" or "giggly"',
+        'Pre-roll pack — easy to share',
+      ],
+      vape:     [
+        'Sativa vape cartridge — you control the dose in real time',
+        'Uplifting live resin sativa cart — brighter and more expressive',
+        'Disposable sativa vape — discreet and easy to put away',
+      ],
+      edible:   [
+        '2.5–5mg sativa gummy — gives you a ceiling, nearly impossible to overdo',
+        'Low-dose sativa or hybrid edible — start at 5mg and see where you land',
+        '"Happy" or "social" formula if your dispensary carries one',
+      ],
+      tincture: [
+        '2.5mg microdose capsule — functional and clean, no ceiling anxiety',
+        'Low-dose sativa tincture — sublingual hits faster than edibles',
+        '4:1 THC:CBD tincture — social without being sloppy',
+      ],
+      any:      [
+        '2.5–5mg sativa gummy — ceiling effect means nothing gets out of hand',
+        'Sativa vape cart — titrate in real time, easy to stop',
+        'Sativa or hybrid pre-roll — classic, shareable, easy',
+      ],
+    },
+    terpenes: ['Limonene','Terpinolene','Pinene'],
+    tip: 'Ask for uplifting and not sedating — a sativa or a bright hybrid. Stay away from anything heavy. A low-dose edible gives you a ceiling. A vape lets you go slowly. Either works.',
+  },
+  healer: {
+    label: 'The Healer',
+    category: 'CBD-forward — therapeutic relief without losing your day',
+    strains: ['ACDC','Harlequin','Cannatonic','Ringo\'s Gift','Charlotte\'s Web'],
+    productsByFormat: {
+      flower:   [
+        'High-CBD flower — ACDC, Harlequin, or Cannatonic if they carry it',
+        '1:1 CBD:THC pre-roll — mild effect, real therapeutic value',
+        'CBD-dominant flower — ask for the highest CBD:THC ratio they have',
+      ],
+      vape:     [
+        'High-CBD or 1:1 vape cartridge — fast-acting, targeted relief',
+        'CBD-dominant vape (ACDC or Harlequin oil) — minimal psychoactive effect',
+        '1:1 live resin cart — balanced and therapeutic',
+      ],
+      edible:   [
+        '1:1 CBD:THC gummy — systemic, long-lasting, good for body tension',
+        'High-CBD gummy — 20:1 ratio if they carry it, zero high',
+        '"Rest" or "relief" formula edible — usually CBD-forward',
+      ],
+      tincture: [
+        'CBD topical — apply it directly to wherever it hurts, zero high',
+        '1:1 sublingual tincture — faster onset than edibles, easy to dose',
+        'High-CBD tincture (20:1 or higher) — therapeutic without intoxication',
+      ],
+      any:      [
+        '1:1 CBD:THC gummy — the most accessible therapeutic option, widely available',
+        'High-CBD vape cart — fast relief when you need it',
+        'CBD topical if it\'s localized — goes right to the source with no high',
+      ],
+    },
+    terpenes: ['Caryophyllene','Myrcene','Linalool'],
+    tip: 'Ask for something high in caryophyllene — it\'s the only terpene that binds directly to pain and inflammation receptors, with zero psychoactive effect on its own. Your budtender will take it seriously.',
+  },
+  explorer: {
+    label: 'The Explorer',
+    category: 'Gentle intro — low-dose or CBD-forward',
+    strains: ['Harlequin','ACDC','Blue Dream (low dose)','Pennywise'],
+    productsByFormat: {
+      flower:   [
+        'CBD-rich pre-roll — very low THC, nothing overwhelming',
+        '1:1 pre-roll — a gentle, mild introduction to flower',
+        'CBD-dominant flower — ask for the highest CBD and lowest THC they have',
+      ],
+      vape:     [
+        'CBD-dominant vape — calming, with only trace THC',
+        '1:1 cart — take one small puff, wait 10 full minutes before another',
+        'CBD disposable vape — easy to control, safe starting point',
+      ],
+      edible:   [
+        '2.5mg THC gummy — the universal starting point at every dispensary',
+        'CBD gummy (zero THC) — if you want absolutely no psychoactive effect',
+        '1:1 low-dose gummy (5mg total) — the mildest introduction with some THC',
+      ],
+      tincture: [
+        'CBD tincture — zero THC, easy to measure, easy to adjust',
+        '2.5mg microdose capsule — precise, forgiving, beginner-proof',
+        '1:1 low-dose tincture — start at half a dropper and wait an hour',
+      ],
+      any:      [
+        '2.5mg THC gummy — the safest, most controlled starting point full stop',
+        'CBD pre-roll or CBD vape — if you\'re not ready for THC yet',
+        'Tell your budtender it\'s your first time — they\'re genuinely good at this',
+      ],
+    },
+    terpenes: ['Linalool','Myrcene'],
+    tip: 'Tell your budtender this is new for you. They\'ve heard it a thousand times and they\'re good at this. Start at 2.5mg. Wait the full two hours before taking more — the delay catches almost everyone the first time.',
+  },
+  microdose: {
+    label: 'The Micro-Doser',
+    category: 'Sub-perceptual THC — the effect without the high',
+    strains: ['ACDC','Harlequin','Any strain — at 2.5mg dose'],
+    productsByFormat: {
+      flower:   [
+        'High-CBD flower — stay functional and clear-headed all day',
+        'CBD pre-roll — calming without any real intoxication',
+        'Low-THC hybrid flower — one or two hits and put it down',
+      ],
+      vape:     [
+        'One small puff from a sativa or hybrid cart — then wait 15 minutes',
+        'CBD-forward vape with trace THC — steady and functional',
+        'Low-THC disposable — easy to moderate, easy to stop',
+      ],
+      edible:   [
+        '2.5mg microdose THC gummy — the gold standard for precision dosing',
+        'Microdose capsule (2.5mg) — same effect, every single time',
+        'CBD gummy if you want the therapeutic benefit with zero high',
+      ],
+      tincture: [
+        '1:1 tincture — start at half a dropper, add slowly',
+        'CBD tincture for zero psychoactive effect with full therapeutic value',
+        'Low-dose THC sublingual — measure carefully and give it 30 minutes',
+      ],
+      any:      [
+        '2.5mg microdose gummy — precise, gentle, beginner-proof',
+        'CBD-dominant vape — one puff at a time, total control',
+        'Say "microdose" to your budtender — they\'ll know exactly where to go',
+      ],
+    },
+    terpenes: ['Varies by goal'],
+    tip: 'Say "microdose" to your budtender. That one word tells them everything. Most dispensaries carry a dedicated low-dose line — they\'ll walk you right to it.',
+  },
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let qIdx     = 0;
+let answers  = {};
+let sid      = genUUID();
+
+// ── ARCHETYPE LOGIC ───────────────────────────────────────────────────────────
+function archetype(a) {
+  const { goal, experience, intensity, priority } = a;
+
+  // Sleep — always sleeper regardless of everything else
+  if (goal === 'sleep') return 'sleeper';
+
+  // Relief — healer, unless they want classic THC (give them relief-focused THC recs)
+  if (goal === 'relief') return 'healer';
+
+  // Focus
+  if (goal === 'focus') {
+    if (experience === 'new' || intensity === 'light') return 'microdose';
+    return 'sharpener';
+  }
+
+  // Social
+  if (goal === 'social') {
+    if (experience === 'new') return 'explorer';
+    return 'social';
+  }
+
+  // CBD priority (non-sleep, non-relief) — therapeutic approach
+  if (priority === 'cbd') return 'healer';
+
+  // New users → always start gentle
+  if (experience === 'new') return 'explorer';
+
+  // Relax goal
+  if (goal === 'relax') {
+    if (intensity === 'light') return 'microdose';
+    if (priority === 'balanced') return 'unwinder';
+    return 'unwinder';
+  }
+
+  // Beginner/unsure goal
+  if (goal === 'beginner') {
+    if (intensity === 'light')  return 'microdose';
+    if (intensity === 'strong') return 'unwinder';
+    return 'explorer';
+  }
+
+  // Catch-all
+  if (intensity === 'light') return 'microdose';
+  return 'unwinder';
+}
+
+// ── FORMAT-AWARE PRODUCT SELECTION ───────────────────────────────────────────
+// Pull the product list for the user's exact format preference
+function sortedProducts(archKey, formatPref) {
+  const arch = ARCHETYPES[archKey];
+  const fmt  = (formatPref && arch.productsByFormat[formatPref]) ? formatPref : 'any';
+  return arch.productsByFormat[fmt];
+}
+
+// ── QUIZ FLOW ─────────────────────────────────────────────────────────────────
+function startQuiz() {
+  qIdx = 0; answers = {}; sid = genUUID();
+  show('sQuestion'); renderQ(); setProgress(0);
+}
+
+function renderQ() {
+  const q = QS[qIdx];
+  const letters = 'ABCDEF';
+  document.getElementById('qMeta').textContent = `Question ${qIdx + 1} of ${QS.length}`;
+  document.getElementById('qText').textContent = q.text;
+
+  document.getElementById('qAnswers').innerHTML = q.opts.map((o, i) => `
+    <button class="answer${answers[q.key]===o.v?' sel':''}" onclick="pick('${o.v}',this)">
+      <div class="a-letter">${letters[i]}</div>
+      <div class="a-text">
+        <div>${o.l}</div>
+        ${o.s?`<div class="a-sub">${o.s}</div>`:''}
+      </div>
+    </button>`).join('');
+
+  const btn = document.getElementById('btnNext');
+  btn.classList.toggle('show', !!answers[q.key]);
+}
+
+function pick(val, btn) {
+  document.querySelectorAll('.answer').forEach(b => {
+    b.classList.remove('sel');
+    b.querySelector('.a-letter').style.background = '';
+    b.querySelector('.a-letter').style.color = '';
+  });
+  btn.classList.add('sel');
+  answers[QS[qIdx].key] = val;
+  document.getElementById('btnNext').classList.add('show');
+}
+
+function nextQ() {
+  if (qIdx < QS.length - 1) {
+    qIdx++;
+    setProgress((qIdx / QS.length) * 100);
+    renderQ();
+  } else {
+    buildResults();
+  }
+}
+
+function setProgress(pct) {
+  document.getElementById('prog').style.width = pct + '%';
+}
+
+// ── RESULTS ───────────────────────────────────────────────────────────────────
+function buildResults() {
+  show('sProcessing');
+  setProgress(100);
+
+  const key      = archetype(answers);
+  const arch     = ARCHETYPES[key];
+  const products = sortedProducts(key, answers.format);
+
+  // Log all fields to Supabase — every answer captured
+  sbInsert('demand_events', {
+    session_id:      sid,
+    organization_id: CANNASCOPE_ORG_ID,
+    source:          window.location.hostname,
+    event_type:      'quiz_complete',
+    goal:            answers.goal,
+    experience:      JSON.stringify({
+      goal:       answers.goal,
+      experience: answers.experience,
+      format:     answers.format,
+      intensity:  answers.intensity,
+      priority:   answers.priority,
+      budget:     answers.budget,
+      archetype:  key,
+    }),
+    recommendations: arch.strains,
+    product_id:      null,
+    product_rank:    null,
+  });
+
+  setTimeout(() => {
+    document.getElementById('cArchetype').textContent = arch.label;
+    document.getElementById('cCategory').textContent  = arch.category;
+    document.getElementById('cTip').textContent       = arch.tip;
+
+    document.getElementById('cStrains').innerHTML =
+      arch.strains.map(s => `<div class="tag">${s}</div>`).join('');
+
+    // Use format-sorted products
+    document.getElementById('cProducts').innerHTML =
+      products.map(p => `<div class="product-item">${p}</div>`).join('');
+
+    document.getElementById('cTerpenes').innerHTML =
+      arch.terpenes.map(t => `<div class="tag">${t}</div>`).join('');
+
+    show('sResults');
+  }, 2400);
+}
+
+// ── EMAIL ─────────────────────────────────────────────────────────────────────
+async function sendEmail() {
+  const inp = document.getElementById('emailIn');
+  const email = inp.value.trim();
+  if (!email || !email.includes('@')) {
+    inp.classList.add('err');
+    setTimeout(() => inp.classList.remove('err'), 1400);
+    return;
+  }
+
+  const btn = document.getElementById('btnEmail');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+
+  const key = archetype(answers);
+
+  // Send the actual email with their recommendation
+  try {
+    const r = await fetch('/api/send-quiz-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, archetype: key, answers }),
+    });
+    if (!r.ok) console.error('[Cannascope] Email send failed:', await r.text());
+  } catch(e) {
+    console.error('[Cannascope] Email send error:', e);
+  }
+
+  // Also log to Supabase
+  sbInsert('demand_events', {
+    session_id:      sid,
+    organization_id: CANNASCOPE_ORG_ID,
+    source:          window.location.hostname,
+    event_type:      'email_capture',
+    goal:            answers.goal,
+    experience:      JSON.stringify({
+      goal:       answers.goal,
+      experience: answers.experience,
+      format:     answers.format,
+      intensity:  answers.intensity,
+      priority:   answers.priority,
+      budget:     answers.budget,
+      archetype:  key,
+      email,
+    }),
+    recommendations: ARCHETYPES[key].strains,
+    product_id:      null,
+    product_rank:    null,
+  });
+
+  btn.style.display = 'none';
+  document.getElementById('emailSent').style.display = 'block';
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function retake() {
+  document.getElementById('emailSent').style.display = 'none';
+  document.getElementById('btnEmail').style.display = '';
+  document.getElementById('btnEmail').textContent = 'Send it';
+  document.getElementById('btnEmail').disabled = false;
+  document.getElementById('emailIn').value = '';
+  startQuiz();
+}
+</script>
+</body>
+</html>
