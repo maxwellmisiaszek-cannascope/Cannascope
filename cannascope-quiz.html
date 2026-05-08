@@ -4,19 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>What Should I Get at the Dispensary? | Cannabis Quiz</title>
-<meta name="description" content="Not sure what to buy at the dispensary? Answer 6 quick questions and get a personalized cannabis recommendation — strain, format, and effect — backed by terpene science. Free and takes 90 seconds.">
+<meta name="description" content="Not sure what to buy at the dispensary? Answer 6 quick questions and get a personalized cannabis recommendation — strain, format, terpenes, and what to ask your budtender. Free, 90 seconds, science-backed.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://whatshouldigetatthedispensary.com/">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://whatshouldigetatthedispensary.com/">
 <meta property="og:title" content="What Should I Get at the Dispensary?">
-<meta property="og:description" content="Answer 6 questions. Get a personalized cannabis recommendation you can bring straight to your budtender. Free, 90 seconds, science-backed.">
+<meta property="og:description" content="Answer 6 questions. Get a personalized Cannascope card you can bring straight to your budtender. Free, 90 seconds, science-backed.">
 <meta property="og:site_name" content="Cannascope">
+<meta property="og:image" content="https://whatshouldigetatthedispensary.com/og-image.png">
 <!-- Twitter Card -->
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="What Should I Get at the Dispensary?">
-<meta name="twitter:description" content="Answer 6 questions. Get a personalized cannabis recommendation you can bring straight to your budtender. Free, 90 seconds, science-backed.">
+<meta name="twitter:description" content="Answer 6 questions. Get a personalized Cannascope card you can bring straight to your budtender. Free, 90 seconds, science-backed.">
+<meta name="twitter:image" content="https://whatshouldigetatthedispensary.com/og-image.png">
 <!-- FAQ Structured Data -->
 <script type="application/ld+json">
 {
@@ -60,7 +62,7 @@
       "name": "Is this cannabis recommendation quiz free?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes — completely free. Takes about 90 seconds. No account required. You'll get a personalized archetype, recommended strains, preferred formats, and talking points you can bring to any budtender."
+        "text": "Yes — completely free. Takes about 90 seconds. No account required. You'll get a personalized Cannascope card with recommended strains, terpenes, and talking points to bring to any budtender."
       }
     }
   ]
@@ -68,26 +70,28 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --green:       #2D6A4F;
-  --green-mid:   #40916C;
-  --green-light: #52B788;
-  --green-pale:  #D8EFE3;
-  --green-bg:    #F0F7F3;
-  --green-border:#C2DDD1;
-  --bg:          #FAFAF8;
-  --white:       #FFFFFF;
-  --surface:     #F5F5F2;
-  --text:        #18191A;
-  --text-2:      #4A4D46;
-  --text-3:      #8A8D84;
-  --border:      #E4EAE0;
-  --border-2:    #D0D8CC;
-  --red:         #C0392B;
+  --green:        #2D6A4F;
+  --green-deep:   #1F4E38;
+  --green-mid:    #40916C;
+  --green-light:  #52B788;
+  --green-pale:   #D8EFE3;
+  --green-bg:     #F0F7F3;
+  --green-border: #C2DDD1;
+  --bg:           #FAFAF8;
+  --white:        #FFFFFF;
+  --surface:      #F5F5F2;
+  --text:         #18191A;
+  --text-2:       #4A4D46;
+  --text-3:       #8A8D84;
+  --border:       #E4EAE0;
+  --border-2:     #D0D8CC;
+  --red:          #C0392B;
+  --shadow-card:  0 1px 2px rgba(45, 106, 79, 0.04), 0 8px 32px rgba(45, 106, 79, 0.10);
 }
 
 html, body {
@@ -97,7 +101,10 @@ html, body {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
+
+body { overflow-x: hidden; }
 
 .app {
   min-height: 100vh;
@@ -125,6 +132,7 @@ html, body {
   padding: 0 24px;
   flex-direction: column;
   animation: fadeUp 0.35s ease both;
+  position: relative;
 }
 .screen.active { display: flex; }
 
@@ -146,6 +154,12 @@ html, body {
   font-size: 11px; font-weight: 600;
   letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--green-mid); margin-bottom: 32px;
+  display: inline-flex; align-items: center; gap: 8px;
+  align-self: center;
+}
+.landing-eyebrow::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green-light);
 }
 
 .landing-h1 {
@@ -174,7 +188,7 @@ html, body {
   transition: background 0.18s, transform 0.12s;
   box-shadow: 0 4px 20px rgba(45, 106, 79, 0.22);
 }
-.btn-start:hover  { background: #255C43; }
+.btn-start:hover  { background: var(--green-deep); }
 .btn-start:active { transform: scale(0.985); }
 
 .trust-row {
@@ -195,6 +209,18 @@ html, body {
   padding-top: 72px; padding-bottom: 40px;
   justify-content: space-between;
 }
+
+.q-back {
+  position: absolute; top: 22px; left: 18px;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none;
+  cursor: pointer; color: var(--text-3);
+  transition: color 0.15s, background 0.15s;
+  border-radius: 50%;
+}
+.q-back:hover { color: var(--green); background: var(--green-bg); }
+.q-back svg { width: 18px; height: 18px; }
 
 .q-top { flex: 1; }
 
@@ -222,11 +248,12 @@ html, body {
   font-size: 15px; font-weight: 400; color: var(--text);
   cursor: pointer; text-align: left;
   display: flex; align-items: flex-start; gap: 13px;
-  transition: border-color 0.14s, background 0.14s;
+  transition: border-color 0.14s, background 0.14s, transform 0.08s;
   line-height: 1.35;
 }
-.answer:hover { border-color: var(--green-mid); background: var(--green-bg); }
-.answer.sel   { border-color: var(--green); background: var(--green-bg); }
+.answer:hover  { border-color: var(--green-mid); background: var(--green-bg); }
+.answer:active { transform: scale(0.995); }
+.answer.sel    { border-color: var(--green); background: var(--green-bg); }
 .answer.sel .a-letter {
   background: var(--green); color: white; border-color: var(--green);
 }
@@ -241,7 +268,7 @@ html, body {
 }
 
 .a-text { flex: 1; }
-.a-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; font-weight: 300; }
+.a-sub  { font-size: 12px; color: var(--text-3); margin-top: 2px; font-weight: 300; }
 
 .q-bottom { padding-top: 20px; }
 
@@ -255,8 +282,8 @@ html, body {
   opacity: 0; pointer-events: none;
   transform: translateY(6px);
 }
-.btn-next.show { opacity: 1; pointer-events: all; transform: translateY(0); }
-.btn-next:hover { background: #255C43; }
+.btn-next.show  { opacity: 1; pointer-events: all; transform: translateY(0); }
+.btn-next:hover { background: var(--green-deep); }
 
 /* ── PROCESSING ───────────────────────────────────────────────────── */
 .processing {
@@ -282,7 +309,7 @@ html, body {
 
 /* ── RESULTS ──────────────────────────────────────────────────────── */
 .results {
-  padding-top: 56px; padding-bottom: 64px;
+  padding-top: 56px; padding-bottom: 80px;
   justify-content: flex-start; gap: 0;
 }
 
@@ -302,41 +329,63 @@ html, body {
 /* ── THE CARD ─────────────────────────────────────────────────────── */
 .card {
   background: var(--white);
-  border-radius: 20px;
+  border-radius: 22px;
   border: 1px solid var(--border);
-  box-shadow: 0 2px 24px rgba(45, 106, 79, 0.10), 0 0 0 1px rgba(45, 106, 79, 0.04);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
   margin-bottom: 24px;
+  position: relative;
 }
 
 .card-head {
-  background: var(--green);
-  padding: 22px 24px;
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-deep) 100%);
+  padding: 22px 24px 24px;
   display: flex; align-items: flex-start;
   justify-content: space-between; gap: 12px;
+  position: relative; overflow: hidden;
 }
-.card-head-left {}
+.card-head::after {
+  content: ''; position: absolute;
+  right: -40px; top: -40px; width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 70%);
+  pointer-events: none;
+}
+
+.card-mark {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.22);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
+}
+.card-mark svg { width: 16px; height: 16px; color: white; }
+
+.card-head-text { flex: 1; min-width: 0; }
 .card-eyebrow {
-  font-size: 10px; font-weight: 600; letter-spacing: 0.16em;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.18em;
   text-transform: uppercase; color: rgba(255,255,255,0.55);
   margin-bottom: 5px;
 }
 .card-name {
   font-family: 'Fraunces', serif;
-  font-size: 26px; font-weight: 300;
+  font-size: 24px; font-weight: 300;
   color: white; letter-spacing: -0.015em;
+  line-height: 1.1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .card-archetype {
   font-size: 10px; font-weight: 600;
-  color: rgba(255,255,255,0.65);
+  color: rgba(255,255,255,0.78);
   background: rgba(255,255,255,0.14);
-  padding: 5px 12px; border-radius: 100px;
-  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 5px 11px; border-radius: 100px;
+  letter-spacing: 0.06em; text-transform: uppercase;
   white-space: nowrap; flex-shrink: 0; margin-top: 4px;
   border: 1px solid rgba(255,255,255,0.18);
 }
 
-.card-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.card-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 18px; }
 
 .card-row {}
 .card-row-label {
@@ -345,16 +394,16 @@ html, body {
 }
 .card-row-val { font-size: 14px; color: var(--text-2); line-height: 1.5; }
 
-.tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag {
   font-size: 12px; font-weight: 500;
   color: var(--green); background: var(--green-pale);
-  padding: 5px 12px; border-radius: 100px;
+  padding: 5px 11px; border-radius: 100px;
   border: 1px solid var(--green-border);
   letter-spacing: -0.01em;
 }
 
-.product-list { display: flex; flex-direction: column; gap: 7px; }
+.product-list { display: flex; flex-direction: column; gap: 6px; }
 .product-item {
   font-size: 13px; color: var(--text-2); line-height: 1.45;
   padding-left: 12px;
@@ -364,84 +413,202 @@ html, body {
 .card-tip {
   background: var(--green-bg);
   border: 1px solid var(--green-border);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 13px 15px;
   font-size: 13px; color: var(--text-2);
-  line-height: 1.65; font-style: italic;
+  line-height: 1.6; font-style: italic;
 }
 
 .card-foot {
   border-top: 1px solid var(--border);
   padding: 14px 24px;
   display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface);
+  font-size: 11px;
 }
-.card-foot-brand {
-  font-size: 12px; font-weight: 700;
-  letter-spacing: 0.06em; text-transform: uppercase;
+.card-foot-id {
+  font-family: 'DM Sans', monospace;
+  font-weight: 700; letter-spacing: 0.06em;
   color: var(--green);
 }
-.card-foot-label { font-size: 11px; color: var(--text-3); }
+.card-foot-label { color: var(--text-3); font-weight: 500; }
 
-/* ── EMAIL BLOCK ──────────────────────────────────────────────────── */
-.email-block {
+/* ── ACTION BAR ───────────────────────────────────────────────────── */
+.actions {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin-bottom: 20px;
+}
+.action-btn {
   background: var(--white);
   border: 1.5px solid var(--border);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 12px 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+  transition: all 0.15s;
+  min-height: 76px;
+}
+.action-btn:hover { border-color: var(--green-mid); background: var(--green-bg); color: var(--green); }
+.action-btn:active { transform: scale(0.97); }
+.action-btn svg { width: 20px; height: 20px; }
+.action-btn.done { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.action-btn:disabled { opacity: 0.7; cursor: wait; }
+
+/* ── CAPTURE FORM ─────────────────────────────────────────────────── */
+.capture {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  padding: 22px;
   margin-bottom: 16px;
 }
-.email-h {
+.capture-h {
   font-family: 'Fraunces', serif;
   font-size: 20px; font-weight: 300;
-  color: var(--text); margin-bottom: 6px;
+  color: var(--text); margin-bottom: 5px;
   letter-spacing: -0.01em;
 }
-.email-sub { font-size: 13px; color: var(--text-3); margin-bottom: 16px; line-height: 1.55; }
+.capture-sub { font-size: 13px; color: var(--text-3); margin-bottom: 18px; line-height: 1.55; }
 
-.email-row { display: flex; gap: 8px; }
-.email-input {
-  flex: 1; height: 48px;
-  border: 1.5px solid var(--border); border-radius: 10px;
+.field { margin-bottom: 11px; }
+.field-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 9px;
+  margin-bottom: 11px;
+}
+
+.input {
+  width: 100%; height: 46px;
+  border: 1.5px solid var(--border); border-radius: 11px;
   padding: 0 14px;
   font-family: 'DM Sans', sans-serif;
   font-size: 15px; color: var(--text); background: var(--bg);
-  outline: none; transition: border-color 0.18s;
+  outline: none; transition: border-color 0.18s, background 0.18s;
   min-width: 0;
 }
-.email-input::placeholder { color: var(--text-3); }
-.email-input:focus { border-color: var(--green); }
-.email-input.err { border-color: var(--red); }
+.input::placeholder { color: var(--text-3); font-weight: 300; }
+.input:focus { border-color: var(--green); background: var(--white); }
+.input.err   { border-color: var(--red); }
 
-.btn-email {
-  height: 48px; padding: 0 18px;
-  background: var(--green); color: white;
-  border: none; border-radius: 10px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px; font-weight: 600;
-  cursor: pointer; white-space: nowrap;
-  transition: background 0.18s;
-  flex-shrink: 0;
+.optin {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 14px 0 6px;
+  padding: 11px 13px;
+  background: var(--green-bg);
+  border-radius: 11px;
+  cursor: pointer;
 }
-.btn-email:hover { background: #255C43; }
-.btn-email:disabled { opacity: 0.6; cursor: not-allowed; }
+.optin input[type="checkbox"] {
+  appearance: none;
+  width: 18px; height: 18px; flex-shrink: 0;
+  border: 1.5px solid var(--green-mid);
+  border-radius: 5px;
+  background: var(--white);
+  cursor: pointer;
+  margin-top: 1px;
+  position: relative;
+  transition: all 0.15s;
+}
+.optin input[type="checkbox"]:checked {
+  background: var(--green); border-color: var(--green);
+}
+.optin input[type="checkbox"]:checked::after {
+  content: ''; position: absolute;
+  left: 5px; top: 1px;
+  width: 4px; height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.optin-text {
+  font-size: 12px; line-height: 1.5; color: var(--text-2);
+  font-weight: 400;
+}
 
-.email-sent {
-  display: none; text-align: center;
-  color: var(--green); font-size: 14px;
-  font-weight: 500; margin-top: 10px;
+.tcpa {
+  font-size: 11px; color: var(--text-3);
+  line-height: 1.5;
+  margin-top: 8px;
 }
+.tcpa a { color: var(--green-mid); text-decoration: none; }
+.tcpa a:hover { text-decoration: underline; }
+
+.capture-status {
+  font-size: 13px; font-weight: 500;
+  margin-top: 12px;
+  padding: 10px 12px; border-radius: 10px;
+  display: none;
+}
+.capture-status.show { display: block; }
+.capture-status.ok  { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+.capture-status.err { background: #FCEEEC; color: var(--red); border: 1px solid #F1C8C2; }
 
 .retake {
   text-align: center; font-size: 13px;
   color: var(--text-3); cursor: pointer;
-  padding: 10px; transition: color 0.15s;
+  padding: 12px; transition: color 0.15s;
+  margin-top: 4px;
 }
 .retake:hover { color: var(--green); }
 
-/* ── DIVIDER ──────────────────────────────────────────────────────── */
-.divider {
-  height: 1px; background: var(--border);
-  margin: 20px 0;
+/* ── SEO BLOCK ────────────────────────────────────────────────────── */
+.seo-block {
+  width: 100%; max-width: 480px; margin: 0 auto;
+  padding: 60px 24px 80px;
+  color: var(--text-2);
+}
+.seo-h {
+  font-family: 'Fraunces', serif;
+  font-size: 22px; font-weight: 300;
+  color: var(--text); letter-spacing: -0.02em;
+  margin-bottom: 24px; line-height: 1.3;
+}
+.seo-p {
+  font-size: 14px; line-height: 1.7;
+  margin-bottom: 18px;
+}
+.faq-list {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border); border-radius: 14px;
+  overflow: hidden; margin-top: 8px;
+}
+.faq-list details {
+  padding: 16px 18px; border-bottom: 1px solid var(--border);
+  background: var(--white);
+}
+.faq-list details:last-child { border-bottom: none; }
+.faq-list summary {
+  font-size: 14px; font-weight: 500;
+  color: var(--text); cursor: pointer; list-style: none;
+}
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-list p {
+  font-size: 13px; line-height: 1.65;
+  color: var(--text-2); margin-top: 10px;
+}
+
+/* AdSense slot — only renders if Google ad script is loaded */
+.ad-slot {
+  margin: 28px 0; min-height: 90px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── HIDDEN UTILITIES ─────────────────────────────────────────────── */
+.hidden { display: none !important; }
+
+/* ── RESPONSIVE TWEAKS ────────────────────────────────────────────── */
+@media (max-width: 380px) {
+  .screen { padding: 0 18px; }
+  .actions { gap: 6px; }
+  .action-btn { font-size: 11px; padding: 10px 4px; min-height: 70px; }
+  .action-btn svg { width: 18px; height: 18px; }
+  .card-body { padding: 20px 20px; gap: 16px; }
+  .card-head { padding: 20px 20px 22px; }
+  .card-foot { padding: 12px 20px; }
+  .field-row { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -455,8 +622,8 @@ html, body {
 <div class="screen landing active" id="sLanding">
   <div class="landing-eyebrow">Powered by Cannascope</div>
   <h1 class="landing-h1">What should you get<br>at the <em>dispensary?</em></h1>
-  <p class="landing-sub">Answer 6 questions. Get a personalized recommendation backed by terpene science — yours to bring straight to your budtender.</p>
-  <button class="btn-start" onclick="startQuiz()">Get my recommendation</button>
+  <p class="landing-sub">Answer 6 questions. Get a personalized Cannascope card backed by terpene science — yours to bring straight to your budtender.</p>
+  <button class="btn-start" onclick="startQuiz()">Get my Cannascope</button>
   <div class="trust-row">
     <div class="trust-item"><div class="trust-pip"></div>90 seconds</div>
     <div class="trust-item"><div class="trust-pip"></div>Science-backed</div>
@@ -464,34 +631,39 @@ html, body {
   </div>
 </div>
 
-<!-- SEO content — crawlable by Google, visually below the fold -->
-<section style="width:100%;max-width:480px;margin:0 auto;padding:60px 24px 80px;color:var(--text-2);">
-  <h2 style="font-family:'Fraunces',serif;font-size:22px;font-weight:300;color:var(--text);letter-spacing:-0.02em;margin-bottom:24px;line-height:1.3">Not sure what to get at the dispensary?</h2>
-  <p style="font-size:14px;line-height:1.7;margin-bottom:20px">Walking into a dispensary without a plan can be overwhelming — hundreds of products, different strains, formats, and potencies. This free cannabis quiz helps you figure out exactly what to ask for, in about 90 seconds.</p>
-  <p style="font-size:14px;line-height:1.7;margin-bottom:32px">Answer 6 questions about your goal (sleep, relaxation, focus, pain relief, creativity, or socializing), your experience level, and preferred format. You'll get a personalized recommendation — including specific strains, terpenes to look for, and talking points to bring to your budtender.</p>
+<!-- SEO content — crawlable by Google, visually below the fold on landing -->
+<section class="seo-block">
+  <h2 class="seo-h">Not sure what to get at the dispensary?</h2>
+  <p class="seo-p">Walking into a dispensary without a plan can be overwhelming — hundreds of products, different strains, formats, and potencies. This free cannabis quiz helps you figure out exactly what to ask for, in about 90 seconds.</p>
+  <p class="seo-p">Answer 6 questions about your goal (sleep, relaxation, focus, pain relief, creativity, or socializing), your experience level, and preferred format. You'll get a personalized Cannascope card — including specific strains, terpenes to look for, and talking points to bring to your budtender.</p>
 
-  <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:14px;overflow:hidden">
-    <details style="padding:16px 18px;border-bottom:1px solid var(--border);background:var(--white)">
-      <summary style="font-size:14px;font-weight:500;color:var(--text);cursor:pointer;list-style:none">What should I buy at the dispensary if I want to sleep better?</summary>
-      <p style="font-size:13px;line-height:1.65;color:var(--text-2);margin-top:10px">Look for strains high in myrcene and linalool — these terpenes are associated with sedation and relaxation. Indica-dominant strains like Granddaddy Purple, Northern Lights, or Wedding Cake are popular for sleep. Edibles taken 1–2 hours before bed give the longest-lasting effect. Start with 5mg THC and see how you feel.</p>
+  <div class="ad-slot" id="adSlot1"></div>
+
+  <div class="faq-list">
+    <details>
+      <summary>What should I buy at the dispensary if I want to sleep better?</summary>
+      <p>Look for strains high in myrcene and linalool — these terpenes are associated with sedation and relaxation. Indica-dominant strains like Granddaddy Purple, Northern Lights, or Wedding Cake are popular for sleep. Edibles taken 1–2 hours before bed give the longest-lasting effect. Start with 5mg THC and see how you feel.</p>
     </details>
-    <details style="padding:16px 18px;border-bottom:1px solid var(--border);background:var(--white)">
-      <summary style="font-size:14px;font-weight:500;color:var(--text);cursor:pointer;list-style:none">I'm a beginner — what cannabis product should I get?</summary>
-      <p style="font-size:13px;line-height:1.65;color:var(--text-2);margin-top:10px">Start with a tincture or a low-dose edible (2.5–5mg THC). These are forgiving — you can dose precisely and the effects come on slowly. Avoid high-THC flower or concentrates your first time. A 1:1 THC:CBD ratio is also a great starting point since CBD tempers the intensity of THC.</p>
+    <details>
+      <summary>I'm a beginner — what cannabis product should I get?</summary>
+      <p>Start with a tincture or a low-dose edible (2.5–5mg THC). These are forgiving — you can dose precisely and the effects come on slowly. Avoid high-THC flower or concentrates your first time. A 1:1 THC:CBD ratio is also a great starting point since CBD tempers the intensity of THC.</p>
     </details>
-    <details style="padding:16px 18px;border-bottom:1px solid var(--border);background:var(--white)">
-      <summary style="font-size:14px;font-weight:500;color:var(--text);cursor:pointer;list-style:none">What's the difference between indica, sativa, and hybrid?</summary>
-      <p style="font-size:13px;line-height:1.65;color:var(--text-2);margin-top:10px">The indica/sativa distinction is more about marketing than science — what actually determines effects are terpenes and cannabinoid ratios. That said: indica-leaning strains tend to be more body-focused and calming, sativa-leaning strains tend to be more cerebral and energizing, and hybrids fall in between. Our quiz focuses on terpene profiles, not just labels.</p>
+    <details>
+      <summary>What's the difference between indica, sativa, and hybrid?</summary>
+      <p>The indica/sativa distinction is more about marketing than science — what actually determines effects are terpenes and cannabinoid ratios. That said: indica-leaning strains tend to be more body-focused and calming, sativa-leaning strains tend to be more cerebral and energizing, and hybrids fall in between. Our quiz focuses on terpene profiles, not just labels.</p>
     </details>
-    <details style="padding:16px 18px;background:var(--white)">
-      <summary style="font-size:14px;font-weight:500;color:var(--text);cursor:pointer;list-style:none">How is this recommendation made?</summary>
-      <p style="font-size:13px;line-height:1.65;color:var(--text-2);margin-top:10px">Your answers are matched against seven consumer archetypes — The Deep Sleeper, The Sharpener, The Social Spark, The Healer, The Unwinder, The Explorer, and The Micro-Doser. Each archetype has a curated set of strains, terpene profiles, and formats selected based on reported effects and cannabinoid science. The result is a recommendation you can hand directly to your budtender.</p>
+    <details>
+      <summary>How is this recommendation made?</summary>
+      <p>Your answers are matched against seven consumer archetypes — The Deep Sleeper, The Sharpener, The Social Spark, The Healer, The Unwinder, The Explorer, and The Micro-Doser. Each archetype has a curated set of strains, terpene profiles, and formats selected based on reported effects and cannabinoid science. The result is a Cannascope card you can hand directly to your budtender.</p>
     </details>
   </div>
 </section>
 
 <!-- ══ QUESTION ══════════════════════════════════════════════════════ -->
 <div class="screen q-screen" id="sQuestion">
+  <button class="q-back" id="qBack" onclick="prevQ()" aria-label="Previous question">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+  </button>
   <div class="q-top">
     <div class="q-meta" id="qMeta">Question 1 of 6</div>
     <div class="q-text" id="qText"></div>
@@ -518,9 +690,16 @@ html, body {
 
   <div class="card" id="theCard">
     <div class="card-head">
-      <div class="card-head-left">
-        <div class="card-eyebrow">Your Cannascope</div>
-        <div class="card-name">Cannascope</div>
+      <div class="card-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3 C9 3 6 6 6 12 C6 18 9 21 12 21 C15 21 18 18 18 12 C18 6 15 3 12 3 Z"/>
+          <path d="M12 8 L12 16"/>
+          <path d="M9 11 L12 13 L15 11"/>
+        </svg>
+      </div>
+      <div class="card-head-text">
+        <div class="card-eyebrow">Cannascope</div>
+        <div class="card-name" id="cName">Your Cannascope</div>
       </div>
       <div class="card-archetype" id="cArchetype"></div>
     </div>
@@ -544,19 +723,56 @@ html, body {
       <div class="card-tip" id="cTip"></div>
     </div>
     <div class="card-foot">
-      <div class="card-foot-brand">Cannascope</div>
+      <div class="card-foot-id" id="cId">CS-—</div>
       <div class="card-foot-label">Show this to your budtender</div>
     </div>
   </div>
 
-  <div class="email-block">
-    <div class="email-h">Send your Cannascope to your inbox</div>
-    <div class="email-sub">Pull it up at the dispensary. No spam, ever.</div>
-    <div class="email-row">
-      <input class="email-input" type="email" id="emailIn" placeholder="your@email.com">
-      <button class="btn-email" id="btnEmail" onclick="sendEmail()">Send it</button>
+  <!-- Action bar -->
+  <div class="actions">
+    <button class="action-btn" id="btnSaveImg" onclick="saveAsImage()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Save image</span>
+    </button>
+    <button class="action-btn" id="btnText" onclick="textCard()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      <span>Text it to me</span>
+    </button>
+    <button class="action-btn" id="btnEmail" onclick="emailCard()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <span>Email it</span>
+    </button>
+  </div>
+
+  <!-- Capture form -->
+  <div class="capture">
+    <div class="capture-h">Save your Cannascope</div>
+    <div class="capture-sub">Pull it up at the dispensary, share it with a friend, or text it to yourself. No spam, ever.</div>
+
+    <div class="field-row">
+      <input class="input" id="inName" placeholder="First name" maxlength="30" autocomplete="given-name">
+      <input class="input" id="inZip"  placeholder="ZIP code"   maxlength="5"  inputmode="numeric" autocomplete="postal-code">
     </div>
-    <div class="email-sent" id="emailSent">Sent. Check your inbox.</div>
+    <div class="field">
+      <input class="input" id="inEmail" type="email" placeholder="Email — for the card" autocomplete="email">
+    </div>
+    <div class="field">
+      <input class="input" id="inPhone" type="tel" placeholder="Phone — for text" inputmode="tel" autocomplete="tel">
+    </div>
+
+    <label class="optin">
+      <input type="checkbox" id="smsOptIn">
+      <span class="optin-text">
+        Yes, text me my Cannascope and let me know about good drops near me.
+        I agree to receive automated SMS from Cannascope. Msg &amp; data rates may apply. Reply STOP to unsubscribe, HELP for help.
+      </span>
+    </label>
+
+    <div class="tcpa">
+      By submitting, you agree to our <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> and <a href="/terms" target="_blank" rel="noopener">Terms</a>. Cannascope is for adults 21+.
+    </div>
+
+    <div class="capture-status" id="captureStatus"></div>
   </div>
 
   <div class="retake" onclick="retake()">Take it again for a different goal</div>
@@ -565,6 +781,13 @@ html, body {
 </div><!-- /app -->
 
 <script>
+// ══════════════════════════════════════════════════════════════════════════════
+//  Cannascope Quiz — whatshouldigetatthedispensary.com
+//  Engine logic preserved 1:1 from prior version.
+//  Polish layer adds: name, zip, phone, SMS opt-in, save-as-image, card ID,
+//  back button, and clean Supabase capture across all events.
+// ══════════════════════════════════════════════════════════════════════════════
+
 // ── UUID HELPER ───────────────────────────────────────────────────────────────
 function genUUID() {
   try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch(e) {}
@@ -574,12 +797,18 @@ function genUUID() {
   });
 }
 
+// Card ID — short, readable, looks "official" on the card
+function genCardId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I/O/0/1 confusion
+  const pick = (n) => Array.from({length:n}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return `CS-${pick(4)}-${pick(3)}`;
+}
+
 // ── SUPABASE (direct REST — no SDK needed) ────────────────────────────────────
 const SB_URL = 'https://nrcvpwyvxmplwvjrdoua.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY3Zwd3l2eG1wbHd2anJkb3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzg1MTQsImV4cCI6MjA4ODc1NDUxNH0.mWbihyevgsi8OF1iLHvhs8Wene-Gb7HNfEKxtDHwqls';
 
 // ── YOUR CANNASCOPE ORGANIZATION ID ───────────────────────────────────────────
-// Find this in Supabase → Table Editor → organizations → copy the id column value
 const CANNASCOPE_ORG_ID = 'c78449ac-deee-4ad3-83dd-6633ee187063';
 
 async function sbInsert(table, data) {
@@ -649,7 +878,7 @@ const QS = [
     ]},
 ];
 
-// ── ARCHETYPES ────────────────────────────────────────────────────────────────
+// ── ARCHETYPES (preserved 1:1 from prior version) ─────────────────────────────
 const ARCHETYPES = {
   sleeper: {
     label: 'The Deep Sleeper',
@@ -895,56 +1124,38 @@ const ARCHETYPES = {
 let qIdx     = 0;
 let answers  = {};
 let sid      = genUUID();
+let cardId   = '';
+let archKey  = '';
 
-// ── ARCHETYPE LOGIC ───────────────────────────────────────────────────────────
+// ── ARCHETYPE LOGIC (preserved 1:1) ──────────────────────────────────────────
 function archetype(a) {
   const { goal, experience, intensity, priority } = a;
-
-  // Sleep — always sleeper regardless of everything else
-  if (goal === 'sleep') return 'sleeper';
-
-  // Relief — healer, unless they want classic THC (give them relief-focused THC recs)
+  if (goal === 'sleep')  return 'sleeper';
   if (goal === 'relief') return 'healer';
-
-  // Focus
   if (goal === 'focus') {
     if (experience === 'new' || intensity === 'light') return 'microdose';
     return 'sharpener';
   }
-
-  // Social
   if (goal === 'social') {
     if (experience === 'new') return 'explorer';
     return 'social';
   }
-
-  // CBD priority (non-sleep, non-relief) — therapeutic approach
   if (priority === 'cbd') return 'healer';
-
-  // New users → always start gentle
   if (experience === 'new') return 'explorer';
-
-  // Relax goal
   if (goal === 'relax') {
     if (intensity === 'light') return 'microdose';
     if (priority === 'balanced') return 'unwinder';
     return 'unwinder';
   }
-
-  // Beginner/unsure goal
   if (goal === 'beginner') {
     if (intensity === 'light')  return 'microdose';
     if (intensity === 'strong') return 'unwinder';
     return 'explorer';
   }
-
-  // Catch-all
   if (intensity === 'light') return 'microdose';
   return 'unwinder';
 }
 
-// ── FORMAT-AWARE PRODUCT SELECTION ───────────────────────────────────────────
-// Pull the product list for the user's exact format preference
 function sortedProducts(archKey, formatPref) {
   const arch = ARCHETYPES[archKey];
   const fmt  = (formatPref && arch.productsByFormat[formatPref]) ? formatPref : 'any';
@@ -953,7 +1164,7 @@ function sortedProducts(archKey, formatPref) {
 
 // ── QUIZ FLOW ─────────────────────────────────────────────────────────────────
 function startQuiz() {
-  qIdx = 0; answers = {}; sid = genUUID();
+  qIdx = 0; answers = {}; sid = genUUID(); cardId = ''; archKey = '';
   show('sQuestion'); renderQ(); setProgress(0);
 }
 
@@ -974,14 +1185,13 @@ function renderQ() {
 
   const btn = document.getElementById('btnNext');
   btn.classList.toggle('show', !!answers[q.key]);
+
+  // Hide back button on first question
+  document.getElementById('qBack').style.visibility = qIdx === 0 ? 'hidden' : 'visible';
 }
 
 function pick(val, btn) {
-  document.querySelectorAll('.answer').forEach(b => {
-    b.classList.remove('sel');
-    b.querySelector('.a-letter').style.background = '';
-    b.querySelector('.a-letter').style.color = '';
-  });
+  document.querySelectorAll('.answer').forEach(b => b.classList.remove('sel'));
   btn.classList.add('sel');
   answers[QS[qIdx].key] = val;
   document.getElementById('btnNext').classList.add('show');
@@ -997,6 +1207,14 @@ function nextQ() {
   }
 }
 
+function prevQ() {
+  if (qIdx > 0) {
+    qIdx--;
+    setProgress((qIdx / QS.length) * 100);
+    renderQ();
+  }
+}
+
 function setProgress(pct) {
   document.getElementById('prog').style.width = pct + '%';
 }
@@ -1006,11 +1224,12 @@ function buildResults() {
   show('sProcessing');
   setProgress(100);
 
-  const key      = archetype(answers);
-  const arch     = ARCHETYPES[key];
-  const products = sortedProducts(key, answers.format);
+  archKey        = archetype(answers);
+  cardId         = genCardId();
+  const arch     = ARCHETYPES[archKey];
+  const products = sortedProducts(archKey, answers.format);
 
-  // Log all fields to Supabase — every answer captured
+  // Log quiz completion to Supabase
   sbInsert('demand_events', {
     session_id:      sid,
     organization_id: CANNASCOPE_ORG_ID,
@@ -1024,7 +1243,8 @@ function buildResults() {
       intensity:  answers.intensity,
       priority:   answers.priority,
       budget:     answers.budget,
-      archetype:  key,
+      archetype:  archKey,
+      card_id:    cardId,
     }),
     recommendations: arch.strains,
     product_id:      null,
@@ -1035,11 +1255,11 @@ function buildResults() {
     document.getElementById('cArchetype').textContent = arch.label;
     document.getElementById('cCategory').textContent  = arch.category;
     document.getElementById('cTip').textContent       = arch.tip;
+    document.getElementById('cId').textContent        = cardId;
 
     document.getElementById('cStrains').innerHTML =
       arch.strains.map(s => `<div class="tag">${s}</div>`).join('');
 
-    // Use format-sorted products
     document.getElementById('cProducts').innerHTML =
       products.map(p => `<div class="product-item">${p}</div>`).join('');
 
@@ -1050,57 +1270,236 @@ function buildResults() {
   }, 2400);
 }
 
-// ── EMAIL ─────────────────────────────────────────────────────────────────────
-async function sendEmail() {
-  const inp = document.getElementById('emailIn');
-  const email = inp.value.trim();
-  if (!email || !email.includes('@')) {
-    inp.classList.add('err');
-    setTimeout(() => inp.classList.remove('err'), 1400);
+// ── PERSONALIZATION ─────────────────────────────────────────────────────────
+function syncCardName() {
+  const name = (document.getElementById('inName').value || '').trim();
+  const el = document.getElementById('cName');
+  el.textContent = name ? `${name}'s Cannascope` : 'Your Cannascope';
+}
+
+// Phone formatting — US-only, light touch
+function formatPhone(v) {
+  const digits = v.replace(/\D/g, '').slice(0, 10);
+  if (digits.length === 0)    return '';
+  if (digits.length < 4)      return `(${digits}`;
+  if (digits.length < 7)      return `(${digits.slice(0,3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+}
+
+function digitsOnly(v) { return (v || '').replace(/\D/g, ''); }
+
+// ── CAPTURE HELPERS ──────────────────────────────────────────────────────────
+function readForm() {
+  return {
+    name:      document.getElementById('inName').value.trim(),
+    zip:       document.getElementById('inZip').value.trim(),
+    email:     document.getElementById('inEmail').value.trim(),
+    phone:     digitsOnly(document.getElementById('inPhone').value),
+    smsOptIn:  document.getElementById('smsOptIn').checked,
+  };
+}
+
+function setStatus(msg, kind) {
+  const el = document.getElementById('captureStatus');
+  el.textContent = msg;
+  el.className = 'capture-status show ' + (kind || 'ok');
+  if (kind === 'ok') {
+    setTimeout(() => { el.className = 'capture-status'; }, 5000);
+  }
+}
+
+function captureMetadata(extra) {
+  return JSON.stringify(Object.assign({
+    goal:       answers.goal,
+    experience: answers.experience,
+    format:     answers.format,
+    intensity:  answers.intensity,
+    priority:   answers.priority,
+    budget:     answers.budget,
+    archetype:  archKey,
+    card_id:    cardId,
+  }, extra || {}));
+}
+
+// ── ACTION 1: SAVE AS IMAGE ───────────────────────────────────────────────────
+async function ensureHtml2Canvas() {
+  if (window.html2canvas) return window.html2canvas;
+  await new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+  return window.html2canvas;
+}
+
+async function saveAsImage() {
+  const btn  = document.getElementById('btnSaveImg');
+  const card = document.getElementById('theCard');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span>Saving…</span>';
+  btn.disabled = true;
+  try {
+    const h2c = await ensureHtml2Canvas();
+    const canvas = await h2c(card, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    });
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = `cannascope-${(archKey || 'card')}-${cardId.replace(/-/g,'')}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+
+    sbInsert('demand_events', {
+      session_id:      sid,
+      organization_id: CANNASCOPE_ORG_ID,
+      source:          window.location.hostname,
+      event_type:      'save_image',
+      goal:            answers.goal,
+      experience:      captureMetadata(),
+      recommendations: ARCHETYPES[archKey].strains,
+      product_id:      null,
+      product_rank:    null,
+    });
+
+    btn.classList.add('done');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Saved</span>';
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.classList.remove('done');
+      btn.disabled = false;
+    }, 2200);
+  } catch(e) {
+    console.error('[Cannascope] saveAsImage error:', e);
+    btn.innerHTML = orig;
+    btn.disabled = false;
+    setStatus('Couldn\'t save image. Try the email option.', 'err');
+  }
+}
+
+// ── ACTION 2: TEXT IT TO ME ──────────────────────────────────────────────────
+async function textCard() {
+  const f = readForm();
+  if (!f.phone || f.phone.length < 10) {
+    document.getElementById('inPhone').classList.add('err');
+    setStatus('Add your phone number first.', 'err');
+    document.getElementById('inPhone').focus();
+    setTimeout(() => document.getElementById('inPhone').classList.remove('err'), 1400);
+    return;
+  }
+  if (!f.smsOptIn) {
+    setStatus('Check the SMS opt-in box first — required by law.', 'err');
+    document.getElementById('smsOptIn').focus();
     return;
   }
 
-  const btn = document.getElementById('btnEmail');
-  btn.textContent = 'Sending...'; btn.disabled = true;
+  const btn  = document.getElementById('btnText');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span>Sending…</span>'; btn.disabled = true;
 
-  const key = archetype(answers);
+  try {
+    const r = await fetch('/api/send-quiz-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone:     f.phone,
+        name:      f.name,
+        zip:       f.zip,
+        email:     f.email,
+        archetype: archKey,
+        cardId:    cardId,
+        answers:   answers,
+      }),
+    });
+    if (!r.ok) throw new Error(`SMS send failed: ${r.status}`);
 
-  // Send the actual email with their recommendation
+    sbInsert('demand_events', {
+      session_id:      sid,
+      organization_id: CANNASCOPE_ORG_ID,
+      source:          window.location.hostname,
+      event_type:      'sms_capture',
+      goal:            answers.goal,
+      experience:      captureMetadata({
+        name: f.name, zip: f.zip, email: f.email, phone: f.phone, sms_opt_in: true,
+      }),
+      recommendations: ARCHETYPES[archKey].strains,
+      product_id:      null,
+      product_rank:    null,
+    });
+
+    btn.classList.add('done');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Sent</span>';
+    setStatus('Sent. Check your texts.', 'ok');
+  } catch(e) {
+    console.error('[Cannascope] textCard error:', e);
+    btn.innerHTML = orig; btn.disabled = false;
+    setStatus('Couldn\'t send the text. Try email instead.', 'err');
+    return;
+  }
+  setTimeout(() => {
+    btn.innerHTML = orig; btn.classList.remove('done'); btn.disabled = false;
+  }, 4000);
+}
+
+// ── ACTION 3: EMAIL IT TO ME ─────────────────────────────────────────────────
+async function emailCard() {
+  const f = readForm();
+  if (!f.email || !f.email.includes('@')) {
+    document.getElementById('inEmail').classList.add('err');
+    setStatus('Add your email first.', 'err');
+    document.getElementById('inEmail').focus();
+    setTimeout(() => document.getElementById('inEmail').classList.remove('err'), 1400);
+    return;
+  }
+
+  const btn  = document.getElementById('btnEmail');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span>Sending…</span>'; btn.disabled = true;
+
   try {
     const r = await fetch('/api/send-quiz-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, archetype: key, answers }),
+      body: JSON.stringify({
+        email:     f.email,
+        name:      f.name,
+        zip:       f.zip,
+        phone:     f.phone,
+        archetype: archKey,
+        cardId:    cardId,
+        answers:   answers,
+      }),
     });
-    if (!r.ok) console.error('[Cannascope] Email send failed:', await r.text());
+    if (!r.ok) throw new Error(`Email send failed: ${r.status}`);
+
+    sbInsert('demand_events', {
+      session_id:      sid,
+      organization_id: CANNASCOPE_ORG_ID,
+      source:          window.location.hostname,
+      event_type:      'email_capture',
+      goal:            answers.goal,
+      experience:      captureMetadata({
+        name: f.name, zip: f.zip, email: f.email, phone: f.phone, sms_opt_in: f.smsOptIn,
+      }),
+      recommendations: ARCHETYPES[archKey].strains,
+      product_id:      null,
+      product_rank:    null,
+    });
+
+    btn.classList.add('done');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Sent</span>';
+    setStatus('Sent. Check your inbox.', 'ok');
   } catch(e) {
-    console.error('[Cannascope] Email send error:', e);
+    console.error('[Cannascope] emailCard error:', e);
+    btn.innerHTML = orig; btn.disabled = false;
+    setStatus('Couldn\'t send the email. Save as image instead.', 'err');
+    return;
   }
-
-  // Also log to Supabase
-  sbInsert('demand_events', {
-    session_id:      sid,
-    organization_id: CANNASCOPE_ORG_ID,
-    source:          window.location.hostname,
-    event_type:      'email_capture',
-    goal:            answers.goal,
-    experience:      JSON.stringify({
-      goal:       answers.goal,
-      experience: answers.experience,
-      format:     answers.format,
-      intensity:  answers.intensity,
-      priority:   answers.priority,
-      budget:     answers.budget,
-      archetype:  key,
-      email,
-    }),
-    recommendations: ARCHETYPES[key].strains,
-    product_id:      null,
-    product_rank:    null,
-  });
-
-  btn.style.display = 'none';
-  document.getElementById('emailSent').style.display = 'block';
+  setTimeout(() => {
+    btn.innerHTML = orig; btn.classList.remove('done'); btn.disabled = false;
+  }, 4000);
 }
 
 // ── NAV ───────────────────────────────────────────────────────────────────────
@@ -1111,13 +1510,30 @@ function show(id) {
 }
 
 function retake() {
-  document.getElementById('emailSent').style.display = 'none';
-  document.getElementById('btnEmail').style.display = '';
-  document.getElementById('btnEmail').textContent = 'Send it';
-  document.getElementById('btnEmail').disabled = false;
-  document.getElementById('emailIn').value = '';
+  ['inName','inZip','inEmail','inPhone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('smsOptIn').checked = false;
+  document.getElementById('captureStatus').className = 'capture-status';
+  ['btnSaveImg','btnText','btnEmail'].forEach(id => {
+    const b = document.getElementById(id);
+    b.classList.remove('done'); b.disabled = false;
+  });
+  document.getElementById('cName').textContent = 'Your Cannascope';
   startQuiz();
 }
+
+// ── EVENT WIRING ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('inName').addEventListener('input', syncCardName);
+
+  const phoneEl = document.getElementById('inPhone');
+  phoneEl.addEventListener('input', (e) => {
+    e.target.value = formatPhone(e.target.value);
+  });
+
+  document.getElementById('inZip').addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5);
+  });
+});
 </script>
 </body>
 </html>
