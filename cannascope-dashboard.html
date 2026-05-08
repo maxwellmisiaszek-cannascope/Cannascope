@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cannascope · Live Dashboard</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:        #2D6A4F;
+  --green-deep:   #1F4E38;
+  --green-mid:    #40916C;
+  --green-light:  #52B788;
+  --green-pale:   #D8EFE3;
+  --green-bg:     #F0F7F3;
+  --green-border: #C2DDD1;
+  --bg:           #FAFAF8;
+  --white:        #FFFFFF;
+  --surface:      #F5F5F2;
+  --text:         #18191A;
+  --text-2:       #4A4D46;
+  --text-3:       #8A8D84;
+  --border:       #E4EAE0;
+  --border-2:     #D0D8CC;
+  --red:          #C0392B;
+  --amber:        #B89A56;
+  --shadow:       0 1px 2px rgba(45,106,79,.04), 0 6px 24px rgba(45,106,79,.08);
+}
+
+html, body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg); color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+body { min-height: 100vh; }
+
+/* ── LOGIN ─────────────────────────────────────────────────────────── */
+.login-wrap {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.login {
+  width: 100%; max-width: 380px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 36px 30px;
+  text-align: center;
+}
+.login-eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--green-mid); margin-bottom: 18px;
+}
+.login-h {
+  font-family: 'Fraunces', serif;
+  font-size: 26px; font-weight: 300;
+  color: var(--text); margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+.login-sub {
+  font-size: 13px; color: var(--text-3);
+  margin-bottom: 24px;
+}
+.login-input {
+  width: 100%; height: 50px;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 0 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; color: var(--text);
+  outline: none; background: var(--bg);
+  transition: border-color 0.18s;
+  margin-bottom: 12px;
+}
+.login-input:focus { border-color: var(--green); background: var(--white); }
+.login-input.err   { border-color: var(--red); }
+
+.login-btn {
+  width: 100%; height: 50px;
+  background: var(--green); color: white;
+  border: none; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.login-btn:hover { background: var(--green-deep); }
+.login-btn:disabled { opacity: 0.6; cursor: wait; }
+
+.login-err {
+  font-size: 12px; color: var(--red);
+  margin-top: 10px; min-height: 16px;
+}
+
+/* ── APP ──────────────────────────────────────────────────────────── */
+.app { display: none; }
+.app.show { display: block; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 28px; height: 28px;
+  border-radius: 50%; background: var(--green);
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-mark svg { width: 14px; height: 14px; color: white; }
+.brand-name {
+  font-family: 'Fraunces', serif;
+  font-size: 17px; font-weight: 400;
+  color: var(--text); letter-spacing: -0.01em;
+}
+.brand-name span { color: var(--green); font-style: italic; }
+
+.live {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600;
+  color: var(--green-mid);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green-light);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%     { opacity: 0.45; transform: scale(0.85); }
+}
+
+.topbar-right {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 12px; color: var(--text-3);
+}
+.refresh-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 100px; padding: 6px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500;
+  color: var(--text-2); cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  transition: all 0.15s;
+}
+.refresh-btn:hover { border-color: var(--green-mid); color: var(--green); }
+.refresh-btn svg { width: 13px; height: 13px; }
+.refresh-btn.spin svg { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.logout-btn {
+  background: transparent; border: none;
+  font-size: 12px; color: var(--text-3); cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  padding: 6px 8px;
+}
+.logout-btn:hover { color: var(--red); }
+
+/* ── MAIN ─────────────────────────────────────────────────────────── */
+.main {
+  max-width: 1280px; margin: 0 auto;
+  padding: 28px;
+  display: grid; gap: 20px;
+}
+
+@media (max-width: 720px) {
+  .topbar { padding: 12px 16px; gap: 8px; }
+  .brand-name { font-size: 15px; }
+  .topbar-right { gap: 8px; font-size: 11px; }
+  .main { padding: 18px 16px; gap: 16px; }
+}
+
+/* ── STAT CARDS ────────────────────────────────────────────────────── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+@media (max-width: 720px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+.stat {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+}
+.stat-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 8px;
+}
+.stat-val {
+  font-family: 'Fraunces', serif;
+  font-size: 32px; font-weight: 400;
+  color: var(--text); letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+.stat-sub {
+  font-size: 11px; color: var(--text-3);
+  margin-top: 6px; font-weight: 400;
+}
+
+/* ── PANELS / CHARTS ──────────────────────────────────────────────── */
+.row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+.row.equal { grid-template-columns: 1fr 1fr; }
+@media (max-width: 880px) {
+  .row, .row.equal { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+.panel-h {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 16px; gap: 12px;
+}
+.panel-title {
+  font-family: 'Fraunces', serif;
+  font-size: 17px; font-weight: 400;
+  color: var(--text); letter-spacing: -0.015em;
+}
+.panel-meta {
+  font-size: 11px; color: var(--text-3);
+  font-weight: 500; letter-spacing: 0.04em;
+}
+
+.chart-wrap { position: relative; height: 220px; }
+.chart-wrap.tall { height: 260px; }
+
+/* ── TABLES ───────────────────────────────────────────────────────── */
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th, .table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.table th {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-3);
+}
+.table td { color: var(--text-2); }
+.table td:last-child { text-align: right; font-weight: 600; color: var(--text); }
+.table tr:last-child td { border-bottom: none; }
+
+.empty {
+  font-size: 13px; color: var(--text-3);
+  text-align: center; padding: 30px 16px;
+  font-style: italic;
+}
+
+/* ── FEED ─────────────────────────────────────────────────────────── */
+.feed {
+  display: flex; flex-direction: column;
+  max-height: 440px; overflow-y: auto;
+  margin: -6px -6px;
+}
+.feed-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.feed-item:hover { background: var(--green-bg); }
+.feed-pip {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.feed-pip.quiz_complete { background: var(--green-light); }
+.feed-pip.email_capture { background: var(--amber); }
+.feed-pip.sms_capture   { background: var(--green); }
+.feed-pip.save_image    { background: var(--green-mid); }
+
+.feed-text {
+  flex: 1; min-width: 0;
+  font-size: 13px; color: var(--text-2);
+  line-height: 1.45;
+}
+.feed-text strong { color: var(--text); font-weight: 600; }
+.feed-text .muted { color: var(--text-3); font-size: 12px; }
+.feed-time {
+  font-size: 11px; color: var(--text-3);
+  font-family: 'DM Mono', monospace;
+  flex-shrink: 0;
+}
+
+/* ── BAR LIST ─────────────────────────────────────────────────────── */
+.bars { display: flex; flex-direction: column; gap: 10px; }
+.bar-row {
+  display: grid; grid-template-columns: 110px 1fr 40px;
+  align-items: center; gap: 10px;
+  font-size: 13px;
+}
+.bar-label { color: var(--text-2); text-transform: capitalize; }
+.bar-track {
+  height: 8px; background: var(--surface);
+  border-radius: 100px; overflow: hidden;
+}
+.bar-fill {
+  height: 100%; background: linear-gradient(90deg, var(--green-mid), var(--green-light));
+  border-radius: 100px;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bar-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; color: var(--text); text-align: right;
+  font-weight: 600;
+}
+
+/* ── BANNER ───────────────────────────────────────────────────────── */
+.banner {
+  background: #FCEEEC; border: 1px solid #F1C8C2;
+  color: var(--red); padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  display: none;
+}
+.banner.show { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════════════════ -->
+<div class="login-wrap" id="vLogin">
+  <div class="login">
+    <div class="login-eyebrow">Cannascope · Live</div>
+    <div class="login-h">Restricted</div>
+    <div class="login-sub">Internal dashboard. Enter your passphrase.</div>
+    <input type="password" class="login-input" id="passIn" placeholder="Passphrase" autocomplete="current-password">
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ══ APP ════════════════════════════════════════════════════════════ -->
+<div class="app" id="vApp">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3 C9 3 6 6 6 12 C6 18 9 21 12 21 C15 21 18 18 18 12 C18 6 15 3 12 3 Z"/>
+          <path d="M12 8 L12 16"/><path d="M9 11 L12 13 L15 11"/>
+        </svg>
+      </div>
+      <div class="brand-name">Cannascope <span>· live</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="live"><div class="live-dot"></div>Live</div>
+      <span id="updatedAt">—</span>
+      <button class="refresh-btn" id="refreshBtn" onclick="loadStats()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
+        Refresh
+      </button>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="banner" id="banner"></div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Quizzes Completed</div>
+        <div class="stat-val" id="sQuizzes">—</div>
+        <div class="stat-sub" id="sQuizzesSub">All-time</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Email Captures</div>
+        <div class="stat-val" id="sEmails">—</div>
+        <div class="stat-sub" id="sEmailsSub">— rate</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">SMS Captures</div>
+        <div class="stat-val" id="sSms">—</div>
+        <div class="stat-sub" id="sSmsSub">— opt-in rate</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Image Saves</div>
+        <div class="stat-val" id="sImg">—</div>
+        <div class="stat-sub" id="sImgSub">Shared as PNG</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="panel">
+        <div class="panel-h">
+          <div class="panel-title">Activity — last 30 days</div>
+          <div class="panel-meta">Quizzes vs. captures</div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="chartTime"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><div class="panel-title">Archetypes</div></div>
+        <div class="chart-wrap tall"><canvas id="chartArchetype"></canvas></div>
+      </div>
+    </div>
+
+    <div class="row equal">
+      <div class="panel">
+        <div class="panel-h"><div class="panel-title">Goals</div></div>
+        <div class="bars" id="bGoals"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><div class="panel-title">Format preference</div></div>
+        <div class="bars" id="bFormats"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="panel">
+        <div class="panel-h">
+          <div class="panel-title">Recent activity</div>
+          <div class="panel-meta">Last 50 events</div>
+        </div>
+        <div class="feed" id="feed"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h">
+          <div class="panel-title">Top ZIPs</div>
+          <div class="panel-meta">Captured</div>
+        </div>
+        <table class="table" id="tZips">
+          <thead><tr><th>ZIP</th><th>Captures</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row equal">
+      <div class="panel">
+        <div class="panel-h"><div class="panel-title">Experience level</div></div>
+        <div class="bars" id="bExp"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><div class="panel-title">Effect intensity</div></div>
+        <div class="bars" id="bInt"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════
+// Auth
+// ══════════════════════════════════════════════════════════════════════
+const PASS_KEY = 'cs_admin_pass';
+
+function getPass()   { return sessionStorage.getItem(PASS_KEY); }
+function setPass(p)  { sessionStorage.setItem(PASS_KEY, p); }
+function clearPass() { sessionStorage.removeItem(PASS_KEY); }
+
+async function doLogin() {
+  const pass = document.getElementById('passIn').value.trim();
+  const err  = document.getElementById('loginErr');
+  const btn  = document.getElementById('loginBtn');
+  err.textContent = '';
+  if (!pass) { err.textContent = 'Enter your passphrase.'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const r = await fetch('/api/admin-stats', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-admin-pass': pass },
+      body: '{}',
+    });
+    if (r.status === 401) {
+      err.textContent = 'Incorrect passphrase.';
+      document.getElementById('passIn').classList.add('err');
+      return;
+    }
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      err.textContent = d.error || `Server error (${r.status})`;
+      return;
+    }
+    const data = await r.json();
+    setPass(pass);
+    showApp();
+    render(data);
+    startAutoRefresh();
+  } catch(e) {
+    err.textContent = 'Network error: ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign in';
+  }
+}
+
+function doLogout() {
+  clearPass();
+  stopAutoRefresh();
+  document.getElementById('vApp').classList.remove('show');
+  document.getElementById('vLogin').style.display = 'flex';
+  document.getElementById('passIn').value = '';
+  document.getElementById('passIn').classList.remove('err');
+}
+
+function showApp() {
+  document.getElementById('vLogin').style.display = 'none';
+  document.getElementById('vApp').classList.add('show');
+}
+
+document.getElementById('passIn').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// Data
+// ══════════════════════════════════════════════════════════════════════
+let timeChart   = null;
+let archChart   = null;
+let refreshTimer = null;
+
+async function loadStats() {
+  const pass = getPass();
+  if (!pass) { doLogout(); return; }
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spin');
+  try {
+    const r = await fetch('/api/admin-stats', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-admin-pass': pass },
+      body: '{}',
+    });
+    if (r.status === 401) { doLogout(); return; }
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      showBanner(d.error || `Server error (${r.status})`);
+      return;
+    }
+    const data = await r.json();
+    render(data);
+    hideBanner();
+  } catch(e) {
+    showBanner('Network error: ' + e.message);
+  } finally {
+    setTimeout(() => btn.classList.remove('spin'), 400);
+  }
+}
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+  refreshTimer = setInterval(loadStats, 30000);
+}
+function stopAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = null;
+}
+
+function showBanner(msg) {
+  const b = document.getElementById('banner');
+  b.textContent = msg;
+  b.classList.add('show');
+}
+function hideBanner() { document.getElementById('banner').classList.remove('show'); }
+
+// ══════════════════════════════════════════════════════════════════════
+// Render helpers
+// ══════════════════════════════════════════════════════════════════════
+function fmt(n) {
+  if (n === null || n === undefined) return '—';
+  return Number(n).toLocaleString('en-US');
+}
+function pct(n) {
+  if (!n) return '0%';
+  return `${Math.round(n * 100)}%`;
+}
+function relTime(iso) {
+  if (!iso) return '—';
+  const t = new Date(iso).getTime();
+  const diff = Math.max(0, Date.now() - t);
+  const s = Math.floor(diff / 1000);
+  if (s < 60)    return `${s}s ago`;
+  if (s < 3600)  return `${Math.floor(s/60)}m ago`;
+  if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+  return `${Math.floor(s/86400)}d ago`;
+}
+
+const ARCHETYPE_LABELS = {
+  sleeper:   'Deep Sleeper',
+  unwinder:  'Unwinder',
+  sharpener: 'Sharpener',
+  social:    'Social Spark',
+  healer:    'Healer',
+  explorer:  'Explorer',
+  microdose: 'Micro-Doser',
+};
+const GOAL_LABELS = {
+  sleep:'Sleep', relax:'Relax', focus:'Focus',
+  social:'Social', relief:'Relief', beginner:'Exploring',
+};
+const FORMAT_LABELS = {
+  edible:'Edible', vape:'Vape', flower:'Flower',
+  tincture:'Tincture', any:'Open',
+};
+const EXP_LABELS = {
+  new:'First time', casual:'Casual',
+  regular:'Regular', daily:'Daily',
+};
+const INT_LABELS = {
+  light:'Light', moderate:'Moderate', strong:'Strong',
+};
+
+function render(data) {
+  const s = data.summary || {};
+  document.getElementById('sQuizzes').textContent = fmt(s.total_quizzes);
+  document.getElementById('sEmails').textContent  = fmt(s.email_captures);
+  document.getElementById('sSms').textContent     = fmt(s.sms_captures);
+  document.getElementById('sImg').textContent     = fmt(s.save_image_events);
+
+  document.getElementById('sQuizzesSub').textContent = `${fmt(s.unique_sessions)} unique sessions`;
+  document.getElementById('sEmailsSub').textContent  = `${pct(s.email_capture_rate)} capture rate`;
+  document.getElementById('sSmsSub').textContent     = `${pct(s.sms_opt_in_rate)} opt-in rate`;
+  document.getElementById('sImgSub').textContent     = 'Shared as PNG';
+
+  document.getElementById('updatedAt').textContent = `Updated ${relTime(data.generated_at)}`;
+
+  renderTimeChart(data.by_day || []);
+  renderArchetypeChart(data.by_archetype || {});
+  renderBars('bGoals',   data.by_goal       || {}, GOAL_LABELS);
+  renderBars('bFormats', data.by_format     || {}, FORMAT_LABELS);
+  renderBars('bExp',     data.by_experience || {}, EXP_LABELS);
+  renderBars('bInt',     data.by_intensity  || {}, INT_LABELS);
+  renderZips(data.top_zips || []);
+  renderFeed(data.recent || []);
+}
+
+// Time series — line chart
+function renderTimeChart(byDay) {
+  const ctx = document.getElementById('chartTime').getContext('2d');
+  const labels = byDay.map(d => {
+    const dt = new Date(d.date + 'T00:00:00');
+    return dt.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  });
+  const quizzes  = byDay.map(d => d.quizzes);
+  const captures = byDay.map(d => d.captures);
+
+  if (timeChart) {
+    timeChart.data.labels = labels;
+    timeChart.data.datasets[0].data = quizzes;
+    timeChart.data.datasets[1].data = captures;
+    timeChart.update('none');
+    return;
+  }
+
+  timeChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Quizzes',
+          data: quizzes,
+          borderColor: '#2D6A4F',
+          backgroundColor: 'rgba(82,183,136,0.15)',
+          fill: true, tension: 0.35,
+          pointRadius: 0, pointHoverRadius: 4,
+          borderWidth: 2,
+        },
+        {
+          label: 'Captures',
+          data: captures,
+          borderColor: '#B89A56',
+          backgroundColor: 'rgba(184,154,86,0.10)',
+          fill: false, tension: 0.35,
+          pointRadius: 0, pointHoverRadius: 4,
+          borderWidth: 2, borderDash: [4,3],
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom', labels: {
+            boxWidth: 10, boxHeight: 10, padding: 14,
+            color: '#4A4D46', font: { family: 'DM Sans', size: 11 },
+          },
+        },
+        tooltip: {
+          backgroundColor: '#18191A', titleFont: { family:'DM Sans', size: 12 },
+          bodyFont: { family:'DM Sans', size: 12 }, padding: 10, cornerRadius: 8,
+        },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color:'#8A8D84', font:{family:'DM Sans', size: 10}, maxRotation: 0, autoSkipPadding: 14 } },
+        y: { beginAtZero: true, grid: { color:'#E4EAE0', drawBorder: false }, ticks: { color:'#8A8D84', font:{family:'DM Sans', size: 10}, precision: 0 } },
+      },
+    },
+  });
+}
+
+// Archetype donut
+function renderArchetypeChart(byArch) {
+  const ctx    = document.getElementById('chartArchetype').getContext('2d');
+  const keys   = Object.keys(ARCHETYPE_LABELS).filter(k => byArch[k]);
+  const labels = keys.map(k => ARCHETYPE_LABELS[k]);
+  const data   = keys.map(k => byArch[k]);
+  const colors = ['#2D6A4F','#40916C','#52B788','#B7E4C7','#B89A56','#D4B97A','#74C69D'];
+
+  if (archChart) {
+    archChart.data.labels = labels;
+    archChart.data.datasets[0].data = data;
+    archChart.data.datasets[0].backgroundColor = colors.slice(0, keys.length);
+    archChart.update('none');
+    return;
+  }
+
+  archChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colors.slice(0, keys.length), borderWidth: 0 }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '62%',
+      plugins: {
+        legend: {
+          position: 'bottom', labels: {
+            boxWidth: 8, boxHeight: 8, padding: 10,
+            color: '#4A4D46', font: { family: 'DM Sans', size: 11 },
+          },
+        },
+        tooltip: {
+          backgroundColor: '#18191A', padding: 10, cornerRadius: 8,
+          titleFont: { family:'DM Sans', size: 12 },
+          bodyFont: { family:'DM Sans', size: 12 },
+        },
+      },
+    },
+  });
+}
+
+// Bar list
+function renderBars(elId, dict, labels) {
+  const el = document.getElementById(elId);
+  const entries = Object.entries(dict).sort((a,b) => b[1] - a[1]);
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty">No data yet — quiz takers will appear here.</div>';
+    return;
+  }
+  const max = entries[0][1];
+  el.innerHTML = entries.map(([k, v]) => {
+    const pctW = max ? Math.round((v / max) * 100) : 0;
+    const lbl  = labels[k] || k;
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${lbl}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pctW}%"></div></div>
+        <div class="bar-count">${v}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderZips(zips) {
+  const tb = document.querySelector('#tZips tbody');
+  if (!zips.length) {
+    tb.innerHTML = '<tr><td colspan="2"><div class="empty">No ZIPs captured yet.</div></td></tr>';
+    return;
+  }
+  tb.innerHTML = zips.map(z => `<tr><td>${z.zip}</td><td>${z.count}</td></tr>`).join('');
+}
+
+function renderFeed(items) {
+  const el = document.getElementById('feed');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty">No activity yet.</div>';
+    return;
+  }
+  el.innerHTML = items.map(i => {
+    const arch = i.archetype ? (ARCHETYPE_LABELS[i.archetype] || i.archetype) : null;
+    const goal = i.goal      ? (GOAL_LABELS[i.goal]           || i.goal)      : null;
+    const evt  = ({
+      quiz_complete: 'Quiz completed',
+      email_capture: 'Email captured',
+      sms_capture:   'SMS opt-in',
+      save_image:    'Card saved',
+    })[i.event] || i.event;
+    const bits = [evt];
+    if (arch) bits.push(`<strong>${arch}</strong>`);
+    if (goal && !arch) bits.push(`for ${goal}`);
+    if (i.zip)  bits.push(`<span class="muted">${i.zip}</span>`);
+    if (i.name) bits.push(`<span class="muted">${i.name}</span>`);
+    return `
+      <div class="feed-item">
+        <div class="feed-pip ${i.event}"></div>
+        <div class="feed-text">${bits.join(' · ')}</div>
+        <div class="feed-time">${relTime(i.ts)}</div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// Boot — silent re-auth if pass already in sessionStorage
+// ══════════════════════════════════════════════════════════════════════
+(async function boot() {
+  const pass = getPass();
+  if (!pass) return;
+  try {
+    const r = await fetch('/api/admin-stats', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-admin-pass': pass },
+      body: '{}',
+    });
+    if (r.status === 401) { clearPass(); return; }
+    if (!r.ok) return;
+    const data = await r.json();
+    showApp();
+    render(data);
+    startAutoRefresh();
+  } catch(_) {}
+})();
+</script>
+</body>
+</html>
